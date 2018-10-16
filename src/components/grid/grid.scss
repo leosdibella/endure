@@ -5,14 +5,17 @@ $numberOfSpacesHigh: 36;
 .grid.dark-mode {
     border: 1px solid #f2f2f2;
     border-top: none;
+    border-right: none;
 }
 
 .grid.light-mode {
     border: 1px solid #3d3d3d;
     border-top: none;
+    border-right: none;
 }
 
 .grid {
+    position: relative;
     display: flex;
     margin: auto;
     flex-wrap: wrap;

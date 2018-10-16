@@ -1,70 +1,122 @@
 $colors: (
     green: (
-        low: rgb(50, 120, 80),
-        high: rgb(3, 235, 96)
+        lowest: rgb(19, 82, 0),
+        low: rgb(56, 158, 13),
+        high: rgb(115, 209, 61),
+        highest: rgb(183, 235, 143)
     ),
     blue: (
-        low: rgb(42, 78, 102),
-        high: rgb(5, 153, 252)
+        lowest: rgb(6, 17, 120),
+        low: rgb(29, 57, 196),
+        high: rgb(89, 126, 247),
+        highest: rgb(173, 198, 255)
     ),
     red: (
-        low: rgb(163, 5, 5),
-        high: rgb(241, 82, 82)
+        lowest: rgb(130, 0, 20),
+        low: rgb(207, 19, 34),
+        high:  rgb(255, 77, 79),
+        highest: rgb(255, 163, 158)
     ),
     violet: (
-        low: rgb(69, 8, 110),
-        high: rgb(171, 79, 233)
+        lowest: rgb(34, 7, 94),
+        low: rgb(83, 29, 171),
+        high: rgb(146, 84, 222),
+        highest: rgb(211, 173, 247)
     ),
     orange: (
-        low: rgb(248, 99, 0),
-        high: rgb(255, 149, 79)
+        lowest: rgb(135, 56, 0),
+        low: rgb(212, 107, 8),
+        high: rgb(255, 169, 64),
+        highest: rgb(255, 213, 145)
     ),
     yellow: (
-        low: rgb(255, 251, 2),
-        high: rgb(230, 240, 100)
+        lowest: rgb(135, 104, 0),
+        low: rgb(250, 219, 20),
+        high: rgb(255, 236, 61),
+        highest: rgb(255, 251, 143)
     )
 );
 
+@mixin tile() {
+    position: absolute;
+}
+
+@-webkit-keyframes AnimateTile {
+    0% {
+		background-position: 0% 50%
+	}
+	50% {
+		background-position: 100% 50%
+	}
+	100% {
+		background-position: 0% 50%
+	}
+}
+
+@-moz-keyframes AnimateTile {
+    0% {
+		background-position: 0% 50%
+	}
+	50% {
+		background-position: 100% 50%
+	}
+	100% {
+		background-position: 0% 50%
+	}
+}
+
+@keyframes AnimateTile { 
+    0% {
+		background-position: 0% 50%
+	}
+	50% {
+		background-position: 100% 50%
+	}
+	100% {
+		background-position: 0% 50%
+	}
+}
+
+@mixin animatedTile() {
+    @include tile();
+    -webkit-animation: AnimateTile 2.5s ease infinite;
+    -moz-animation: AnimateTile 2.5s ease infinite;
+    animation: AnimateTile 2.5s ease infinite;
+    background-size: 400% 400%;
+}
+
 @each $color-primary, $map-primary in $colors {
+    $lowest-primary: map-get($map-primary, lowest);
     $low-primary: map-get($map-primary, low);
     $high-primary: map-get($map-primary, high);
+    $highest-primary: map-get($map-primary, highest);
 
-    .tile-#{$color-primary} {
-        background: linear-gradient(88deg, $high-primary, $low-primary);
-        border-radius: 10px;
+    .dark-mode .tile-#{$color-primary} {
+        @include tile();
+        background: radial-gradient($high-primary, $lowest-primary);
+    }
+
+    .light-mode .tile-#{$color-primary} {
+        @include tile();
+        background: radial-gradient($highest-primary, $low-primary);
     }
 
     @each $color-secondary, $map-secondary in $colors {
+        $lowest-secondary: map-get($map-secondary, lowest);
         $low-secondary: map-get($map-secondary, low);
         $high-secondary: map-get($map-secondary, high);
+        $highest-secondary: map-get($map-secondary, highest);
 
         @if $low-primary != $low-secondary {
-            .tile-#{$color-primary}-#{$color-secondary} {
-                background: linear-gradient(88deg, $high-primary, $low-primary, $high-secondary, $low-secondary);
-                -webkit-animation: AnimationName 3s ease infinite;
-                -moz-animation: AnimationName 3s ease infinite;
-                animation: AnimationName 3s ease infinite;
-                background-size: 400% 400%;
-                border-radius: 10px;
+            .dark-mode .tile-#{$color-primary}-#{$color-secondary} {
+                background: linear-gradient(-45deg, $high-primary, $lowest-primary, $high-secondary, $lowest-secondary);
+                @include animatedTile();
+            }
+
+            .light-mode .tile-#{$color-primary}-#{$color-secondary} {
+                background: linear-gradient(-45deg, $highest-primary, $low-primary, $highest-secondary, $low-secondary);
+                @include animatedTile();
             }
         }
     }
-}
-
-@-webkit-keyframes AnimationName {
-    0%{background-position:0% 55%}
-    50%{background-position:100% 46%}
-    100%{background-position:0% 55%}
-}
-
-@-moz-keyframes AnimationName {
-    0%{background-position:0% 55%}
-    50%{background-position:100% 46%}
-    100%{background-position:0% 55%}
-}
-
-@keyframes AnimationName { 
-    0%{background-position:0% 55%}
-    50%{background-position:100% 46%}
-    100%{background-position:0% 55%}
 }

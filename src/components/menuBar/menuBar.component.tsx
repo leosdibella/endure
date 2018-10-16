@@ -83,6 +83,12 @@ export class MenuBar extends React.Component<MenuBarProps, State> {
         super(props);
     };
 
+    setState() {
+        super.setState({
+
+        });
+    };
+
     render() {
         return <div className={'menu-bar ' + this.props.viewMode.baseClass}>
             <span>

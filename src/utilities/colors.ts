@@ -20,10 +20,13 @@ export namespace Colors {
 
         constructor(name: string, inverse?: Color) {
             this.name = name;
-            this.inverse = inverse;
 
-            if (!Utilities.isWellDefinedValue(inverse.inverse)) {
-                inverse.inverse = this;
+            if (Utilities.isWellDefinedValue(inverse)) {
+                this.inverse = inverse;
+
+                if (!Utilities.isWellDefinedValue(inverse.inverse)) {
+                    inverse.inverse = this;
+                }
             }
         };
     };
@@ -32,6 +35,6 @@ export namespace Colors {
     export const GREEN: Color = RED.getInverse();
     export const BLUE: Color = new Color(Values.Blue, new Color(Values.Orange));
     export const ORANGE: Color = BLUE.getInverse();
-    export const VIOLET: Color = new Color(Values.Red, new Color(Values.Yellow));
+    export const VIOLET: Color = new Color(Values.Violet, new Color(Values.Yellow));
     export const YELLOW: Color = VIOLET.getInverse();
 };
