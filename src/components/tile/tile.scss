@@ -1,0 +1,70 @@
+$colors: (
+    green: (
+        low: rgb(50, 120, 80),
+        high: rgb(3, 235, 96)
+    ),
+    blue: (
+        low: rgb(42, 78, 102),
+        high: rgb(5, 153, 252)
+    ),
+    red: (
+        low: rgb(163, 5, 5),
+        high: rgb(241, 82, 82)
+    ),
+    violet: (
+        low: rgb(69, 8, 110),
+        high: rgb(171, 79, 233)
+    ),
+    orange: (
+        low: rgb(248, 99, 0),
+        high: rgb(255, 149, 79)
+    ),
+    yellow: (
+        low: rgb(255, 251, 2),
+        high: rgb(230, 240, 100)
+    )
+);
+
+@each $color-primary, $map-primary in $colors {
+    $low-primary: map-get($map-primary, low);
+    $high-primary: map-get($map-primary, high);
+
+    .tile-#{$color-primary} {
+        background: linear-gradient(88deg, $high-primary, $low-primary);
+        border-radius: 10px;
+    }
+
+    @each $color-secondary, $map-secondary in $colors {
+        $low-secondary: map-get($map-secondary, low);
+        $high-secondary: map-get($map-secondary, high);
+
+        @if $low-primary != $low-secondary {
+            .tile-#{$color-primary}-#{$color-secondary} {
+                background: linear-gradient(88deg, $high-primary, $low-primary, $high-secondary, $low-secondary);
+                -webkit-animation: AnimationName 3s ease infinite;
+                -moz-animation: AnimationName 3s ease infinite;
+                animation: AnimationName 3s ease infinite;
+                background-size: 400% 400%;
+                border-radius: 10px;
+            }
+        }
+    }
+}
+
+@-webkit-keyframes AnimationName {
+    0%{background-position:0% 55%}
+    50%{background-position:100% 46%}
+    100%{background-position:0% 55%}
+}
+
+@-moz-keyframes AnimationName {
+    0%{background-position:0% 55%}
+    50%{background-position:100% 46%}
+    100%{background-position:0% 55%}
+}
+
+@keyframes AnimationName { 
+    0%{background-position:0% 55%}
+    50%{background-position:100% 46%}
+    100%{background-position:0% 55%}
+}
