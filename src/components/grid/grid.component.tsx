@@ -4,6 +4,7 @@ import { ViewModes } from '../../utilities/viewModes';
 import { Tile, TileProps, TileStyle } from '../../components/tile/tile.component';
 import { Utilities } from '../../utilities/utilities';
 import { Colors } from '../../utilities/colors';
+import { Constants } from '../../utilities/constants';
 
 class Space {
     readonly id: string;
@@ -33,12 +34,23 @@ class State {
         return 'space' + (allowInteraction && (columnIndex === this.currentLeftMostColumn || columnIndex === this.currentLeftMostColumn + 1) ? ' ' + accentClass : '');
     };
 
+    reduceTiles() : boolean {
+        let reduceAgain = false;
+
+        for (let i = 0; i < Constants.GridDimensions.numberOFSpacesHigh; ++i) {
+            for (let j = 0; j < Constants.GridDimensions.numberOfSpacesWide; ++j) {
+                
+            }
+        }
+    };
+
     constructor() {
         for (let i = 0; i < State.numberOfSpacesHigh; ++i) {
             this.tiles.push([]);
 
             for (let j = 0; j < State.numberOfSpacesWide; ++j) {
                 this.spaces.push(new Space(i, j));
+                this.tiles[i].push(null);
             }
         }
 

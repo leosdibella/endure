@@ -1,7 +1,14 @@
 import * as React from 'react';
 import '../../components/tile/tile.scss';
 import { Colors } from '../../utilities/colors';
-import { Constants } from '../../utilities/constants';
+
+class State {
+    readonly className: string;
+
+    constructor (colors: Colors.Color[]) {
+        this.className = 'tile-' + colors.map(color => color.name).reduce((previous, next) => previous + '-' + next);
+    }
+}
 
 export class TileStyle {
     top: string;
@@ -29,15 +36,16 @@ export class TileProps {
     }
 };
 
-export class Tile extends React.Component<TileProps, object> {
+export class Tile extends React.Component<TileProps, State> {
+    readonly state: State;
+
     constructor(props: TileProps) {
         super(props);
+        this.state = new State(this.props.colors);
     }
 
     render() {
-        const className = 'tile-' + this.props.colors.map(color => color.name).reduce((previous, next) => previous + '-' + next);
-
-        return <div className={className} style={this.props.tileStyle}>
+        return <div className={this.state.className} style={this.props.tileStyle}>
         </div>
     };
 };

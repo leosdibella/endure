@@ -91,16 +91,6 @@ $colors: (
     $high-primary: map-get($map-primary, high);
     $highest-primary: map-get($map-primary, highest);
 
-    .dark-mode .tile-#{$color-primary} {
-        @include tile();
-        background: radial-gradient($high-primary, $lowest-primary);
-    }
-
-    .light-mode .tile-#{$color-primary} {
-        @include tile();
-        background: radial-gradient($highest-primary, $low-primary);
-    }
-
     @each $color-secondary, $map-secondary in $colors {
         $lowest-secondary: map-get($map-secondary, lowest);
         $low-secondary: map-get($map-secondary, low);
