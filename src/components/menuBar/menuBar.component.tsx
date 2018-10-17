@@ -2,8 +2,7 @@ import * as React from 'react';
 import '../../components/menuBar/menuBar.scss';
 import { ViewModes } from '../../utilities/viewModes';
 import { Utilities } from '../../utilities/utilities';
-import { GameUpdates } from '../../components/game/game.component';
-import { GameMode } from '../../components/game/game.component';
+import { GameUpdates, Game, GameMode } from '../../components/game/game.component';
 
 enum ComboClass {
     Healthy = 'healthy-combo',
@@ -22,7 +21,7 @@ class CountDown {
     private static readonly millisecondsPerSecond: number = 1000;
     private static readonly decrementInterval: number = 17;
     private static readonly minimumViableCombo: number = 2;
-    private milliseconds: number;
+    private milliseconds: number = 0;
     private menuBar: MenuBar;
     private interval: NodeJS.Timeout;
 
@@ -64,7 +63,7 @@ class CountDown {
         }
     };
 
-    private disable() : void {
+    disable() : void {
         this.milliseconds = 0;
 
         if (Utilities.isWellDefinedValue(this.interval)) {
@@ -77,7 +76,7 @@ class CountDown {
         const seconds: number = Math.floor(this.milliseconds / CountDown.millisecondsPerSecond),
               milliseconds = this.milliseconds - (seconds * CountDown.millisecondsPerSecond);
 
-        if (milliseconds === 0 || (this.menuBar.props.gameMode !== GameMode.InGame && this.menuBar.props.gameMode !== GameMode.Paused)) {
+        if (milliseconds === 0 || !Game.isInProgress(this.menuBar.props.gameMode)) {
             this.disable();
             return <div></div>;
         }
@@ -137,6 +136,10 @@ export class MenuBar extends React.Component<MenuBarProps, State> {
         if (this.props.combo > previousProps.combo) {
             this.state.countDown.reinitialize();
         }
+    };
+
+    componentWillUnmount() {
+        this.state.countDown.disable();
     };
 
     render() {

@@ -36,10 +36,66 @@ class State {
     
     currentLeftMostColumn: number = 4;
 
+    constructor() {
+        for (let i = 0; i < State.numberOfSpacesHigh; ++i) {
+            for (let j = 0; j < State.numberOfSpacesWide; ++j) {
+                this.spaces.push(new Space(i, j));
+                this.tiles.push(null);
+            }
+        }
+    }
+};
+
+export interface GridProps {
+    viewMode: ViewModes.Mode;
+    gameMode: GameMode;
+    readonly onChanges: (gameUpdates: GameUpdates) => void;
+};
+
+export class Grid extends React.Component<GridProps, State> {
+    readonly state: State = new State();
+
+    constructor(props: GridProps) {
+        super(props);
+
+        this.updateTile(0, 0, [Colors.Color.Blue, Colors.Color.Green]);
+        this.updateTile(1, 0, [Colors.Color.Green, Colors.Color.Orange]);
+        this.updateTile(3, 0, [Colors.Color.Violet, Colors.Color.Green]);
+        this.updateTile(3, 1, [Colors.Color.Red, Colors.Color.Blue]);
+        this.updateTile(3, 2, [Colors.Color.Yellow, Colors.Color.Blue]);
+        this.updateTile(3, 3, [Colors.Color.Yellow, Colors.Color.Green]);
+        this.updateTile(4, 0, [Colors.Color.Orange, Colors.Color.Violet]);
+        this.updateTile(4, 3, [Colors.Color.Yellow, Colors.Color.Violet]);
+    };
+
+    private readonly onKeyPress = (keyboardEvent: KeyboardEvent) : void => {
+        switch (keyboardEvent.key.toUpperCase()) {
+            case 'A': {
+                if (this.state.currentLeftMostColumn > 0) {
+                    this.setState({
+                        currentLeftMostColumn: this.state.currentLeftMostColumn - 1
+                    });
+                }
+
+                break;
+            }
+            case 'D': {
+                if (this.state.currentLeftMostColumn < State.numberOfSpacesWide - 2) {
+                    this.setState({
+                        currentLeftMostColumn: this.state.currentLeftMostColumn + 1
+                    });
+                }
+
+                break;
+            }
+            default: break;
+        }
+    };
+
     private generateConnectedSubGraphFromTilesWithColor(color: Colors.Color) : ConnectedGraph {
-        const tilesMatchingColor = this.tiles.filter(tile => tile.colors.indexOf(color) > -1, [])
-                                             .sort((a, b) => a.row - b.row || a.column - b.column),
-              directedAcyclicGraph = new DirectedAcyclicGraph(this.tiles);
+        const tilesMatchingColor = this.state.tiles.filter(tile => tile.colors.indexOf(color) > -1, [])
+                                                   .sort((a, b) => a.row - b.row || a.column - b.column),
+              directedAcyclicGraph = new DirectedAcyclicGraph(this.state.tiles);
 
         let wieght,
             tileA,
@@ -52,7 +108,7 @@ class State {
 
                 if ((tileA.column === tileB.column && tileA.row + 1 === tileB.row) || (tileA.row === tileB.row && tileA.column + 1 === tileB.column)) {
                     wieght = Colors.howManyColorsDoPairOfColorPairsShare(tileA.colors, tileB.colors, true);
-                    directedAcyclicGraph.addEdge(State.getTileIndex(tileA.row, tileA.column), State.getTileIndex(tileB.row, tileB.column), wieght);
+                    directedAcyclicGraph.addEdge(Grid.getTileIndex(tileA.row, tileA.column), Grid.getTileIndex(tileB.row, tileB.column), wieght);
                 }
             }
         }
@@ -89,80 +145,22 @@ class State {
         };
     };
 
-    reduceTiles() : TileReductionDepenencies {
+    private reduceTiles() : TileReductionDepenencies {
         const tileReductionDepenencies: TileReductionDepenencies = this.getTileReductionDependencies();
 
         for (let i = 0; i < tileReductionDepenencies.tileIndicesToReduce.length; ++i) {
-            this.tiles[tileReductionDepenencies.tileIndicesToReduce[i]] = null;
+            this.state.tiles[tileReductionDepenencies.tileIndicesToReduce[i]] = null;
         }
 
         return tileReductionDepenencies;
     };
 
-    updateTile(row: number, column: number, colors: Colors.Color[], height: number = State.spacePixelDimensions, width: number = State.spacePixelDimensions) : void {
+    private updateTile(row: number, column: number, colors: Colors.Color[], height: number = State.spacePixelDimensions, width: number = State.spacePixelDimensions) : void {
         const top: number = (row * State.spacePixelDimensions) + (row + 1),
               left: number = (column * State.spacePixelDimensions) + column;
 
-        this.tiles[State.getTileIndex(row, column)] = new TileProps(`${row}-${column}`, colors, new TileStyle(top, left, height, width), row, column);
+        this.state.tiles[Grid.getTileIndex(row, column)] = new TileProps(`${row}-${column}`, colors, new TileStyle(top, left, height, width), row, column);
     }
-
-    constructor() {
-        for (let i = 0; i < State.numberOfSpacesHigh; ++i) {
-            for (let j = 0; j < State.numberOfSpacesWide; ++j) {
-                this.spaces.push(new Space(i, j));
-                this.tiles.push(null);
-            }
-        }
-
-        this.updateTile(0, 0, [Colors.Color.Blue, Colors.Color.Green]);
-        this.updateTile(1, 0, [Colors.Color.Green, Colors.Color.Orange]);
-        this.updateTile(3, 0, [Colors.Color.Violet, Colors.Color.Green]);
-        this.updateTile(3, 1, [Colors.Color.Red, Colors.Color.Blue]);
-        this.updateTile(3, 2, [Colors.Color.Yellow, Colors.Color.Blue]);
-        this.updateTile(3, 3, [Colors.Color.Yellow, Colors.Color.Green]);
-        this.updateTile(4, 0, [Colors.Color.Orange, Colors.Color.Violet]);
-        this.updateTile(4, 3, [Colors.Color.Yellow, Colors.Color.Violet]);
-    }
-};
-
-const initialState = new State();
-
-export interface GridProps {
-    viewMode: ViewModes.Mode;
-    gameMode: GameMode;
-    readonly onChanges: (gameUpdates: GameUpdates) => void;
-};
-
-export class Grid extends React.Component<GridProps, State> {
-    readonly state: State = initialState;
-
-    constructor(props: GridProps) {
-        super(props);
-    };
-
-    private readonly onKeyPress = (keyboardEvent: KeyboardEvent) : void => {
-        switch (keyboardEvent.key.toUpperCase()) {
-            case 'A': {
-                if (this.state.currentLeftMostColumn > 0) {
-                    this.setState({
-                        currentLeftMostColumn: this.state.currentLeftMostColumn - 1
-                    });
-                }
-
-                break;
-            }
-            case 'D': {
-                if (this.state.currentLeftMostColumn < State.numberOfSpacesWide - 2) {
-                    this.setState({
-                        currentLeftMostColumn: this.state.currentLeftMostColumn + 1
-                    });
-                }
-
-                break;
-            }
-            default: break;
-        }
-    };
 
     private getSpaceClassName(columnIndex: number, accentClass: string) : string {
         return 'space' + (this.props.gameMode === GameMode.InGame && (columnIndex === this.state.currentLeftMostColumn || columnIndex === this.state.currentLeftMostColumn + 1) ? ' ' + accentClass : '');
