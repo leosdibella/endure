@@ -8,7 +8,7 @@ enum GameMode {
     NewGame = 0,
     InGame,
     GameOver,
-    Pause
+    Paused
 };
 
 class State {
@@ -17,11 +17,7 @@ class State {
     viewMode: ViewModes.Mode = ViewModes.DARK_MODE;
     combo: number = 0;
     score: number = 0;
-
-    set setViewMode(viewMode: ViewModes.Mode) {
-        this.viewMode = viewMode;
-    }
-}
+};
 
 const initialState: State = new State();
 
@@ -33,6 +29,7 @@ export interface GameUpdates {
 export class Game extends React.Component<object, State> {
     private static readonly endure: string[] = 'endure'.split('');
     private static readonly gameOver: string[] = 'GameOver'.split('');
+    private static readonly paused: string[] = 'Paused'.split('');
 
     readonly state: State = initialState;
 
@@ -48,6 +45,13 @@ export class Game extends React.Component<object, State> {
             allowInteraction: false,
             gameMode: GameMode.NewGame
         })
+    };
+
+    readonly togglePaused = () : void => {
+        this.setState({
+            allowInteraction: !this.state.allowInteraction,
+            gameMode: this.state.gameMode === GameMode.Paused ? GameMode.InGame : GameMode.Paused
+        });
     };
 
     private injectOverlayIntoOverlayContainer(overlay: JSX.Element[], onClick?: () => void) : JSX.Element {
@@ -77,11 +81,15 @@ export class Game extends React.Component<object, State> {
                                                                         <button onClick={this.showNewGameScreen}>
                                                                             Quit
                                                                         </button>
-                                                            </div>);
+                                                                    </div>);
 
                 return this.injectOverlayIntoOverlayContainer(overlay);
             }
+            case GameMode.Paused: {
+                const overlay: JSX.Element[] = Game.paused.map((letter, index) => <span key={index} className='paused-text'>{letter}</span>);
 
+                return this.injectOverlayIntoOverlayContainer(overlay, this.togglePaused);
+            }
         }
     };
 
@@ -94,6 +102,26 @@ export class Game extends React.Component<object, State> {
             score: gameUpdates.score,
             combo: gameUpdates.combo
         });
+    };
+
+    readonly onKeyDown = (keyboardEvent: KeyboardEvent) : void => {
+        switch (keyboardEvent.key.toUpperCase()) {
+            case 'P': {
+                this.togglePaused();
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    };
+
+    componentDidMount() {
+        document.addEventListener('keydown', this.onKeyDown);
+    };
+
+    componentWillUnmount() {
+        document.removeEventListener('keydown', this.onKeyDown);
     };
 
     render() {

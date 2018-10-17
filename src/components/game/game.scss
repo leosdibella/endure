@@ -33,7 +33,7 @@
                0 20px 20px rgba(0,0,0,.15);
 }
 
-.game-over-text, .new-game-text {
+.game-over-text, .new-game-text, .paused-text {
     background: #ffffff;
     background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
     -webkit-background-clip: text;
@@ -87,6 +87,13 @@
 }
 
 .game-over-text {
+    animation: 5s infinite linear;
+    -webkit-animation: 5s infinite linear;
+    -moz-animation: 5s infinite linear;
+    @include animation-text-keyframes
+}
+
+.paused-text {
     animation: 5s infinite linear;
     -webkit-animation: 5s infinite linear;
     -moz-animation: 5s infinite linear;

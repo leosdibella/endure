@@ -9,6 +9,7 @@ class Time {
     private hours: number = 0;
     private minutes: number = 0;
     private seconds: number = 0;
+    private menuBar: MenuBar;
 
     private static setValues(time: Time) : void {
         ++time.seconds;
@@ -51,15 +52,38 @@ class Time {
 
     getFormattedTime() : string {
         return this.hours + 'h ' + this.minutes + 'm ' + this.seconds + 's';
-    }
+    };
+
+    constructor(menuBar: MenuBar) {
+        this.menuBar = menuBar;
+    };
+};
+
+class CountDown {
+    private seconds: number;
+    private milliseconds: number;
+    private menuBar: MenuBar;
+
+    constructor(menuBar: MenuBar) {
+        this.menuBar = menuBar;
+    };
+
+    getCountDownParts() : number[] {
+        return [
+            this.seconds, this.milliseconds
+        ];
+    };
 };
 
 class State {
-    readonly time: Time = new Time();
-    //readonly countDown: CountDown = new CountDown();
-}
+    readonly time: Time;
+    readonly countDown: CountDown;
 
-const initialState: State = new State();
+    constructor(menuBar: MenuBar) {
+        this.time = new Time(menuBar);
+        this.countDown = new CountDown(menuBar);
+    }
+};
 
 export class MenuBarProps {
     viewMode: ViewModes.Mode;
@@ -70,14 +94,15 @@ export class MenuBarProps {
         this.combo = combo;
         this.viewMode = viewMode;
         this.score = score;
-    }
+    };
 };
 
 export class MenuBar extends React.Component<MenuBarProps, State> {
-    readonly state: State = initialState;
+    readonly state: State;
     
     constructor(props: MenuBarProps) {
         super(props);
+        this.state = new State(this);
     };
 
     setState() {
@@ -103,5 +128,5 @@ export class MenuBar extends React.Component<MenuBarProps, State> {
                 {this.state.time.getFormattedTime()}
             </span>
         </div>;
-    }
+    };
 };

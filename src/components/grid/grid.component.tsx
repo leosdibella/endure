@@ -36,10 +36,6 @@ class State {
     
     currentLeftMostColumn: number = 4;
 
-    getSpaceClassName(allowInteraction: boolean, columnIndex: number, accentClass: string) : string {
-        return 'space' + (allowInteraction && (columnIndex === this.currentLeftMostColumn || columnIndex === this.currentLeftMostColumn + 1) ? ' ' + accentClass : '');
-    };
-
     private generateConnectedSubGraphFromTilesWithColor(color: Colors.Color) : ConnectedGraph {
         const tilesMatchingColor = this.tiles.filter(tile => tile.colors.indexOf(color) > -1, [])
                                              .sort((a, b) => a.row - b.row || a.column - b.column),
@@ -150,17 +146,47 @@ export class Grid extends React.Component<GridProps, State> {
         super(props);
     };
 
-    componentWillMount() {
+    private readonly onKeyPress = (keyboardEvent: KeyboardEvent) : void => {
+        const key: string = keyboardEvent.key;
 
+        switch (key.toUpperCase()) {
+            case 'A': {
+                if (this.state.currentLeftMostColumn > 0) {
+                    this.setState({
+                        currentLeftMostColumn: this.state.currentLeftMostColumn - 1
+                    });
+                }
+
+                break;
+            }
+            case 'D': {
+                if (this.state.currentLeftMostColumn < State.numberOfSpacesWide - 2) {
+                    this.setState({
+                        currentLeftMostColumn: this.state.currentLeftMostColumn + 1
+                    });
+                }
+
+                break;
+            }
+            default: break;
+        }
+    };
+
+    private getSpaceClassName(columnIndex: number, accentClass: string) : string {
+        return 'space' + (this.props.allowInteraction && (columnIndex === this.state.currentLeftMostColumn || columnIndex === this.state.currentLeftMostColumn + 1) ? ' ' + accentClass : '');
+    };
+
+    componentDidMount() {
+        document.addEventListener('keypress', this.onKeyPress);
     };
 
     componentWillUnmount() {
-
+        document.removeEventListener('keypress', this.onKeyPress);
     };
 
     render() {
         const spaces: JSX.Element[] = this.state.spaces.map(space =>
-            <div key={space.id} className={this.state.getSpaceClassName(this.props.allowInteraction, space.columnIndex, this.props.viewMode.accentClass)}>
+            <div key={space.id} className={this.getSpaceClassName(space.columnIndex, this.props.viewMode.accentClass)}>
                 {space.id}
             </div>);
         
