@@ -4,7 +4,7 @@ import { ViewModes } from '../../utilities/viewModes';
 import { Tile, TileProps, TileStyle } from '../../components/tile/tile.component';
 import { Utilities } from '../../utilities/utilities';
 import { Colors } from '../../utilities/colors';
-import { GameUpdates } from '../../components/game/game.component';
+import { GameUpdates, GameMode } from '../../components/game/game.component';
 import { DirectedAcyclicGraph, ConnectedGraph } from '../../utilities/directedAcyclicGraph';
 
 class Space {
@@ -127,16 +127,10 @@ class State {
 
 const initialState = new State();
 
-export class GridProps {
+export interface GridProps {
     viewMode: ViewModes.Mode;
-    allowInteraction: boolean;
+    gameMode: GameMode;
     readonly onChanges: (gameUpdates: GameUpdates) => void;
-
-    constructor(viewMode: ViewModes.Mode, allowInteraction: boolean, onChanges: (gameUpdates: GameUpdates) => void) {
-        this.viewMode = viewMode;
-        this.allowInteraction = allowInteraction;
-        this.onChanges = onChanges;
-    };
 };
 
 export class Grid extends React.Component<GridProps, State> {
@@ -171,7 +165,7 @@ export class Grid extends React.Component<GridProps, State> {
     };
 
     private getSpaceClassName(columnIndex: number, accentClass: string) : string {
-        return 'space' + (this.props.allowInteraction && (columnIndex === this.state.currentLeftMostColumn || columnIndex === this.state.currentLeftMostColumn + 1) ? ' ' + accentClass : '');
+        return 'space' + (this.props.gameMode === GameMode.InGame && (columnIndex === this.state.currentLeftMostColumn || columnIndex === this.state.currentLeftMostColumn + 1) ? ' ' + accentClass : '');
     };
 
     componentDidMount() {

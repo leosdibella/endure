@@ -144,17 +144,19 @@ html, body, .game, .game-overlay-container, #endure {
     z-index: 10;
 }
 
-.game-over-options-container {
+.game-button-panel,
+.view-mode-radio-container {
     display: flex;
     justify-content: center;
     flex: 1;
     flex-direction: row;
+    align-items: center;
 }
 
-.game-over-options-container button, 
-.game-over-options-container button:active, 
-.game-over-options-container button:hover,
-.game-over-options-container button:focus {
+.game-button-panel button, 
+.game-button-panel button:active, 
+.game-button-panel button:hover,
+.game-button-panel button:focus {
     outline: none;
     cursor: pointer;
     margin: 10px;
@@ -164,14 +166,32 @@ html, body, .game, .game-overlay-container, #endure {
     @include themedText(.33);
 }
 
-.dark-mode .game-overlay-container .game-overlay .game-over-options-container button {
+.dark-mode .game-overlay-container .game-overlay .game-button-panel button {
     color: #ffffff;
-    border-color: #ffffff;
     background: #3d3d3d;
+    border-color: #ffffff;
 }
 
-.light-mode .game-overlay-container .game-overlay .game-over-options-container button {
+.light-mode .game-overlay-container .game-overlay .game-button-panel button {
     color: #3d3d3d;
-    border-color: #3d3d3d;
     background: #f2f2f2;
+    border-color: #3d3d3d;
+}
+
+.light-mode .game-overlay-container .game-overlay .view-mode-radio-container {
+    font-size: 20px;
+    color: #dddddd;
+}
+
+.dark-mode .game-overlay-container .game-overlay .view-mode-radio-container {
+    font-size: 20px;
+    color: #ffffff;
+}
+
+.view-mode-radio-container label:last-child {
+    margin-left: 40px;
+}
+
+.view-mode-radio-container label {
+    cursor: pointer;
 }

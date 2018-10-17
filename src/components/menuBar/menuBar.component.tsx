@@ -3,6 +3,7 @@ import '../../components/menuBar/menuBar.scss';
 import { ViewModes } from '../../utilities/viewModes';
 import { Utilities } from '../../utilities/utilities';
 import { GameUpdates } from '../../components/game/game.component';
+import { GameMode } from '../../components/game/game.component';
 
 enum ComboClass {
     Healthy = 'healthy-combo',
@@ -18,7 +19,9 @@ const COMBO_CLASS_MAP: { [key: string]: string; } = {
 };
 
 class CountDown {
-    private seconds: number;
+    private static readonly millisecondsPerSecond: number = 1000;
+    private static readonly decrementInterval: number = 17;
+    private static readonly minimumViableCombo: number = 2;
     private milliseconds: number;
     private menuBar: MenuBar;
     private interval: NodeJS.Timeout;
@@ -28,46 +31,82 @@ class CountDown {
     };
 
     private readonly decrement = () => {
-        if (this.menuBar.props.allowInteraction) {
-            if (this.seconds === 0 && this.milliseconds === 0) {
+        if (this.menuBar.props.gameMode === GameMode.InGame) {
+            this.milliseconds -= CountDown.decrementInterval;
+
+            if (this.milliseconds <= 0) {
+                this.milliseconds = 0;
+
                 this.menuBar.props.onChanges({
                     combo: 0
                 });
-            } else {
-                if (this.milliseconds === 0) {
-                    --this.seconds;
-                    this.milliseconds = 999;
-                } else {
-                    --this.milliseconds;
-                }
 
+                this.disable();
+            } else {
                 this.menuBar.setState({
                     countDown: this
                 });
             }
         }
 
-        if (this.menuBar.props.combo === 0) {
-            if (Utilities.isWellDefinedValue(this.interval)) {
-                clearInterval(this.interval);
-            }
+        if (this.menuBar.props.combo < CountDown.minimumViableCombo) {
+            this.disable();
         }
     };
 
     reinitialize() {
-        this.seconds = 3;
-        this.milliseconds = 0;
+        if (this.menuBar.props.combo >= CountDown.minimumViableCombo) {
+            this.milliseconds = 3000;
 
-        if (!Utilities.isWellDefinedValue(this.interval)) {
-            this.interval = setInterval(this.decrement, 1);
+            if (!Utilities.isWellDefinedValue(this.interval)) {
+                this.interval = setInterval(this.decrement, CountDown.decrementInterval);
+            }
         }
     };
 
-    getCountDownParts() : number[] {
-        return [
-            this.seconds,
-            this.milliseconds
-        ];
+    private disable() : void {
+        this.milliseconds = 0;
+
+        if (Utilities.isWellDefinedValue(this.interval)) {
+            clearInterval(this.interval);
+            this.interval = null;
+        }
+    };
+
+    getComboLayout() : JSX.Element {
+        const seconds: number = Math.floor(this.milliseconds / CountDown.millisecondsPerSecond),
+              milliseconds = this.milliseconds - (seconds * CountDown.millisecondsPerSecond);
+
+        if (milliseconds === 0 || (this.menuBar.props.gameMode !== GameMode.InGame && this.menuBar.props.gameMode !== GameMode.Paused)) {
+            this.disable();
+            return <div></div>;
+        }
+        
+        return <span className='menu-bar-combo-container'>
+            <span>
+                Combo: x
+            </span>
+            <span className='menu-bar-combo'>
+                {this.menuBar.props.combo}
+            </span>
+            <span className={'menu-bar-count-down ' + COMBO_CLASS_MAP[seconds]}>
+                <span>
+                    [
+                </span>
+                <span>
+                    {seconds}
+                </span>
+                <span>
+                    .
+                </span>
+                <span>
+                    {milliseconds}
+                </span>
+                <span>
+                    ]
+                </span>
+            </span>
+        </span>;
     };
 };
 
@@ -76,7 +115,7 @@ interface State {
 }; 
 
 export interface MenuBarProps {
-    allowInteraction: boolean;
+    gameMode: GameMode;
     viewMode: ViewModes.Mode;
     combo: number;
     score: number;
@@ -92,42 +131,6 @@ export class MenuBar extends React.Component<MenuBarProps, State> {
         this.state = {
             countDown: new CountDown(this)
         };
-
-        this.state.countDown.reinitialize();
-    };
-
-    private getComboLayout() : JSX.Element {
-        if (this.props.combo > 0) {
-            const countDownParts = this.state.countDown.getCountDownParts();
-
-            return <span className='menu-bar-combo-container'>
-                <span>
-                    Combo: x
-                </span>
-                <span className='menu-bar-combo'>
-                    {this.props.combo}
-                </span>
-                <span className={'menu-bar-count-down ' + COMBO_CLASS_MAP[countDownParts[0]]}>
-                    <span>
-                        [
-                    </span>
-                    <span>
-                        {countDownParts[0]}
-                    </span>
-                    <span>
-                        .
-                    </span>
-                    <span>
-                        {countDownParts[1]}
-                    </span>
-                    <span>
-                        ]
-                    </span>
-                </span>
-            </span>;
-        }
-
-        return <div></div>;
     };
 
     componentDidUpdate(previousProps: MenuBarProps) {
@@ -138,7 +141,7 @@ export class MenuBar extends React.Component<MenuBarProps, State> {
 
     render() {
         return <div className={'menu-bar ' + this.props.viewMode.baseClass}>
-            {this.getComboLayout()}
+            {this.state.countDown.getComboLayout()}
             <span className='menu-bar-score'>
                 {'Score: ' + this.props.score}
             </span>

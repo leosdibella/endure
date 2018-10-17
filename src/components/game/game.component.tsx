@@ -5,7 +5,7 @@ import { ViewModes } from '../../utilities/viewModes';
 import { MenuBar } from '../../components/menuBar/menuBar.component';
 import { Utilities } from '../../utilities/utilities';
 
-enum GameMode {
+export enum GameMode {
     NewGame = 0,
     InGame,
     GameOver,
@@ -13,10 +13,9 @@ enum GameMode {
 };
 
 class State {
-    allowInteraction: boolean = false;
     gameMode: GameMode = GameMode.GameOver;
     viewMode: ViewModes.Mode = ViewModes.DARK_MODE;
-    combo: number = 1;
+    combo: number = 2;
     score: number = 0;
 };
 
@@ -37,7 +36,6 @@ export class Game extends React.Component<object, State> {
     readonly startNewGame = () : void => {
         if (this.state.gameMode === GameMode.GameOver || this.state.gameMode === GameMode.NewGame) {
             this.setState({
-                allowInteraction: true,
                 gameMode: GameMode.InGame
             });
         }
@@ -46,7 +44,6 @@ export class Game extends React.Component<object, State> {
     readonly showNewGameScreen = () : void => {
         if (this.state.gameMode === GameMode.GameOver) {
             this.setState({
-                allowInteraction: false,
                 gameMode: GameMode.NewGame
             });
         }
@@ -55,7 +52,6 @@ export class Game extends React.Component<object, State> {
     readonly togglePaused = () : void => {
         if (this.state.gameMode === GameMode.InGame || this.state.gameMode === GameMode.Paused) {
             this.setState({
-                allowInteraction: !this.state.allowInteraction,
                 gameMode: this.state.gameMode === GameMode.Paused ? GameMode.InGame : GameMode.Paused
             });
         }
@@ -65,6 +61,10 @@ export class Game extends React.Component<object, State> {
         this.setState({
             viewMode: this.state.viewMode === ViewModes.DARK_MODE ? ViewModes.LIOHT_MODE : ViewModes.DARK_MODE
         });
+    };
+
+    readonly quitGame = () : void => {
+
     };
 
     private injectOverlayIntoOverlayContainer(overlay: JSX.Element[], onClick?: () => void) : JSX.Element {
@@ -95,7 +95,7 @@ export class Game extends React.Component<object, State> {
                                                                                         {letter}
                                                                                     </span>)
                                                             .concat(<div key={Game.gameOver.length}
-                                                                         className="game-over-options-container">
+                                                                         className='game-button-panel'>
                                                                         <button onClick={this.startNewGame}>
                                                                             New Game
                                                                         </button>
@@ -110,9 +110,35 @@ export class Game extends React.Component<object, State> {
                 const overlay: JSX.Element[] = Game.paused.map((letter, index) => <span key={index}
                                                                                         className='paused-text'>
                                                                                         {letter}
-                                                                                    </span>);
+                                                                                    </span>)
+                                                          .concat(<div key={Game.paused.length}
+                                                                       className='view-mode-radio-container'>
+                                                            <label>
+                                                                <input type='radio'
+                                                                       name='viewMode'
+                                                                       value='dark'
+                                                                       onChange={this.toggleViewMode}
+                                                                       checked={this.state.viewMode === ViewModes.LIOHT_MODE}/> Light Mode
+                                                            </label>
+                                                            <label>
+                                                                <input type='radio'
+                                                                       name='viewMode'
+                                                                       value='light'
+                                                                       onChange={this.toggleViewMode}
+                                                                       checked={this.state.viewMode === ViewModes.DARK_MODE}/> Dark Mode
+                                                            </label>
+                                                          </div>)
+                                                          .concat(<div key={Game.paused.length + 1}
+                                                                       className='game-button-panel'>
+                                                                <button onClick={this.togglePaused}>
+                                                                    Resume
+                                                                </button>
+                                                                <button onClick={this.quitGame}>
+                                                                    Quit
+                                                                </button>
+                                                          </div>)
 
-                return this.injectOverlayIntoOverlayContainer(overlay, this.togglePaused);
+                return this.injectOverlayIntoOverlayContainer(overlay);
             }
         }
     };
@@ -156,13 +182,13 @@ export class Game extends React.Component<object, State> {
         return <div className={'game ' + this.state.viewMode.baseClass}>
             {this.getOverlay()}
             <MenuBar viewMode={this.state.viewMode}
-                     allowInteraction={this.state.allowInteraction}
+                     gameMode={this.state.gameMode}
                      combo={this.state.combo}
                      score={this.state.score}
                      onChanges={this.handleUpdates}>
             </MenuBar>
             <Grid viewMode={this.state.viewMode}
-                  allowInteraction={this.state.allowInteraction}
+                  gameMode={this.state.gameMode}
                   onChanges={this.handleUpdates}>
             </Grid>
         </div>;
