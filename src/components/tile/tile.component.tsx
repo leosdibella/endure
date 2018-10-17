@@ -1,14 +1,7 @@
 import * as React from 'react';
 import '../../components/tile/tile.scss';
 import { Colors } from '../../utilities/colors';
-
-class State {
-    readonly className: string;
-
-    constructor (colors: Colors.Color[]) {
-        this.className = 'tile-' + colors.map(color => color.name).reduce((previous, next) => previous + '-' + next);
-    }
-}
+import { Utilities } from '../../utilities/utilities';
 
 export class TileStyle {
     top: string;
@@ -28,24 +21,34 @@ export class TileProps {
     id: string;
     colors: Colors.Color[];
     tileStyle: TileStyle;
+    row: number;
+    column: number;
 
-    constructor(id: string, colors: Colors.Color[], tileStyle: TileStyle) {
+    constructor(id: string, colors: Colors.Color[], tileStyle: TileStyle, row: number, column: number) {
         this.id = id;
         this.colors = colors;
         this.tileStyle = tileStyle;
+        this.row = row;
+        this.column = column;
     }
 };
 
-export class Tile extends React.Component<TileProps, State> {
-    readonly state: State;
-
+export class Tile extends React.Component<TileProps, object> {
     constructor(props: TileProps) {
         super(props);
-        this.state = new State(this.props.colors);
     }
 
+    getClassName() {
+        if (Utilities.isWellDefinedValue(this.props.colors)) {
+            return 'tile-' + this.props.colors.map(color => color.toString())
+                                              .reduce((previous, next) => previous + '-' + next);
+        }
+
+        return 'dead-tile';
+    };
+
     render() {
-        return <div className={this.state.className} style={this.props.tileStyle}>
+        return <div className={this.getClassName()} style={this.props.tileStyle}>
         </div>
     };
 };

@@ -1,7 +1,7 @@
 import { Utilities } from '../utilities/utilities';
 
 export namespace Colors {
-    enum Values {
+    export enum Color {
         Red = 'red',
         Green = 'green',
         Blue = 'blue',
@@ -10,103 +10,61 @@ export namespace Colors {
         Orange = 'orange'
     };
 
-    export class Color {
-        readonly name: string;
-        private inverse: Color;
+    export const VALUES: Color[] = [
+        Color.Red,
+        Color.Green,
+        Color.Blue,
+        Color.Orange,
+        Color.Violet,
+        Color.Yellow
+    ];
 
-        getInverse() : Color {
-            return this.inverse;
-        }
-
-        constructor(name: string, inverse?: Color) {
-            this.name = name;
-
-            if (Utilities.isWellDefinedValue(inverse)) {
-                this.inverse = inverse;
-
-                if (!Utilities.isWellDefinedValue(inverse.inverse)) {
-                    inverse.inverse = this;
-                }
-            }
-        };
-    };
-
-    export const RED: Color = new Color(Values.Red, new Color(Values.Green));
-    export const GREEN: Color = RED.getInverse();
-    export const BLUE: Color = new Color(Values.Blue, new Color(Values.Orange));
-    export const ORANGE: Color = BLUE.getInverse();
-    export const VIOLET: Color = new Color(Values.Violet, new Color(Values.Yellow));
-    export const YELLOW: Color = VIOLET.getInverse();
-
-    const COLORS: Color[] = [RED, GREEN, BLUE, ORANGE, VIOLET, YELLOW];
-
-    function getRandomColorIndex(maxIndex: number) : number {
-        return Math.floor(Math.random() * maxIndex);
-    };
-
-    export function getRandomColorOrdering() : Color[] {
-        const indices: number[] = [],
-              randomColorOrdering: Color[] = [];
-
-        for (let i = 0; i < COLORS.length; ++i) {
-            indices.push(i);
-        }
-        
-        let index,
-            lengthDifference = indices.length - randomColorOrdering.length;
-        
-        while (lengthDifference > 0) {
-            index = getRandomColorIndex(lengthDifference);
-            randomColorOrdering.push(COLORS[indices[index]]);
-            indices.splice(index, 1);
-            lengthDifference = indices.length - randomColorOrdering.length;
-        }
-
-        return randomColorOrdering;
-    };
-
-    export function getRandomNonMatchingColorPair() : Color[] {
-        const colorPair: Color[] = [],
-              randomNumber: number = getRandomColorIndex(COLORS.length);
-
-        let anotherRandomNumber: number = randomNumber;
-
-        colorPair.push(COLORS[randomNumber]);
-
-        while (anotherRandomNumber === randomNumber) {
-            anotherRandomNumber = getRandomColorIndex(COLORS.length);
-
-            if (anotherRandomNumber !== randomNumber) {
-                colorPair.push(COLORS[anotherRandomNumber]);
-            }
-        }
-
-        return colorPair;
-    };
-
-    export function howManyColorsDoPairOfColorPairsShare(colorPairA: Color[], colorPairB: Color[]) : number {
+    export function howManyColorsDoPairOfColorPairsShare(colorPairA: Color[], colorPairB: Color[], skipComparison: boolean = false) : number {
         if (colorPairA[0] === colorPairB[0] && colorPairA[1] === colorPairB[1]) {
             return 2;
-        } else if (colorPairA[0] === colorPairB[0] || colorPairA[0] === colorPairB[1] || colorPairA[1] === colorPairB[0] || colorPairA[1] === colorPairB[1]) {
+        } else if (skipComparison || (colorPairA[0] === colorPairB[0] || colorPairA[0] === colorPairB[1] || colorPairA[1] === colorPairB[0] || colorPairA[1] === colorPairB[1])) {
             return 1;
         }
 
         return 0;
     };
 
-    export class ColorSquare {
+    export class Square {
         private static readonly area: number = 4;
         readonly coordinates: Color[][] = [];
 
         private static mapCoordinates(source: Color[][], target: Color[][]) {
-            for (let i = 0; i < ColorSquare.area; ++i) {
+            for (let i = 0; i < Square.area; ++i) {
                 target[i] = source[i];
             }
         }
 
+        private static getRandomColorIndex(maxIndex: number) : number {
+            return Math.floor(Math.random() * maxIndex);
+        };
+    
+        private static getRandomNonMatchingColorPair() : Color[] {
+            const colorPair: Color[] = [],
+                  randomNumber: number = Square.getRandomColorIndex(VALUES.length);
+    
+            let anotherRandomNumber: number = randomNumber;
+    
+            colorPair.push(VALUES[randomNumber]);
+    
+            while (anotherRandomNumber === randomNumber) {
+                anotherRandomNumber = Square.getRandomColorIndex(VALUES.length);
+    
+                if (anotherRandomNumber !== randomNumber) {
+                    colorPair.push(VALUES[anotherRandomNumber]);
+                }
+            }
+    
+            return colorPair;
+        };
+
         constructor() {
-            for (let i = 0; i < ColorSquare.area; ++i) {
-                this.coordinates.push(getRandomNonMatchingColorPair());
+            for (let i = 0; i < Square.area; ++i) {
+                this.coordinates.push(Square.getRandomNonMatchingColorPair());
             }
         };
 
@@ -118,7 +76,7 @@ export namespace Colors {
                 counterClockwise ? this.coordinates[2] : this.coordinates[1]
             ];
 
-            ColorSquare.mapCoordinates(transformedCoordinates, this.coordinates);
+            Square.mapCoordinates(transformedCoordinates, this.coordinates);
         };
 
         flipColorSquareAlongDiagonal() : void {
@@ -129,7 +87,7 @@ export namespace Colors {
                 this.coordinates[3]
             ];
 
-            ColorSquare.mapCoordinates(transformedCoordinates, this.coordinates);
+            Square.mapCoordinates(transformedCoordinates, this.coordinates);
         };
     }
 };

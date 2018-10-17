@@ -18,22 +18,12 @@
     color: #3d3d3d;
 }
 
-.logo-text {
-    background: #ffffff;
-    background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -moz-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: AnimateLogo 10s infinite linear;
-    -webkit-animation: AnimateLogo 5s infinite linear;
-    -moz-animation: AnimateLogo 5s infinite linear;
-    margin: 0px 20px;
+@mixin themedText($multiplier) {
     text-shadow: 0 1px 0 #ccc,
-               0 2px 0 #c9c9c9,
-               0 3px 0 #bbb,
-               0 4px 0 #b9b9b9,
-               0 5px 0 #aaa,
+               0 $multiplier * 2px 0 #c9c9c9,
+               0 $multiplier * 3px 0 #bbb,
+               0 $multiplier * 4px 0 #b9b9b9,
+               0 $multiplier * 5px 0 #aaa,
                0 6px 1px rgba(0,0,0,.1),
                0 0 5px rgba(0,0,0,.1),
                0 1px 3px rgba(0,0,0,.3),
@@ -43,38 +33,75 @@
                0 20px 20px rgba(0,0,0,.15);
 }
 
-@keyframes AnimateLogo {
-    from {
-      -webkit-filter: hue-rotate(0deg);
-    }
-  
-    to {
-      -webkit-filter: hue-rotate(-360deg);
-    }
+.game-over-text, .new-game-text {
+    background: #ffffff;
+    background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -moz-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0px 20px;
+    @include themedText(2);
+}
 
-    25% {
-        text-shadow: none;
+@mixin animation-text-keyframes {
+    $animation-number: 0 !default !global;
+    $animation-number: $animation-number + 1 !global;
+    $name: unquote("การเคลื่อนไหวที่-#{$animation-number}");
+    animation-name: $name;
+    
+    @at-root {
+        @keyframes #{$name} {
+            from {
+                -webkit-filter: hue-rotate(0deg);
+            }
+            
+            to {
+                -webkit-filter: hue-rotate(-360deg);
+            }
+          
+            25% {
+                text-shadow: none;
+            }
+          
+            50% {
+                text-shadow: none;
+            }
+          
+            75% {
+                text-shadow: none;
+            }
+          
+            100% {
+                text-shadow: none;
+            }
+        }
     }
+}
 
-    50% {
-        text-shadow: none;
-    }
+.new-game-text {
+    animation: 5s infinite linear;
+    -webkit-animation: 5s infinite linear;
+    -moz-animation: 5s infinite linear;
+    @include animation-text-keyframes;
+}
 
-    75% {
-        text-shadow: none;
-    }
+.game-over-text {
+    animation: 5s infinite linear;
+    -webkit-animation: 5s infinite linear;
+    -moz-animation: 5s infinite linear;
+    @include animation-text-keyframes
+}
 
-    100% {
-        text-shadow: none;
-    }
-  }
-  
-
-.logo-text:first-child, .logo-text:last-child {
+.new-game-text:first-child, .new-game-text:last-child {
     font-style: italic;
 }
 
-.logo-container {
+.game-over-text:nth-child(5) {
+    margin: 0px 40px;
+}
+
+.game-overlay {
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
     font-size: 90px;
 }
@@ -87,7 +114,7 @@ body {
     margin: 0px;
 }
 
-html, body, .game, .logo-overlay, #endure {
+html, body, .game, .game-overlay-container, #endure {
     height: 100%;
     width: 100%;
 }
@@ -99,7 +126,7 @@ html, body, .game, .logo-overlay, #endure {
     justify-content: space-around;
 }
 
-.logo-overlay {
+.game-overlay-container {
     justify-content: space-around;
     display: flex;
     flex: 1;
@@ -108,4 +135,37 @@ html, body, .game, .logo-overlay, #endure {
     align-items: center;
     background-color: rgba(0, 0, 0, .5);
     z-index: 10;
+}
+
+.game-over-options-container {
+    display: flex;
+    justify-content: center;
+    flex: 1;
+    flex-direction: row;
+}
+
+.game-over-options-container button, 
+.game-over-options-container button:active, 
+.game-over-options-container button:hover,
+.game-over-options-container button:focus {
+    outline: none;
+    cursor: pointer;
+    margin: 10px;
+    background: inherit;
+    padding: 3px 20px 5px 20px;
+    border-width: 1px;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    @include themedText(.33);
+}
+
+.dark-mode .game-overlay-container .game-overlay .game-over-options-container button {
+    color: #ffffff;
+    border-color: #ffffff;
+    background: #3d3d3d;
+}
+
+.light-mode .game-overlay-container .game-overlay .game-over-options-container button {
+    color: #3d3d3d;
+    border-color: #3d3d3d;
+    background: #f2f2f2;
 }

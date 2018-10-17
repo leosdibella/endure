@@ -57,22 +57,19 @@ class Time {
 class State {
     readonly time: Time = new Time();
     //readonly countDown: CountDown = new CountDown();
-    score: number = 0;
-
-    getScore() : string {
-        return 'Score: ' + this.score;
-    }
 }
 
 const initialState: State = new State();
 
 export class MenuBarProps {
     viewMode: ViewModes.Mode;
-    comboCount: number;
+    combo: number;
+    score: number;
 
-    constructor(comboCount: number, viewMode: ViewModes.Mode) {
-        this.comboCount = comboCount;
+    constructor(combo: number, viewMode: ViewModes.Mode, score: number) {
+        this.combo = combo;
         this.viewMode = viewMode;
+        this.score = score;
     }
 };
 
@@ -92,10 +89,15 @@ export class MenuBar extends React.Component<MenuBarProps, State> {
     render() {
         return <div className={'menu-bar ' + this.props.viewMode.baseClass}>
             <span>
-                {'Combo: ' + this.props.comboCount}
+                <span>
+                    Combo: x
+                </span>
+                <span className='menu-bar-combo-counter'>
+                    {this.props.combo}
+                </span>
             </span>
             <span>
-                {this.state.getScore()}
+                {'Score: ' + this.props.score}
             </span>
             <span>
                 {this.state.time.getFormattedTime()}
