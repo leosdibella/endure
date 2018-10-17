@@ -2,99 +2,85 @@ import * as React from 'react';
 import '../../components/menuBar/menuBar.scss';
 import { ViewModes } from '../../utilities/viewModes';
 import { Utilities } from '../../utilities/utilities';
+import { GameUpdates } from '../../components/game/game.component';
 
-class Time {
-    private timeout: NodeJS.Timeout; 
-    private paused: boolean = true;
-    private hours: number = 0;
-    private minutes: number = 0;
-    private seconds: number = 0;
-    private menuBar: MenuBar;
+enum ComboClass {
+    Healthy = 'healthy-combo',
+    Warning = 'warning-combo',
+    Danger = 'danger-combo'
+};
 
-    private static setValues(time: Time) : void {
-        ++time.seconds;
-
-        if (time.seconds > 59) {
-            ++time.minutes;
-            time.seconds = 0;
-        }
-
-        if (time.minutes > 59) {
-            ++time.hours;
-            time.minutes = 0;
-        }
-
-        time.startTimer();
-    };
-
-    private readonly incrementTime = () : void => Time.setValues(this);
-
-    private startTimer() : void {
-        this.timeout = setTimeout(this.incrementTime, 1000);
-    };
-
-    togglePaused(paused: boolean = false) : void {
-        this.paused = Utilities.isWellDefinedValue(paused) ? paused : !this.paused;
-
-        if (!this.paused && !Utilities.isWellDefinedValue(this.timeout)) {
-            this.startTimer();
-        } else {
-            this.timeout = null;
-        }
-    };
-
-    reset() : void {
-        this.hours = 0;
-        this.minutes = 0;
-        this.seconds = 0;
-        this.paused = false;
-    };
-
-    getFormattedTime() : string {
-        return this.hours + 'h ' + this.minutes + 'm ' + this.seconds + 's';
-    };
-
-    constructor(menuBar: MenuBar) {
-        this.menuBar = menuBar;
-    };
+const COMBO_CLASS_MAP: { [key: string]: string; } = {
+    0: ComboClass.Danger,
+    1: ComboClass.Warning,
+    2: ComboClass.Healthy,
+    3: ComboClass.Healthy
 };
 
 class CountDown {
     private seconds: number;
     private milliseconds: number;
     private menuBar: MenuBar;
+    private interval: NodeJS.Timeout;
 
     constructor(menuBar: MenuBar) {
         this.menuBar = menuBar;
     };
 
+    private readonly decrement = () => {
+        if (this.menuBar.props.allowInteraction) {
+            if (this.seconds === 0 && this.milliseconds === 0) {
+                this.menuBar.props.onChanges({
+                    combo: 0
+                });
+            } else {
+                if (this.milliseconds === 0) {
+                    --this.seconds;
+                    this.milliseconds = 999;
+                } else {
+                    --this.milliseconds;
+                }
+
+                this.menuBar.setState({
+                    countDown: this
+                });
+            }
+        }
+
+        if (this.menuBar.props.combo === 0) {
+            if (Utilities.isWellDefinedValue(this.interval)) {
+                clearInterval(this.interval);
+            }
+        }
+    };
+
+    reinitialize() {
+        this.seconds = 3;
+        this.milliseconds = 0;
+
+        if (!Utilities.isWellDefinedValue(this.interval)) {
+            this.interval = setInterval(this.decrement, 1);
+        }
+    };
+
     getCountDownParts() : number[] {
         return [
-            this.seconds, this.milliseconds
+            this.seconds,
+            this.milliseconds
         ];
     };
 };
 
-class State {
-    readonly time: Time;
+interface State {
     readonly countDown: CountDown;
+}; 
 
-    constructor(menuBar: MenuBar) {
-        this.time = new Time(menuBar);
-        this.countDown = new CountDown(menuBar);
-    }
-};
-
-export class MenuBarProps {
+export interface MenuBarProps {
+    allowInteraction: boolean;
     viewMode: ViewModes.Mode;
     combo: number;
     score: number;
-
-    constructor(combo: number, viewMode: ViewModes.Mode, score: number) {
-        this.combo = combo;
-        this.viewMode = viewMode;
-        this.score = score;
-    };
+    readonly onChanges: (gameUpdates: GameUpdates) => void;
 };
 
 export class MenuBar extends React.Component<MenuBarProps, State> {
@@ -102,30 +88,59 @@ export class MenuBar extends React.Component<MenuBarProps, State> {
     
     constructor(props: MenuBarProps) {
         super(props);
-        this.state = new State(this);
+
+        this.state = {
+            countDown: new CountDown(this)
+        };
+
+        this.state.countDown.reinitialize();
     };
 
-    setState() {
-        super.setState({
+    private getComboLayout() : JSX.Element {
+        if (this.props.combo > 0) {
+            const countDownParts = this.state.countDown.getCountDownParts();
 
-        });
+            return <span className='menu-bar-combo-container'>
+                <span>
+                    Combo: x
+                </span>
+                <span className='menu-bar-combo'>
+                    {this.props.combo}
+                </span>
+                <span className={'menu-bar-count-down ' + COMBO_CLASS_MAP[countDownParts[0]]}>
+                    <span>
+                        [
+                    </span>
+                    <span>
+                        {countDownParts[0]}
+                    </span>
+                    <span>
+                        .
+                    </span>
+                    <span>
+                        {countDownParts[1]}
+                    </span>
+                    <span>
+                        ]
+                    </span>
+                </span>
+            </span>;
+        }
+
+        return <div></div>;
+    };
+
+    componentDidUpdate(previousProps: MenuBarProps) {
+        if (this.props.combo > previousProps.combo) {
+            this.state.countDown.reinitialize();
+        }
     };
 
     render() {
         return <div className={'menu-bar ' + this.props.viewMode.baseClass}>
-            <span>
-                <span>
-                    Combo: x
-                </span>
-                <span className='menu-bar-combo-counter'>
-                    {this.props.combo}
-                </span>
-            </span>
-            <span>
+            {this.getComboLayout()}
+            <span className='menu-bar-score'>
                 {'Score: ' + this.props.score}
-            </span>
-            <span>
-                {this.state.time.getFormattedTime()}
             </span>
         </div>;
     };

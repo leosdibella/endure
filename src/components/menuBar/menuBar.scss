@@ -8,3 +8,49 @@
     flex-wrap: nowrap;
     max-height: 30px;
 }
+
+.menu-bar.dark-mode .menu-bar-combo-container {
+    .healthy-combo {
+        color: #52c41a;
+    }
+    
+    .warning-combo {
+        color: #faad14;
+    }
+    
+    .danger-combo {
+        color: #f5222d;
+    }
+}
+
+.menu-bar.light-mode .menu-bar-combo-container {
+    .healthy-combo {
+        color: #237804;
+    }
+    
+    .warning-combo {
+        color: #ad6800;
+    }
+    
+    .danger-combo {
+        color: #a8071a;
+    }
+}
+
+.menu-bar-count-down {
+    margin-left: 5px;
+}
+
+.menu-bar-count-down {
+    span:last-child, span:first-child {
+        font-size: 30px;
+    }
+
+    span:nth-child(2) {
+        font-size: 24px;
+    }
+
+    span:nth-child(4) {
+        font-size: 16px;
+    }
+}

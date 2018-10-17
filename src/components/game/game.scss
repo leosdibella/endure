@@ -109,7 +109,6 @@
 }
 
 .game-overlay {
-    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
     font-size: 90px;
 }
 
@@ -119,6 +118,7 @@ html {
 
 body {
     margin: 0px;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
 }
 
 html, body, .game, .game-overlay-container, #endure {
@@ -161,7 +161,6 @@ html, body, .game, .game-overlay-container, #endure {
     background: inherit;
     padding: 3px 20px 5px 20px;
     border-width: 1px;
-    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
     @include themedText(.33);
 }
 

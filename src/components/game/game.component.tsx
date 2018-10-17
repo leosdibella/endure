@@ -3,6 +3,7 @@ import '../../components/game/game.scss';
 import { Grid } from '../../components/grid/grid.component';
 import { ViewModes } from '../../utilities/viewModes';
 import { MenuBar } from '../../components/menuBar/menuBar.component';
+import { Utilities } from '../../utilities/utilities';
 
 enum GameMode {
     NewGame = 0,
@@ -15,14 +16,14 @@ class State {
     allowInteraction: boolean = false;
     gameMode: GameMode = GameMode.GameOver;
     viewMode: ViewModes.Mode = ViewModes.DARK_MODE;
-    combo: number = 0;
+    combo: number = 1;
     score: number = 0;
 };
 
 const initialState: State = new State();
 
 export interface GameUpdates {
-    score: number;
+    score?: number;
     combo: number;
 };
 
@@ -34,28 +35,41 @@ export class Game extends React.Component<object, State> {
     readonly state: State = initialState;
 
     readonly startNewGame = () : void => {
-        this.setState({
-            allowInteraction: true,
-            gameMode: GameMode.InGame
-        });
+        if (this.state.gameMode === GameMode.GameOver || this.state.gameMode === GameMode.NewGame) {
+            this.setState({
+                allowInteraction: true,
+                gameMode: GameMode.InGame
+            });
+        }
     };
 
     readonly showNewGameScreen = () : void => {
-        this.setState({
-            allowInteraction: false,
-            gameMode: GameMode.NewGame
-        })
+        if (this.state.gameMode === GameMode.GameOver) {
+            this.setState({
+                allowInteraction: false,
+                gameMode: GameMode.NewGame
+            });
+        }
     };
 
     readonly togglePaused = () : void => {
+        if (this.state.gameMode === GameMode.InGame || this.state.gameMode === GameMode.Paused) {
+            this.setState({
+                allowInteraction: !this.state.allowInteraction,
+                gameMode: this.state.gameMode === GameMode.Paused ? GameMode.InGame : GameMode.Paused
+            });
+        }
+    };
+
+    readonly toggleViewMode = () : void => {
         this.setState({
-            allowInteraction: !this.state.allowInteraction,
-            gameMode: this.state.gameMode === GameMode.Paused ? GameMode.InGame : GameMode.Paused
+            viewMode: this.state.viewMode === ViewModes.DARK_MODE ? ViewModes.LIOHT_MODE : ViewModes.DARK_MODE
         });
     };
 
     private injectOverlayIntoOverlayContainer(overlay: JSX.Element[], onClick?: () => void) : JSX.Element {
-        return <div className='game-overlay-container' onClick={onClick}>
+        return <div className='game-overlay-container'
+                    onClick={onClick}>
             <div className='game-overlay'>
                 {overlay}
             </div>
@@ -68,13 +82,20 @@ export class Game extends React.Component<object, State> {
                 return null;
             }
             case GameMode.NewGame: {
-                const overlay: JSX.Element[] = Game.endure.map((letter, index) => <span key={index} className='new-game-text'>{letter}</span>);
+                const overlay: JSX.Element[] = Game.endure.map((letter, index) => <span key={index}
+                                                                                        className='new-game-text'>
+                                                                                        {letter}
+                                                                                    </span>);
 
                 return this.injectOverlayIntoOverlayContainer(overlay, this.startNewGame);
             }
             case GameMode.GameOver: {
-                const overlay: JSX.Element[] = Game.gameOver.map((letter, index) => <span key={index} className='game-over-text'>{letter}</span>)
-                                                            .concat(<div key={Game.gameOver.length} className="game-over-options-container">
+                const overlay: JSX.Element[] = Game.gameOver.map((letter, index) => <span key={index}
+                                                                                        className='game-over-text'>
+                                                                                        {letter}
+                                                                                    </span>)
+                                                            .concat(<div key={Game.gameOver.length}
+                                                                         className="game-over-options-container">
                                                                         <button onClick={this.startNewGame}>
                                                                             New Game
                                                                         </button>
@@ -86,7 +107,10 @@ export class Game extends React.Component<object, State> {
                 return this.injectOverlayIntoOverlayContainer(overlay);
             }
             case GameMode.Paused: {
-                const overlay: JSX.Element[] = Game.paused.map((letter, index) => <span key={index} className='paused-text'>{letter}</span>);
+                const overlay: JSX.Element[] = Game.paused.map((letter, index) => <span key={index}
+                                                                                        className='paused-text'>
+                                                                                        {letter}
+                                                                                    </span>);
 
                 return this.injectOverlayIntoOverlayContainer(overlay, this.togglePaused);
             }
@@ -99,7 +123,7 @@ export class Game extends React.Component<object, State> {
 
     readonly handleUpdates = (gameUpdates: GameUpdates) : void => {
         this.setState({
-            score: gameUpdates.score,
+            score: Utilities.isWellDefinedValue(gameUpdates.score) ? gameUpdates.score : this.state.score,
             combo: gameUpdates.combo
         });
     };
@@ -108,6 +132,10 @@ export class Game extends React.Component<object, State> {
         switch (keyboardEvent.key.toUpperCase()) {
             case 'P': {
                 this.togglePaused();
+                break;
+            }
+            case 'V': {
+                this.toggleViewMode();
                 break;
             }
             default: {
@@ -127,8 +155,16 @@ export class Game extends React.Component<object, State> {
     render() {
         return <div className={'game ' + this.state.viewMode.baseClass}>
             {this.getOverlay()}
-            <MenuBar viewMode={this.state.viewMode} combo={this.state.combo} score={this.state.score}></MenuBar>
-            <Grid viewMode={this.state.viewMode} allowInteraction={this.state.allowInteraction} onChanges={this.handleUpdates}></Grid>
+            <MenuBar viewMode={this.state.viewMode}
+                     allowInteraction={this.state.allowInteraction}
+                     combo={this.state.combo}
+                     score={this.state.score}
+                     onChanges={this.handleUpdates}>
+            </MenuBar>
+            <Grid viewMode={this.state.viewMode}
+                  allowInteraction={this.state.allowInteraction}
+                  onChanges={this.handleUpdates}>
+            </Grid>
         </div>;
     };
 };

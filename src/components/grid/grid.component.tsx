@@ -147,9 +147,7 @@ export class Grid extends React.Component<GridProps, State> {
     };
 
     private readonly onKeyPress = (keyboardEvent: KeyboardEvent) : void => {
-        const key: string = keyboardEvent.key;
-
-        switch (key.toUpperCase()) {
+        switch (keyboardEvent.key.toUpperCase()) {
             case 'A': {
                 if (this.state.currentLeftMostColumn > 0) {
                     this.setState({
