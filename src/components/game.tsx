@@ -1,7 +1,7 @@
 import * as React from 'react';
 import '../styles/game.scss';
 // import { Grid } from './grid';
-// import { MenuBar } from './menuBar';
+import { MenuBar } from './menuBar';
 import { Utilities } from '../utilities/utilities';
 import { AppUpdates } from './app';
 import { Overlay } from './overlay';
@@ -30,7 +30,7 @@ export class Game extends React.Component<GameProps, GameState> {
     readonly state: GameState = new GameState();
 
     private readonly startNewGame = () : void => {
-        if (!Utilities.isGameInProgress(this.state.gameMode)) {
+        if (this.state.gameMode === Utilities.GameMode.newGame) {
             this.setState({
                 gameMode: Utilities.isWellDefinedValue(this.state.difficultyMode) ? Utilities.GameMode.inGame : Utilities.GameMode.selectDifficulty
             });
@@ -116,21 +116,21 @@ export class Game extends React.Component<GameProps, GameState> {
     private getLayout() : JSX.Element[] {
         const layoutElements: JSX.Element[] = [];
 
-        /*if (Game.isInProgress(this.state.gameMode)) {
+        if (Utilities.isGameInProgress(this.state.gameMode)) {
             layoutElements.push(<MenuBar key={1}
-                                         viewMode={this.state.viewMode}
+                                         viewMode={this.props.viewMode}
                                          gameMode={this.state.gameMode}
                                          combo={this.state.combo}
                                          score={this.state.score}
                                          onChanges={this.handleGameUpdates}>
                                 </MenuBar>);
 
-            layoutElements.push(<Grid key={2}
+            /*layoutElements.push(<Grid key={2}
                                       viewMode={this.state.viewMode}
                                       gameMode={this.state.gameMode}
                                       onChanges={this.handleGameUpdates}>
-                                </Grid>);
-        }*/
+                                </Grid>);*/
+        }
 
         return layoutElements;
     }
@@ -143,11 +143,11 @@ export class Game extends React.Component<GameProps, GameState> {
     };
 
     componentDidMount() {
-        document.addEventListener('keypress', this.onKeyPress);
+        document.addEventListener(Utilities.DomEvent.keyPress, this.onKeyPress);
     };
 
     componentWillUnmount() {
-        document.removeEventListener('keypress', this.onKeyPress);
+        document.removeEventListener(Utilities.DomEvent.keyPress, this.onKeyPress);
     };
 
     render() {

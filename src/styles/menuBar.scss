@@ -1,12 +1,19 @@
+$menu-bar-side-margin-width: $side-bar-width + 10;
+
 .menu-bar {
+    width: 100%;
+    top: 0px;
+    position: absolute;
     font-size: 20px;
-    padding: 10px;
+    padding: 10px 0px 10px 10px;
     justify-content: space-between;
     flex: 1;
     display: flex;
     flex-direction: row;
+    margin-left: $menu-bar-side-margin-width;
+    margin-right: $menu-bar-side-margin-width;
     flex-wrap: nowrap;
-    max-height: 30px;
+    max-height: 100px;
 }
 
 .menu-bar.dark-mode .menu-bar-combo-container {
@@ -37,6 +44,10 @@
     }
 }
 
+.menu-bar-combo-container {
+    margin-top: 40px;
+}
+
 .menu-bar-count-down {
     margin-left: 5px;
 }
@@ -53,4 +64,9 @@
     span:nth-child(4) {
         font-size: 16px;
     }
+}
+
+.menu-bar-score {
+    margin-top: 50px;
+    margin-right: $menu-bar-side-margin-width + 100;
 }
