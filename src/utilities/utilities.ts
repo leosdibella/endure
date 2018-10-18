@@ -3,29 +3,40 @@ export namespace Utilities {
         return value !== null && value !== undefined;
     };
 
-    export function conditionallyDistinctUnionNumericalArrays(arrayA: number[], arrayB: number[], allowDisjointArrays: boolean = true) : number[] {
-        const collisions: { [key: string]: number; } = {},
-              distinctUnion: number[] = []
+    export function isGameInProgress(gameMode: GameMode): boolean {
+        return gameMode === GameMode.inGame || gameMode === GameMode.paused;
+    };
 
-        let value: number,
-            areDisjoint: boolean = true;
+    export namespace Constants {
+        export const topBarHeight: number = 100;
+        export const lineHeight: number = 25;
+        export const sideBarWidth: number = 75;
+    };
 
-        for (let i = 0; i < arrayA.length; ++i) {
-            collisions[arrayA[i]] = 1;
-            distinctUnion.push(arrayA[i]);
-        }
-        
-        for (let i = 0; i < arrayB.length; ++i) {
-            value = collisions[arrayB[i]];
+    export enum DomEvent {
+        resize = 'resize',
+        orientationChange = 'orientationchange',
+        keyPress = 'keypress'
+    };
 
-            if (!isWellDefinedValue(value)) {
-                collisions[arrayB[i]] = 1;
-            } else {
-                ++collisions[arrayB[i]];
-                areDisjoint = false;
-            }
-        }
+    export enum ViewMode {
+        dark = 'dark-mode',
+        light = 'light-mode'
+    };
 
-        return !allowDisjointArrays && areDisjoint ? null : distinctUnion;
-    }
+    export enum GameMode {
+        newGame = 0,
+        selectDifficulty,
+        inGame,
+        gameOver,
+        paused,
+        quitConfirmation
+    };
+
+    export enum DifficultyMode {
+        easy = 0,
+        medium,
+        hard,
+        expert
+    };
 };

@@ -1,5 +1,5 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
-import { Game } from './components/game/game.component';
+import { App } from './components/app';
 
-ReactDom.render(<Game/>, document.getElementById('endure'));
+ReactDom.render(<App/>, document.getElementById('endure'));

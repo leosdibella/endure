@@ -1,7 +1,7 @@
 import * as React from 'react';
-import '../../components/tile/tile.scss';
-import { Colors } from '../../utilities/colors';
-import { Utilities } from '../../utilities/utilities';
+import '../styles/tile.scss';
+import { Colors } from '../utilities/colors';
+import { Utilities } from '../utilities/utilities';
 
 export class TileStyle {
     top: string;

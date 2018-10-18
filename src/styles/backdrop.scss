@@ -1,0 +1,72 @@
+.backdrop.dark-mode {
+    .backdrop-left-margin {
+        border-right-color: rgb(255, 120, 117);
+    }
+
+    .backdrop-right-margin {
+        border-left-color: rgba(255, 120, 117, 0.33);
+    }
+
+    .backdrop-lines .backdrop-line {
+        border-bottom-color: rgb(92, 219, 211);
+    }
+}
+
+.backdrop.light-mode {
+    .backdrop-left-margin {
+        border-right-color: rgb(245, 34, 45);
+    }
+
+    .backdrop-right-margin {
+        border-left-color: rgba(245, 34, 45, 0.33);
+    }
+
+    .backdrop-lines .backdrop-line {
+        border-bottom-color: rgb(19, 194, 194);
+    }
+}
+
+.backdrop {
+    @extend %full-view-container;
+    position: absolute;
+    background: transparent;
+}
+
+%backdrop-margin {
+    width: $side-bar-width;
+    position: absolute;
+    background: transparent;
+    z-index: 1;
+    top: 0px;
+    height: 100%;
+}
+
+.backdrop-left-margin {
+    @extend %backdrop-margin;
+    border-right: 2px solid;
+    left: 0px;
+}
+
+.backdrop-right-margin {
+    @extend %backdrop-margin;
+    border-left: 2px solid;
+    right: 0px;
+}
+
+.backdrop-lines {
+    flex: 1;
+    flex-direction: column;
+    display: flex;
+    left: 0px;
+    top: 0px;
+    z-index: 0;
+}
+
+.backdrop-line {
+    flex-basis: $line-height;
+    border-bottom: 1px solid;
+}
+
+.backdrop-line:first-child {
+    flex-basis: $top-bar-height;
+}

@@ -40,7 +40,13 @@ module.exports = {
             use: [
                 devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
                 'css-loader',
-                'sass-loader'
+                'sass-loader',
+                {
+                    loader: 'sass-resources-loader',
+                    options: {
+                      resources: './src/styles/global.scss'
+                    }
+                }
             ],
             exclude: exclusions
         }]

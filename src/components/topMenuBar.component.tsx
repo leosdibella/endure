@@ -1,8 +1,8 @@
-import * as React from 'react';
-import '../../components/menuBar/menuBar.scss';
-import { ViewModes } from '../../utilities/viewModes';
+/*import * as React from 'react';
+import '../../components/topMenuBar/topMenuBar.scss';
+import { ViewMode } from '../../utilities/viewMode';
 import { Utilities } from '../../utilities/utilities';
-import { GameUpdates, Game, GameMode } from '../../components/game/game.component';
+import { GameUpdates, Game, GameMode } from '../game/game.component';
 
 enum ComboClass {
     Healthy = 'healthy-combo',
@@ -68,7 +68,7 @@ class CountDown {
 
         if (Utilities.isWellDefinedValue(this.interval)) {
             clearInterval(this.interval);
-            this.interval = null;
+            this.interval = undefined;
         }
     };
 
@@ -151,3 +151,4 @@ export class MenuBar extends React.Component<MenuBarProps, State> {
         </div>;
     };
 };
+*/

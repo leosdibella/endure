@@ -1,0 +1,11 @@
+.app {
+    @extend %full-view-container;
+}
+
+.app.dark-mode {
+        background-color: $dark;
+}
+
+.app.light-mode {
+        background-color: $dark;
+}

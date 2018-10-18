@@ -1,6 +1,6 @@
-import * as React from 'react';
+/*import * as React from 'react';
 import '../../components/grid/grid.scss';
-import { ViewModes } from '../../utilities/viewModes';
+import { ViewMode } from '../../utilities/viewMode';
 import { Tile, TileProps, TileStyle } from '../../components/tile/tile.component';
 import { Utilities } from '../../utilities/utilities';
 import { Colors } from '../../utilities/colors';
@@ -189,3 +189,4 @@ export class Grid extends React.Component<GridProps, State> {
         </div>;
     };
 };
+*/
