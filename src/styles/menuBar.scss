@@ -4,8 +4,8 @@ $menu-bar-side-margin-width: $side-bar-width + 10;
     width: 100%;
     top: 0px;
     position: absolute;
-    font-size: 20px;
-    padding: 10px 0px 10px 10px;
+    font-size: 35px;
+    padding: 10px 0px 10px 0px;
     justify-content: space-between;
     flex: 1;
     display: flex;
@@ -16,36 +16,48 @@ $menu-bar-side-margin-width: $side-bar-width + 10;
     max-height: 100px;
 }
 
-.menu-bar.dark-mode .menu-bar-combo-container {
-    .healthy-combo {
-        color: #52c41a;
+.menu-bar.dark-mode {
+    .menu-bar-combo-container {
+        .healthy-combo {
+            color: #52c41a;
+        }
+        
+        .warning-combo {
+            color: #faad14;
+        }
+        
+        .danger-combo {
+            color: #f5222d;
+        }
     }
-    
-    .warning-combo {
-        color: #faad14;
-    }
-    
-    .danger-combo {
-        color: #f5222d;
+
+    .menu-bar-score, .menu-bar-combo {
+        color: $light;
     }
 }
 
-.menu-bar.light-mode .menu-bar-combo-container {
-    .healthy-combo {
-        color: #237804;
+.menu-bar.light-mode {
+    .menu-bar-combo-container {
+        .healthy-combo {
+            color: #237804;
+        }
+        
+        .warning-combo {
+            color: #ad6800;
+        }
+        
+        .danger-combo {
+            color: #a8071a;
+        }
     }
-    
-    .warning-combo {
-        color: #ad6800;
-    }
-    
-    .danger-combo {
-        color: #a8071a;
+
+    .menu-bar-score, .menu-bar-combo {
+        color: $dark;
     }
 }
 
 .menu-bar-combo-container {
-    margin-top: 40px;
+    margin-top: 45px;
 }
 
 .menu-bar-count-down {
@@ -68,5 +80,5 @@ $menu-bar-side-margin-width: $side-bar-width + 10;
 
 .menu-bar-score {
     margin-top: 50px;
-    margin-right: $menu-bar-side-margin-width + 100;
+    margin-right: $menu-bar-side-margin-width + 90;
 }

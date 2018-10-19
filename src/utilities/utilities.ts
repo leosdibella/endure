@@ -13,10 +13,14 @@ export namespace Utilities {
         export const sideBarWidth: number = 75;
     };
 
+    export function or<T>(first: T, second: T) : T {
+        return isWellDefinedValue(first) ? first : second;
+    };
+
     export enum DomEvent {
         resize = 'resize',
         orientationChange = 'orientationchange',
-        keyPress = 'keypress'
+        keyDown = 'keydown'
     };
 
     export enum ViewMode {
@@ -30,13 +34,25 @@ export namespace Utilities {
         inGame,
         gameOver,
         paused,
-        quitConfirmation
+        quitConfirmation,
+        viewHighScores
     };
 
     export enum DifficultyMode {
-        easy = 0,
+        low = 0,
         medium,
         hard,
         expert
+    };
+
+    export enum LocalStorageKeys {
+        viewMode = 'ENDURE_VIEW_MODE',
+        highScores = 'ENDURE_HIGH_SCORES',
+        difficultyMode = 'ENDURE_DIFFICULTY_MODE'
+    };
+
+    export interface Score {
+        name: string;
+        value: number;
     };
 };

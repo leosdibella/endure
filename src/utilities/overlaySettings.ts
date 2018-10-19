@@ -3,7 +3,7 @@ import { Utilities } from './utilities';
 export namespace OverlaySettings {
     export interface Option {
         name: string;
-        action: () => void;
+        action?: () => void;
     };
     
     interface GameMode {
@@ -15,25 +15,27 @@ export namespace OverlaySettings {
     
     export const gameMode: GameMode[] = [{
         title: 'endure',
-        className: 'nex-game',
-        defaultOptionsIndex: undefined,
-        options: undefined
+        className: 'new-game',
+        defaultOptionsIndex: 0,
+        options: [{
+            name: 'New Game'
+        }, {
+            name: 'Select Difficulty'
+        }, {
+            name: 'View High Scores'
+        }]
     }, {
         title: 'Select Difficulty',
         className: 'select-difficulty',
         defaultOptionsIndex: 1,
         options: [{
-            name: 'Take it easy bud!',
-            action: undefined
+            name: 'Take it easy bud!'
         }, {
-            name: 'Take off the training wheels',
-            action: undefined
+            name: 'Take off the training wheels'
         }, {
-            name: 'Test me sensei',
-            action: undefined
+            name: 'Test me sensei'
         }, {
-            name: 'Just wreck my shit please',
-            action: undefined
+            name: 'Just wreck my shit please'
         }]
     },
     undefined,
@@ -42,33 +44,34 @@ export namespace OverlaySettings {
         className: 'game-over',
         defaultOptionsIndex: 0,
         options: [{
-            name: 'New Game',
-            action: undefined
+            name: 'New Game'
         }, {
-            name: 'Quit',
-            action: undefined
+            name: 'Quit'
         }]
     }, {
         title: 'Paused',
         className: 'paused',
         defaultOptionsIndex: 0,
         options: [{
-            name: 'Resume',
-            action: undefined
+            name: 'Resume'
         }, {
-            name: 'Quit',
-            action: undefined
+            name: 'Quit'
         }]
     }, {
         title: 'Really Quit?',
         className: 'quit-confirmation',
         defaultOptionsIndex: 1,
         options: [{
-            name: 'Yes',
-            action: undefined
+            name: 'Yes'
         }, {
-            name: 'No',
-            action: undefined
+            name: 'No'
+        }]
+    }, {
+        title: 'High Scores',
+        className: 'high-scores',
+        defaultOptionsIndex: 0,
+        options: [{
+            name: 'Exit'
         }]
     }];
     

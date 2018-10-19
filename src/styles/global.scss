@@ -20,7 +20,9 @@ $light: map-get($grey-scale, x7);
 
 body {
     margin: 0px;
-    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-family: 'Times New Roman', Times, serif;
+    font-weight: 200;
+    font-style: italic;
 }
 
 %full-view-container {
@@ -31,4 +33,8 @@ body {
 
 html, body, #endure {
     @extend %full-view-container;
+}
+
+.hide {
+    display: none;
 }

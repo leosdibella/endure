@@ -8,14 +8,15 @@ import { Overlay } from './overlay';
 
 class GameState {
     gameMode: Utilities.GameMode = Utilities.GameMode.newGame;
-    difficultyMode: Utilities.DifficultyMode;
     combo: number = 0;
     score: number = 0;
+    grade: number = 0;
     waiting: boolean = false;
 };
 
 export interface GameProps {
     viewMode: Utilities.ViewMode;
+    difficultyMode: Utilities.DifficultyMode;
     readonly onUpdate: (appUpdates: AppUpdates) => void;
 };
 
@@ -32,7 +33,7 @@ export class Game extends React.Component<GameProps, GameState> {
     private readonly startNewGame = () : void => {
         if (this.state.gameMode === Utilities.GameMode.newGame) {
             this.setState({
-                gameMode: Utilities.isWellDefinedValue(this.state.difficultyMode) ? Utilities.GameMode.inGame : Utilities.GameMode.selectDifficulty
+                gameMode: Utilities.GameMode.inGame
             });
         }
     };
@@ -47,7 +48,7 @@ export class Game extends React.Component<GameProps, GameState> {
                 gameMode: Utilities.GameMode.newGame,
                 combo: 0,
                 score: 0,
-                difficultyMode: undefined
+                grade: 0
             });
         }
     };
@@ -65,7 +66,7 @@ export class Game extends React.Component<GameProps, GameState> {
             viewMode: this.props.viewMode === Utilities.ViewMode.dark ? Utilities.ViewMode.light : Utilities.ViewMode.dark
         });
     };
-
+    
     private readonly cheat = () : void => {
         if (Utilities.isGameInProgress(this.state.gameMode)) {
             this.setState({
@@ -79,19 +80,32 @@ export class Game extends React.Component<GameProps, GameState> {
             gameUpdates.gameMode = Utilities.GameMode.inGame;
         }
 
-        this.setState(gameUpdates as GameState);
+        if (Utilities.isWellDefinedValue(gameUpdates.difficultyMode)) {
+            this.props.onUpdate({
+                difficultyMode: gameUpdates.difficultyMode
+            });
+        }
+
+        const partialState = {
+            score: Utilities.or(gameUpdates.score, this.state.score),
+            combo: Utilities.or(gameUpdates.combo, this.state.combo),
+            gameMode: Utilities.or(gameUpdates.gameMode, this.state.gameMode)
+        };
+    
+        this.setState(partialState);
     };
 
     private getOverlay() : JSX.Element {
-        if (!Utilities.isGameInProgress(this.state.gameMode)) {
+        if (this.state.gameMode !== Utilities.GameMode.inGame) {
             return <Overlay viewMode={this.props.viewMode}
-                             gameMode={this.state.gameMode}
-                             onQuit={this.quit}
-                             onTogglePaused={this.togglePaused}
-                             onToggleViewMode={this.toggleViewMode}
-                             onStartNewGame={this.startNewGame}
-                             onUpdate={this.handleGameUpdates}>
-                    </Overlay>;
+                            gameMode={this.state.gameMode}
+                            difficultyMode={this.props.difficultyMode}
+                            onQuit={this.quit}
+                            onTogglePaused={this.togglePaused}
+                            onToggleViewMode={this.toggleViewMode}
+                            onStartNewGame={this.startNewGame}
+                            onUpdate={this.handleGameUpdates}>
+                   </Overlay>;
         }
 
         return undefined;
@@ -101,59 +115,52 @@ export class Game extends React.Component<GameProps, GameState> {
         super(props);
     };
 
-    private readonly keypressEventActionMap: { [key: string]: () => void } = {
+    private readonly keyDownEventActionMap: { [key: string]: () => void } = {
         p: this.togglePaused,
         v: this.toggleViewMode,
         q: this.quit,
-        enter: this.startNewGame,
         c: this.cheat
     };
 
-    private readonly onKeyPress = (keyboardEvent: KeyboardEvent) : void => {
-        this.keypressEventActionMap[keyboardEvent.key.toLowerCase()]();
-    };
+    private readonly onKeyDown = (keyboardEvent: KeyboardEvent) : void => {
+        const keyDownHandler = this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()];
 
-    private getLayout() : JSX.Element[] {
-        const layoutElements: JSX.Element[] = [];
-
-        if (Utilities.isGameInProgress(this.state.gameMode)) {
-            layoutElements.push(<MenuBar key={1}
-                                         viewMode={this.props.viewMode}
-                                         gameMode={this.state.gameMode}
-                                         combo={this.state.combo}
-                                         score={this.state.score}
-                                         onChanges={this.handleGameUpdates}>
-                                </MenuBar>);
-
-            /*layoutElements.push(<Grid key={2}
-                                      viewMode={this.state.viewMode}
-                                      gameMode={this.state.gameMode}
-                                      onChanges={this.handleGameUpdates}>
-                                </Grid>);*/
+        if (Utilities.isWellDefinedValue(keyDownHandler)) {
+            keyDownHandler();
         }
-
-        return layoutElements;
-    }
+    };
 
     shouldComponentUpdate(nextProps: GameProps, nextState: GameState) : boolean {
         return nextProps.viewMode !== this.props.viewMode
+            || nextProps.difficultyMode !== this.props.difficultyMode
             || nextState.combo !== this.state.combo
             || nextState.gameMode !== this.state.gameMode
             || nextState.score !== this.state.score;
     };
 
     componentDidMount() {
-        document.addEventListener(Utilities.DomEvent.keyPress, this.onKeyPress);
+        document.addEventListener(Utilities.DomEvent.keyDown, this.onKeyDown);
     };
 
     componentWillUnmount() {
-        document.removeEventListener(Utilities.DomEvent.keyPress, this.onKeyPress);
+        document.removeEventListener(Utilities.DomEvent.keyDown, this.onKeyDown);
     };
 
     render() {
+        /* layoutElements.push(<Grid key={2}
+                                      viewMode={this.state.viewMode}
+                                      gameMode={this.state.gameMode}
+                                      onChanges={this.handleGameUpdates}>
+                                </Grid>);*/
+
         return <div className={'game ' + this.props.viewMode}>
             {this.getOverlay()}
-            {this.getLayout()}
+            <MenuBar viewMode={this.props.viewMode}
+                     gameMode={this.state.gameMode}
+                     combo={this.state.combo}
+                     score={this.state.score}
+                     onChanges={this.handleGameUpdates}>
+            </MenuBar>
         </div>;
     };
 };

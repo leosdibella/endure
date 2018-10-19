@@ -80,8 +80,8 @@ class CountDown {
             return <div></div>;
         }
         
-        return <span className='menu-bar-combo-container'>
-            <span>
+        return <span className={'menu-bar-combo-container'}>
+            <span className='menu-bar-combo'>
                 Combo: x
             </span>
             <span className='menu-bar-combo'>
@@ -142,7 +142,7 @@ export class MenuBar extends React.Component<MenuBarProps, State> {
     };
 
     render() {
-        return <div className={'menu-bar ' + this.props.viewMode}>
+        return <div className={'menu-bar ' + this.props.viewMode + (this.props.gameMode !== Utilities.GameMode.inGame ? ' hide': '')}>
             {this.state.countDown.getComboLayout()}
             <span className='menu-bar-score'>
                 {'Score: ' + this.props.score}

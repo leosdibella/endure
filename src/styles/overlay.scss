@@ -1,0 +1,157 @@
+@mixin themedText($multiplier) {
+    text-shadow: 0 1px 0 #ccc,
+               0 $multiplier * 2px 0 #c9c9c9,
+               0 $multiplier * 3px 0 #bbb,
+               0 $multiplier * 4px 0 #b9b9b9,
+               0 $multiplier * 5px 0 #aaa,
+               0 6px 1px rgba(0,0,0,.1),
+               0 0 5px rgba(0,0,0,.1),
+               0 1px 3px rgba(0,0,0,.3),
+               0 3px 5px rgba(0,0,0,.2),
+               0 5px 10px rgba(0,0,0,.25),
+               0 10px 10px rgba(0,0,0,.2),
+               0 20px 20px rgba(0,0,0,.15);
+}
+
+@mixin animation-text-keyframes {
+    $animation-number: 0 !default !global;
+    $animation-number: $animation-number + 1 !global;
+    $name: unquote("การเคลื่อนไหวที่-#{$animation-number}");
+    animation-name: $name;
+    
+    @at-root {
+        @keyframes #{$name} {
+            from {
+                -webkit-filter: hue-rotate(0deg);
+            }
+            
+            to {
+                -webkit-filter: hue-rotate(-360deg);
+            }
+          
+            25% {
+                text-shadow: none;
+            }
+          
+            50% {
+                text-shadow: none;
+            }
+          
+            75% {
+                text-shadow: none;
+            }
+          
+            100% {
+                text-shadow: none;
+            }
+        }
+    }
+}
+
+@each $gameMode in 
+    game-over,
+    new-game,
+    paused,
+    quit-confirmation,
+    select-difficulty,
+    high-scores {
+        .overlay-#{$gameMode}-text {
+            background: #ffffff;
+            background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -moz-background-clip: text;
+            text-align: center;
+            -webkit-text-fill-color: transparent;
+            margin: 0px 20px;
+            @include themedText(2);
+            animation: 5s infinite linear;
+            -webkit-animation: 5s infinite linear;
+            -moz-animation: 5s infinite linear;
+            @include animation-text-keyframes
+        }
+}
+
+.overlay-container {
+    @extend %full-view-container;
+}
+
+%overlay-flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.overlay-button-panel {
+    @extend %overlay-flex;
+    flex-direction: column;
+}
+
+.overlay-radio-panel {
+    @extend %overlay-flex;
+    flex-direction: row;
+}
+
+.overlay-button {
+    outline: none;
+    cursor: pointer;
+    margin: 10px;
+    background: inherit;
+    padding: 3px 20px 5px 20px;
+    border-width: 1px;
+    @include themedText(.33);
+}
+
+.overlay-button:active,
+.overlay-button:hover,
+.overlay-button:focus {
+    outline: none;
+}
+
+.dark-mode.overlay-container .overlay .overlay-button-panel button {
+    color: #ffffff;
+    background: #3d3d3d;
+    border-color: #ffffff;
+}
+
+.light-mode.overlay-container .overlay .overlay-button-panel button {
+    color: #3d3d3d;
+    background: #f2f2f2;
+    border-color: #3d3d3d;
+}
+
+.light-mode.overlay-container .overlay .overlay-radio-panel {
+    font-size: 20px;
+    color: #dddddd;
+}
+
+.dark-mode.overlay-container .overlay .overlay-radio-panel {
+    font-size: 20px;
+    color: #ffffff;
+}
+
+.overlay-radio-panel label:not(:first-child) {
+    margin-left: 40px;
+}
+
+.overlay-radio-panel label {
+    cursor: pointer;
+}
+
+.overlay {
+    @extend %full-view-container;
+    font-size: 150px;
+    z-index: 2;
+    justify-content: center;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    position: absolute;
+    align-items: center;
+    background-color: rgba(0, 0, 0, .5);
+    z-index: 3;
+}
+
+.overlay-selected-option {
+    border-bottom: 4px red solid;
+}
