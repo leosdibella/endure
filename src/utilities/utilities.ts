@@ -7,6 +7,10 @@ export namespace Utilities {
         return gameMode === GameMode.inGame || gameMode === GameMode.paused;
     };
 
+    export function isLocalStorageSupported() : boolean {
+        return typeof(Storage) !== 'undefined' && Utilities.isWellDefinedValue(window.localStorage);
+    };
+
     export namespace Constants {
         export const topBarHeight: number = 100;
         export const lineHeight: number = 25;
@@ -20,7 +24,8 @@ export namespace Utilities {
     export enum DomEvent {
         resize = 'resize',
         orientationChange = 'orientationchange',
-        keyDown = 'keydown'
+        keyDown = 'keydown',
+        click = 'click'
     };
 
     export enum ViewMode {
@@ -30,16 +35,19 @@ export namespace Utilities {
 
     export enum GameMode {
         newGame = 0,
+        specifyName,
         selectDifficulty,
         inGame,
         gameOver,
         paused,
         quitConfirmation,
-        viewHighScores
+        highScores,
+        setViewMode
     };
 
     export enum DifficultyMode {
-        low = 0,
+        beginnger = 0,
+        low,
         medium,
         hard,
         expert
@@ -48,11 +56,13 @@ export namespace Utilities {
     export enum LocalStorageKeys {
         viewMode = 'ENDURE_VIEW_MODE',
         highScores = 'ENDURE_HIGH_SCORES',
-        difficultyMode = 'ENDURE_DIFFICULTY_MODE'
+        difficultyMode = 'ENDURE_DIFFICULTY_MODE',
+        playerName = 'ENDURE_PLAYER_NAME'
     };
 
-    export interface Score {
+    export interface HighScore {
         name: string;
         value: number;
+        date: string
     };
 };

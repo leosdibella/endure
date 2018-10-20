@@ -1,11 +1,11 @@
 .app {
-    @extend %full-view-container;
+    @extend %global-full-view-container;
 }
 
 .app.dark-mode {
-        background-color: $dark;
+        background-color: map-get($dark-mode-colors, background);
 }
 
 .app.light-mode {
-        background-color: $light;
+        background-color: map-get($light-mode-colors, background);
 }

@@ -1,4 +1,4 @@
-$menu-bar-side-margin-width: $side-bar-width + 10;
+$menu-bar-side-margin-width: $global-side-bar-width + 10;
 
 .menu-bar {
     width: 100%;
@@ -19,40 +19,40 @@ $menu-bar-side-margin-width: $side-bar-width + 10;
 .menu-bar.dark-mode {
     .menu-bar-combo-container {
         .healthy-combo {
-            color: #52c41a;
+            color: map-get($dark-mode-colors, green);
         }
         
         .warning-combo {
-            color: #faad14;
+            color: map-get($dark-mode-colors, orange);
         }
         
         .danger-combo {
-            color: #f5222d;
+            color: map-get($dark-mode-colors, red);
         }
     }
 
     .menu-bar-score, .menu-bar-combo {
-        color: $light;
+        color: map-get($dark-mode-colors, foreground);
     }
 }
 
 .menu-bar.light-mode {
     .menu-bar-combo-container {
         .healthy-combo {
-            color: #237804;
+            color: map-get($light-mode-colors, green);
         }
         
         .warning-combo {
-            color: #ad6800;
+            color: map-get($light-mode-colors, orange);
         }
         
         .danger-combo {
-            color: #a8071a;
+            color: map-get($light-mode-colors, red);
         }
     }
 
     .menu-bar-score, .menu-bar-combo {
-        color: $dark;
+        color: map-get($light-mode-colors, foreground);
     }
 }
 

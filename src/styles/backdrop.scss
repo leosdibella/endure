@@ -1,6 +1,6 @@
 .backdrop.dark-mode {
     .backdrop-left-margin {
-        border-right-color: rgb(255, 120, 117);
+        border-right-color: map-get($dark-mode-colors, red);
     }
 
     .backdrop-right-margin {
@@ -14,7 +14,7 @@
 
 .backdrop.light-mode {
     .backdrop-left-margin {
-        border-right-color: rgb(245, 34, 45);
+        border-right-color:  map-get($light-mode-colors, red);
     }
 
     .backdrop-right-margin {
@@ -26,16 +26,19 @@
     }
 }
 
-.backdrop {
-    @extend %full-view-container;
+%backdrop-position {
     position: absolute;
     background: transparent;
 }
 
+.backdrop {
+    @extend %global-full-view-container;
+    @extend %backdrop-position;
+}
+
 %backdrop-margin {
-    width: $side-bar-width;
-    position: absolute;
-    background: transparent;
+    @extend %backdrop-position;
+    width: $global-side-bar-width;
     z-index: 1;
     top: 0px;
     height: 100%;
@@ -53,20 +56,41 @@
     right: 0px;
 }
 
-.backdrop-lines {
+%backdrop-flex {
     flex: 1;
     flex-direction: column;
     display: flex;
+}
+
+.backdrop-lines {
+    @extend %backdrop-flex;
     left: 0px;
     top: 0px;
     z-index: 0;
 }
 
 .backdrop-line {
-    flex-basis: $line-height;
+    flex-basis: $global-line-height;
     border-bottom: 1px solid;
 }
 
 .backdrop-line:first-child {
-    flex-basis: $top-bar-height;
+    flex-basis: $global-top-bar-height;
+}
+
+.backdrop-binder-holes {
+    @extend %backdrop-flex;
+    justify-content: space-around;
+    height: 100%;
+    align-items: center;
+}
+
+.backdrop-binder-hole {
+    background-color: #262626;
+    border-radius: 50%;
+    height: $global-line-height;
+    width: $global-line-height;
+    -moz-box-shadow: inset -3px 3px 8px 0px #e8e8e8; 
+    -webkit-box-shadow: inset -3px 3px 8px 0px #e8e8e8; 
+    box-shadow: inset -3px 3px 8px 0px #e8e8e8; 
 }

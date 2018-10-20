@@ -1,40 +1,83 @@
-$line-height: 25px;
-$top-bar-height: 100px;
-$side-bar-width: 75px;
+$global-line-height: 25px;
+$global-top-bar-height: 100px;
+$global-side-bar-width: 75px;
 
-$grey-scale: (
-    x0: rgb(0, 0, 0),
-    x1: rgb(38, 38, 38),
-    x2: rgb(89, 89, 89),
-    x3: rgb(140, 140, 140),
-    x4: rgb(191, 191, 191),
-    x5: rgb(217, 217, 217),
-    x6: rgb(232, 232, 232),
-    x7: rgb(245, 245, 245),
-    x8: rgb(250, 250, 250),
-    x9: rgb(255, 255, 255)
+$dark-mode-colors: (
+    background: #595959,
+    foreground: #d9d9d9,
+    red: #ff4d4f,
+    blue: #40a9ff,
+    green: #73d13d,
+    orange: #ffa940,
+    yellow: #ffec3d,
+    violet: #9254de
 );
 
-$dark: map-get($grey-scale, x2);
-$light: map-get($grey-scale, x7);
+$light-mode-colors: (
+    background: #f5f5f5,
+    foreground: #595959,
+    red: #cf1322,
+    blue: #096dd9,
+    green: #389e0d,
+    orange: #d46b08,
+    yellow: #d4b106,
+    violet: #531dab
+);
+
+$color-maps: (
+    dark: (
+        0: map-get($dark-mode-colors, red),
+        1: map-get($dark-mode-colors, orange),
+        2: map-get($dark-mode-colors, yellow),
+        3: map-get($dark-mode-colors, green),
+        4: map-get($dark-mode-colors, blue),
+        5: map-get($dark-mode-colors, violet)
+    ),
+    light: (
+        0: map-get($light-mode-colors, red),
+        1: map-get($light-mode-colors, orange),
+        2: map-get($light-mode-colors, yellow),
+        3: map-get($light-mode-colors, green),
+        4: map-get($light-mode-colors, blue),
+        5: map-get($light-mode-colors, violet)
+    )
+);
 
 body {
     margin: 0px;
-    font-family: 'Times New Roman', Times, serif;
     font-weight: 200;
-    font-style: italic;
 }
 
-%full-view-container {
+body, button {
+    font-family: 'Times New Roman', Times, serif;
+}
+
+%global-full-view-container {
     height: 100%;
     width: 100%;
     overflow: hidden;
 }
 
+%global-flex-column {
+    flex-direction: column;
+    display: flex;
+}
+
+%global-centering {
+    justify-content: center;
+    align-items: center;
+}
+
 html, body, #endure {
-    @extend %full-view-container;
+    @extend %global-full-view-container;
 }
 
 .hide {
     display: none;
+}
+
+%global-tile {
+    padding: 10px;
+    border: 10px solid;
+    transform: rotate(45deg);
 }

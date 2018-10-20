@@ -1,5 +1,5 @@
 .game {
-    @extend %full-view-container;
+    @extend %global-full-view-container;
     flex: 1;
     flex-direction: column;
     display: flex;

@@ -1,0 +1,33 @@
+=====
+TODO:
+=====
+	========
+	MenuBar:
+	========
+		- Change count down and move to own file
+		- Add Grade
+		- Add animations
+	========
+	Overlay:
+	========
+		- Add High scores display
+	========
+	SideBar:
+	========
+		- Create component with logic for 'Get out of jail free cards'
+	=====
+	Game:
+	=====
+		- Implement scoring/combo modifiers
+		- Add Firebase to persist/retreive global high scores
+	=====
+	Grid:
+	=====
+		- Revamp logic and entire component
+		- Gameover animations
+		- Dead tile animations
+	=====
+	Tile:
+	=====
+		- Look into better/different styles and animations
+

@@ -1,105 +1,57 @@
-@mixin themedText($multiplier) {
-    text-shadow: 0 1px 0 #ccc,
-               0 $multiplier * 2px 0 #c9c9c9,
-               0 $multiplier * 3px 0 #bbb,
-               0 $multiplier * 4px 0 #b9b9b9,
-               0 $multiplier * 5px 0 #aaa,
-               0 6px 1px rgba(0,0,0,.1),
-               0 0 5px rgba(0,0,0,.1),
-               0 1px 3px rgba(0,0,0,.3),
-               0 3px 5px rgba(0,0,0,.2),
-               0 5px 10px rgba(0,0,0,.25),
-               0 10px 10px rgba(0,0,0,.2),
-               0 20px 20px rgba(0,0,0,.15);
-}
-
-@mixin animation-text-keyframes {
-    $animation-number: 0 !default !global;
-    $animation-number: $animation-number + 1 !global;
-    $name: unquote("การเคลื่อนไหวที่-#{$animation-number}");
-    animation-name: $name;
-    
-    @at-root {
-        @keyframes #{$name} {
-            from {
-                -webkit-filter: hue-rotate(0deg);
-            }
-            
-            to {
-                -webkit-filter: hue-rotate(-360deg);
-            }
-          
-            25% {
-                text-shadow: none;
-            }
-          
-            50% {
-                text-shadow: none;
-            }
-          
-            75% {
-                text-shadow: none;
-            }
-          
-            100% {
-                text-shadow: none;
-            }
-        }
-    }
-}
-
-@each $gameMode in 
+@each $game-mode in 
     game-over,
     new-game,
+    player-name,
     paused,
     quit-confirmation,
     select-difficulty,
-    high-scores {
-        .overlay-#{$gameMode}-text {
-            background: #ffffff;
-            background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -moz-background-clip: text;
-            text-align: center;
-            -webkit-text-fill-color: transparent;
-            margin: 0px 20px;
-            @include themedText(2);
-            animation: 5s infinite linear;
-            -webkit-animation: 5s infinite linear;
-            -moz-animation: 5s infinite linear;
-            @include animation-text-keyframes
+    high-scores,
+    view-mode {
+        .overlay-#{$game-mode}-text {
+            width: 100%;
+            text-decoration: underline;
+            letter-spacing: 0.1em;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .overlay-container.dark-mode .overlay {
+            .overlay-#{$game-mode}-text {
+                color: map-get($dark-mode-colors, foreground);
+            }
+        }
+
+        .overlay-container.light-mode .overlay {
+            .overlay-#{$game-mode}-text {
+                color: map-get($light-mode-colors, foreground);
+            }
         }
 }
 
-.overlay-container {
-    @extend %full-view-container;
+%overlay-flex {
+    @extend %global-flex-column;
+    @extend %global-centering;
 }
 
-%overlay-flex {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.overlay-container {
+    @extend %global-full-view-container;
 }
 
 .overlay-button-panel {
     @extend %overlay-flex;
-    flex-direction: column;
-}
-
-.overlay-radio-panel {
-    @extend %overlay-flex;
-    flex-direction: row;
 }
 
 .overlay-button {
+    font-size: 15px;
     outline: none;
     cursor: pointer;
     margin: 10px;
     background: inherit;
+    border: none;
     padding: 3px 20px 5px 20px;
     border-width: 1px;
-    @include themedText(.33);
 }
 
 .overlay-button:active,
@@ -108,50 +60,134 @@
     outline: none;
 }
 
-.dark-mode.overlay-container .overlay .overlay-button-panel button {
-    color: #ffffff;
-    background: #3d3d3d;
-    border-color: #ffffff;
+.dark-mode.overlay-container {
+    .overlay {
+        background-color: rgba(0, 0, 0, .5);
+    }
+
+    .overlay .overlay-button-panel {
+        button {
+            color: map-get($dark-mode-colors, foreground);
+        }
+
+        .overlay-selected-option {
+            border-color: map-get($dark-mode-colors, red);
+        }
+    }
 }
 
-.light-mode.overlay-container .overlay .overlay-button-panel button {
-    color: #3d3d3d;
-    background: #f2f2f2;
-    border-color: #3d3d3d;
-}
+.light-mode.overlay-container {
+    .overlay {
+        background-color: rgba(150, 150, 150, .5);
+    }
 
-.light-mode.overlay-container .overlay .overlay-radio-panel {
-    font-size: 20px;
-    color: #dddddd;
-}
+    .overlay .overlay-button-panel {  
+        button {
+            color: map-get($light-mode-colors, foreground);
+        }
 
-.dark-mode.overlay-container .overlay .overlay-radio-panel {
-    font-size: 20px;
-    color: #ffffff;
-}
-
-.overlay-radio-panel label:not(:first-child) {
-    margin-left: 40px;
-}
-
-.overlay-radio-panel label {
-    cursor: pointer;
+        .overlay-selected-option {
+            border-color: map-get($light-mode-colors, red);
+        }
+    }
 }
 
 .overlay {
-    @extend %full-view-container;
-    font-size: 150px;
-    z-index: 2;
-    justify-content: center;
-    display: flex;
+    @extend %overlay-flex;
+    @extend %global-full-view-container;
+    font-size: 120px;
     flex: 1;
-    flex-direction: column;
     position: absolute;
-    align-items: center;
-    background-color: rgba(0, 0, 0, .5);
     z-index: 3;
 }
 
 .overlay-selected-option {
-    border-bottom: 4px red solid;
+    font-size: 20px;
+    border-radius: 50%;
+    border: 1px solid;
+    padding: 20px 50px;
+}
+
+.overlay-high-score {
+    font-size: 20px;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.overlay-high-scores-listings {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    width: 100%;
+
+    .overlay-high-scores-listing:first-child {
+        font-size: 25px;
+    }
+
+    .overlay-high-scores-listing {
+        padding: 0px $global-side-bar-width + 5;
+
+        .overlay-high-score {
+            border-bottom: 1px solid;
+            margin-bottom: 5px;
+        }
+    }
+}
+
+@mixin overlayTileBorder($left-color, $top-color, $right-color, $bottom-color) {
+    border-left-color: $left-color;
+    border-top-color: $top-color;
+    border-right-color: $right-color;
+    border-bottom-color: $bottom-color;
+}
+
+@each $view-mode-name, $color-map in $color-maps {
+    @keyframes #{$view-mode-name}ModeOverlayTile {
+        @for $i from 0 to 5 {
+            #{$i * 16% + 4} {
+                @include overlayTileBorder(map-get($color-map, $i), map-get($color-map, $i + 1), map-get($color-map, $i + 1), map-get($color-map, $i));
+            }
+
+            #{$i * 16% + 8} {
+                @include overlayTileBorder(map-get($color-map, $i), map-get($color-map, $i), map-get($color-map, $i + 1), map-get($color-map, $i + 1));
+            }
+
+            #{$i * 16% + 12} {
+                @include overlayTileBorder(map-get($color-map, $i + 1), map-get($color-map, $i), map-get($color-map, $i), map-get($color-map, $i + 1));
+            }
+            
+            #{$i * 16% + 16} {
+                @include overlayTileBorder(map-get($color-map, $i + 1), map-get($color-map, $i + 1), map-get($color-map, $i), map-get($color-map, $i));
+            }
+        }
+    }   
+}
+
+.overlay-tile {
+    @extend %global-tile;
+    width: 0px;
+    height: 0px;
+    top: 50px;
+    position: relative;
+}
+
+.dark-mode.overlay-tile {
+    @include overlayTileBorder(map-get($dark-mode-colors, foreground), map-get($dark-mode-colors, foreground), map-get($dark-mode-colors, foreground), map-get($dark-mode-colors, foreground));
+    animation: darkModeOverlayTile ease 8s infinite;
+}
+
+.light-mode.overlay-tile {
+    @include overlayTileBorder(map-get($light-mode-colors, foreground), map-get($light-mode-colors, foreground), map-get($light-mode-colors, foreground), map-get($light-mode-colors, foreground));
+    animation: lightModeOverlayTile ease 8s infinite;
+}
+
+.overlay-tile:first-child {
+    left: -20px;
+}
+
+.overlay-tile:last-child {
+    left: 15px;
 }

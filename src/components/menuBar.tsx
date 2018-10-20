@@ -110,6 +110,7 @@ class CountDown {
 
 interface State {
     readonly countDown: CountDown;
+    readonly grade: string;
 }; 
 
 export interface MenuBarProps {
@@ -127,6 +128,7 @@ export class MenuBar extends React.Component<MenuBarProps, State> {
         super(props);
 
         this.state = {
+            grade: '', // TODO
             countDown: new CountDown(this)
         };
     };
@@ -142,8 +144,11 @@ export class MenuBar extends React.Component<MenuBarProps, State> {
     };
 
     render() {
-        return <div className={'menu-bar ' + this.props.viewMode + (this.props.gameMode !== Utilities.GameMode.inGame ? ' hide': '')}>
+        return <div className={'menu-bar ' + this.props.viewMode + (!Utilities.isGameInProgress(this.props.gameMode) ? ' hide': '')}>
             {this.state.countDown.getComboLayout()}
+            <div className='menu-bar-grade'>
+
+            </div>
             <span className='menu-bar-score'>
                 {'Score: ' + this.props.score}
             </span>

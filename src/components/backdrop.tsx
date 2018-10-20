@@ -8,6 +8,8 @@ export interface BackdropProps {
 };
 
 export class Backdrop extends React.Component<BackdropProps, object> {
+    private static readonly numberOfBinderHoles: number = 3;
+
     constructor(props: BackdropProps) {
         super(props);
     };
@@ -17,7 +19,8 @@ export class Backdrop extends React.Component<BackdropProps, object> {
     };
 
     render() {
-        const backdropLines: JSX.Element[] = [];
+        const backdropLines: JSX.Element[] = [],
+              binderHoldes: JSX.Element[] = [];
 
         for (let i = 0; i < this.props.numberOfLines; ++i) {
             backdropLines.push(<div key={i}
@@ -25,8 +28,17 @@ export class Backdrop extends React.Component<BackdropProps, object> {
                                 </div>);
         }
 
+        for (let i = 0; i < Backdrop.numberOfBinderHoles; ++i) {
+            binderHoldes.push(<div key={i}
+                                   className='backdrop-binder-hole'>
+                              </div>);
+        }
+
         return <div className={'backdrop ' + this.props.viewMode}>
             <div className='backdrop-left-margin'>
+                <div className='backdrop-binder-holes'>
+                    {binderHoldes}
+                </div>
             </div>
             <div className='backdrop-right-margin'>
             </div>
