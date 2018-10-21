@@ -63,6 +63,11 @@ body, button {
     display: flex;
 }
 
+%global-flex-row {
+    flex-direction: row;
+    display: flex;
+}
+
 %global-centering {
     justify-content: center;
     align-items: center;

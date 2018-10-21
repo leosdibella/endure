@@ -1,88 +1,51 @@
-/*import * as React from 'react';
-import '../../components/grid/grid.scss';
-import { ViewMode } from '../../utilities/viewMode';
-import { Tile, TileProps, TileStyle } from '../../components/tile/tile.component';
-import { Utilities } from '../../utilities/utilities';
-import { Colors } from '../../utilities/colors';
-import { GameUpdates, GameMode } from '../../components/game/game.component';
-import { DirectedAcyclicGraph, ConnectedGraph } from '../../utilities/directedAcyclicGraph';
+import * as React from 'react';
+import '..//styles/grid.scss';
+import { GameUpdates } from './game';
+import { Tile, TileProps } from './tile';
+import { Utilities } from '../utilities/utilities';
 
-class Space {
-    readonly id: string;
-    readonly columnIndex: number;
-    readonly rowIndex: number;
+class GridState {
+    tiles: TileProps[] = [];
+    column: number = 5;
+    row: number = 11;
 
-    constructor(row: number, column: number) {
-        this.id = `(${row}, ${column})`;
-        this.columnIndex = column;
-        this.rowIndex = row;
-    };
-};
-
-interface TileReductionDepenencies {
-    totalWeight: number;
-    tileIndicesToReduce: number[];
-};
-
-class State {
-    static readonly numberOfSpacesHigh: number = 20;
-    static readonly numberOfSpacesWide: number = 10;
-    static readonly spacePixelDimensions: number = 25;
-    static readonly totalHeight: number =  (State.spacePixelDimensions * State.numberOfSpacesHigh) + (State.numberOfSpacesHigh - 1);
-    static readonly totalWidth: number = State.spacePixelDimensions * State.numberOfSpacesWide + (State.numberOfSpacesWide - 1);
-
-    readonly spaces: Space[] = [];
-    readonly tiles: TileProps[] = [];
-    
-    currentLeftMostColumn: number = 4;
-
-    constructor() {
-        for (let i = 0; i < State.numberOfSpacesHigh; ++i) {
-            for (let j = 0; j < State.numberOfSpacesWide; ++j) {
-                this.spaces.push(new Space(i, j));
-                this.tiles.push(null);
-            }
-        }
+    constructor(tiles: TileProps[]) {
+        this.tiles = tiles.map(t => t);
     }
 };
 
 export interface GridProps {
-    viewMode: ViewModes.Mode;
-    gameMode: GameMode;
-    readonly onChanges: (gameUpdates: GameUpdates) => void;
+    viewMode: Utilities.ViewMode;
+    gameMode: Utilities.GameMode;
+    readonly onUpdate: (gameUpdates: GameUpdates) => void;
 };
 
-export class Grid extends React.Component<GridProps, State> {
-    readonly state: State = new State();
+export class Grid extends React.Component<GridProps, GridState> {
+    readonly state: GridState;
 
-    constructor(props: GridProps) {
-        super(props);
+    private static getTileIndex(row: number, column: number) : number {
+        return (row * Utilities.Constants.numberOfTilesHigh) + column;
+    };
 
-        this.updateTile(0, 0, [Colors.Color.Blue, Colors.Color.Green]);
-        this.updateTile(1, 0, [Colors.Color.Green, Colors.Color.Orange]);
-        this.updateTile(3, 0, [Colors.Color.Violet, Colors.Color.Green]);
-        this.updateTile(3, 1, [Colors.Color.Red, Colors.Color.Blue]);
-        this.updateTile(3, 2, [Colors.Color.Yellow, Colors.Color.Blue]);
-        this.updateTile(3, 3, [Colors.Color.Yellow, Colors.Color.Green]);
-        this.updateTile(4, 0, [Colors.Color.Orange, Colors.Color.Violet]);
-        this.updateTile(4, 3, [Colors.Color.Yellow, Colors.Color.Violet]);
+    private readonly handleGridUpdates = (row: number, column: number) : void => {
+
     };
 
     private readonly onKeyPress = (keyboardEvent: KeyboardEvent) : void => {
         switch (keyboardEvent.key.toUpperCase()) {
             case 'A': {
-                if (this.state.currentLeftMostColumn > 0) {
+                if (this.state.column > 0) {
                     this.setState({
-                        currentLeftMostColumn: this.state.currentLeftMostColumn - 1
+                        column: this.state.column - 1
                     });
                 }
 
                 break;
             }
             case 'D': {
-                if (this.state.currentLeftMostColumn < State.numberOfSpacesWide - 2) {
+                if (this.state.column < Utilities.Constants.numberOfTilesWide - 1) {
                     this.setState({
-                        currentLeftMostColumn: this.state.currentLeftMostColumn + 1
+                        column: this.state.column + 1
                     });
                 }
 
@@ -92,101 +55,57 @@ export class Grid extends React.Component<GridProps, State> {
         }
     };
 
-    private generateConnectedSubGraphFromTilesWithColor(color: Colors.Color) : ConnectedGraph {
-        const tilesMatchingColor = this.state.tiles.filter(tile => tile.colors.indexOf(color) > -1, [])
-                                                   .sort((a, b) => a.row - b.row || a.column - b.column),
-              directedAcyclicGraph = new DirectedAcyclicGraph(this.state.tiles);
-
-        let wieght,
-            tileA,
-            tileB;
-
-        for (let i = 0; i < tilesMatchingColor.length; ++i) {
-            for (let j = i + 1; j < tilesMatchingColor.length; ++j) {
-                tileA = tilesMatchingColor[i];
-                tileB = tilesMatchingColor[j];
-
-                if ((tileA.column === tileB.column && tileA.row + 1 === tileB.row) || (tileA.row === tileB.row && tileA.column + 1 === tileB.column)) {
-                    wieght = Colors.howManyColorsDoPairOfColorPairsShare(tileA.colors, tileB.colors, true);
-                    directedAcyclicGraph.addEdge(Grid.getTileIndex(tileA.row, tileA.column), Grid.getTileIndex(tileB.row, tileB.column), wieght);
-                }
-            }
-        }
-
-        return directedAcyclicGraph.generateLargestConnectedSubgraph();
-    };
-
-    private static getTileIndex(row: number, column: number) : number {
-        return row * State.numberOfSpacesHigh + column;
-    };
-
-    private getTileReductionDependencies() : TileReductionDepenencies {
-        const coloredSubgraphs = Colors.VALUES.map(color => this.generateConnectedSubGraphFromTilesWithColor(color))
-                                              .filter(subgraph=> subgraph.vertexIndices.length > 4, []);
-
-        let tileIndicesToReduce: number[] = [],
-            distinctUnionOfNonDisjointTileIndices: number[],
-            totalWeight: number = 0;
-
-        for (let i = 0; i < coloredSubgraphs.length; ++i) {
-            for (let j = i + 1; j < coloredSubgraphs.length; ++j) {
-                distinctUnionOfNonDisjointTileIndices = Utilities.conditionallyDistinctUnionNumericalArrays(coloredSubgraphs[i].vertexIndices, coloredSubgraphs[j].vertexIndices, false);
-                
-                if (Utilities.isWellDefinedValue(distinctUnionOfNonDisjointTileIndices)) {
-                    tileIndicesToReduce = Utilities.conditionallyDistinctUnionNumericalArrays(tileIndicesToReduce, distinctUnionOfNonDisjointTileIndices);
-                    totalWeight += coloredSubgraphs[i].weight + coloredSubgraphs[j].weight;
-                }
-            }
-        }
-
+    private generateTile(row: number, column: number, colors: Utilities.Color[] = undefined) : TileProps {
         return {
-            tileIndicesToReduce: tileIndicesToReduce,
-            totalWeight: totalWeight
+            id: `${row}_${column}`,
+            row: row,
+            column: column,
+            colors: colors
         };
     };
 
-    private reduceTiles() : TileReductionDepenencies {
-        const tileReductionDepenencies: TileReductionDepenencies = this.getTileReductionDependencies();
+    constructor(props: GridProps) {
+        super(props);
 
-        for (let i = 0; i < tileReductionDepenencies.tileIndicesToReduce.length; ++i) {
-            this.state.tiles[tileReductionDepenencies.tileIndicesToReduce[i]] = null;
-        }
-
-        return tileReductionDepenencies;
+        /*this.updateTile(0, 0, [Utilities.Color.blue, Utilities.Color.green]);
+        this.updateTile(1, 0, [Utilities.Color.green, Utilities.Color.orange]);
+        this.updateTile(3, 0, [Utilities.Color.violet, Utilities.Color.green]);
+        this.updateTile(3, 1, [Utilities.Color.red, Utilities.Color.blue]);
+        this.updateTile(3, 2, [Utilities.Color.yellow, Utilities.Color.blue]);
+        this.updateTile(3, 3, [Utilities.Color.yellow, Utilities.Color.green]);
+        this.updateTile(4, 0, [Utilities.Color.orange, Utilities.Color.violet]);
+        this.updateTile(4, 3, [Utilities.Color.yellow, Utilities.Color.violet]);*/
     };
 
-    private updateTile(row: number, column: number, colors: Colors.Color[], height: number = State.spacePixelDimensions, width: number = State.spacePixelDimensions) : void {
-        const top: number = (row * State.spacePixelDimensions) + (row + 1),
-              left: number = (column * State.spacePixelDimensions) + column;
-
-        this.state.tiles[Grid.getTileIndex(row, column)] = new TileProps(`${row}-${column}`, colors, new TileStyle(top, left, height, width), row, column);
-    }
-
-    private getSpaceClassName(columnIndex: number, accentClass: string) : string {
-        return 'space' + (this.props.gameMode === GameMode.InGame && (columnIndex === this.state.currentLeftMostColumn || columnIndex === this.state.currentLeftMostColumn + 1) ? ' ' + accentClass : '');
+    shouldComponentUpdate(nextProps: GridProps, nextState: GridState) : boolean {
+        return nextProps.gameMode !== this.props.gameMode
+            || nextProps.viewMode !== this.props.viewMode
+            || nextState.column !== this.state.column
+            || nextState.row !== this.state.row
+            || nextState.tiles !== this.state.tiles;
     };
 
-    componentDidMount() {
+    componentDidMount() : void {
         document.addEventListener('keypress', this.onKeyPress);
     };
 
-    componentWillUnmount() {
+    componentWillUnmount() : void {
         document.removeEventListener('keypress', this.onKeyPress);
     };
 
-    render() {
-        const spaces: JSX.Element[] = this.state.spaces.map(space =>
-            <div key={space.id} className={this.getSpaceClassName(space.columnIndex, this.props.viewMode.accentClass)}>
-                {space.id}
-            </div>);
-        
+    render() : JSX.Element {
         const tiles: JSX.Element[] = this.state.tiles.filter(tile => Utilities.isWellDefinedValue(tile))
-                                                     .map(tile => <Tile key={tile.id} tileStyle={tile.tileStyle} id={tile.id} colors={tile.colors} row={tile.row} column={tile.column}/>);
+                                                     .map(tile => <Tile key={tile.id}
+                                                                        id={tile.id}
+                                                                        colors={tile.colors}
+                                                                        row={tile.row}
+                                                                        column={tile.column}
+                                                                        onUpdate={this.handleGridUpdates}/>);
 
-        return <div className={'grid ' + this.props.viewMode.baseClass}>
-            {tiles}
-            {spaces}
+        return <div className={'grid-container ' + this.props.viewMode}>
+            <div className={'grid ' + (Utilities.isGameInProgress(this.props.gameMode) ? '' : ' hide')}>
+                {tiles}
+            </div>
         </div>;
     };
 };
-*/

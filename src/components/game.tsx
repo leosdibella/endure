@@ -1,6 +1,6 @@
 import * as React from 'react';
 import '../styles/game.scss';
-// import { Grid } from './grid';
+import { Grid } from './grid';
 import { MenuBar } from './menuBar';
 import { Utilities } from '../utilities/utilities';
 import { AppUpdates } from './app';
@@ -13,8 +13,7 @@ class GameState {
     period: number = 0;
     difficultyMode: Utilities.DifficultyMode = Utilities.DifficultyMode.medium;
     highScores: Utilities.HighScore[] = [];
-    waiting: boolean = false;
-    playerName: string = 'Anonymous';
+    playerName: string = Utilities.defaultPlayerName;
 };
 
 export interface GameProps {
@@ -23,22 +22,17 @@ export interface GameProps {
 };
 
 export interface GameUpdates {
-    score?: number;
-    combo?: number;
+    points?: number;
     gameMode?: Utilities.GameMode;
     difficultyMode?: Utilities.DifficultyMode;
     viewMode?: Utilities.ViewMode;
-    highScore?: Utilities.HighScore;
     playerName?: string;
+    dropCombo?: boolean;
 };
 
 export class Game extends React.Component<GameProps, GameState> {
     private static readonly numberOfHighScoresToPersist: number = 10;
     readonly state: GameState;
-
-    private static isValidPlayerName(playerName: string) {
-        return Utilities.isWellDefinedValue(playerName) && playerName.trim() !== '';
-    };
 
     private static getPersistedGameState() : GameState {
         const state: GameState = new GameState();
@@ -64,7 +58,7 @@ export class Game extends React.Component<GameProps, GameState> {
                 }
             }
 
-            if (Game.isValidPlayerName(playerName)) {
+            if (Utilities.isValidPlayerName(playerName)) {
                 state.playerName = playerName;
             }
         }
@@ -72,12 +66,12 @@ export class Game extends React.Component<GameProps, GameState> {
         return state;
     };
 
-    private persistGameState(state: GameState) : void {
+    private static persistGameState(state: GameState) : void {
         if (Utilities.isLocalStorageSupported()) {
             window.localStorage.setItem(Utilities.LocalStorageKeys.difficultyMode, state.difficultyMode.toString());
             window.localStorage.setItem(Utilities.LocalStorageKeys.highScores, JSON.stringify(state.highScores));
 
-            if (Game.isValidPlayerName(state.playerName)) {
+            if (Utilities.isValidPlayerName(state.playerName)) {
                 window.localStorage.setItem(Utilities.LocalStorageKeys.playerName, state.playerName);
             }
         }
@@ -96,11 +90,12 @@ export class Game extends React.Component<GameProps, GameState> {
             this.setState({
                 gameMode: Utilities.GameMode.quitConfirmation
             });
-        } else {
+        } else if (this.state.gameMode !== Utilities.GameMode.specifyName) {
             this.setState({
                 gameMode: Utilities.GameMode.newGame,
                 combo: 0,
-                score: 0
+                score: 0,
+                period: 0
             });
         }
     };
@@ -114,9 +109,11 @@ export class Game extends React.Component<GameProps, GameState> {
     };
 
     private readonly toggleViewMode = () : void => {
-        this.props.onUpdate({
-            viewMode: this.props.viewMode === Utilities.ViewMode.dark ? Utilities.ViewMode.light : Utilities.ViewMode.dark
-        });
+        if (this.state.gameMode !== Utilities.GameMode.specifyName) {
+            this.props.onUpdate({
+                viewMode: this.props.viewMode === Utilities.ViewMode.dark ? Utilities.ViewMode.light : Utilities.ViewMode.dark
+            });
+        }
     };
     
     private readonly cheat = () : void => {
@@ -127,7 +124,31 @@ export class Game extends React.Component<GameProps, GameState> {
         }
     };
 
-    private readonly handleGameUpdates = (gameUpdates: GameUpdates) : void => {
+    private readonly keyDownEventActionMap: { [key: string]: () => void } = {
+        p: this.togglePaused,
+        v: this.toggleViewMode,
+        q: this.quit,
+        c: this.cheat
+    };
+
+    private readonly onKeyDown = (keyboardEvent: KeyboardEvent) : void => {
+        const keyDownHandler = this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()];
+
+        if (Utilities.isWellDefinedValue(keyDownHandler)) {
+            keyDownHandler();
+        }
+    };
+    
+    private transformGameState(gameUpdates: GameUpdates) : GameState {
+        let period: number = this.state.score,
+            score: number = this.state.score,
+            combo: number = this.state.combo,
+            highScores: Utilities.HighScore[] = this.state.highScores;
+
+        if (gameUpdates.dropCombo) {
+            combo = 0;
+        }
+
         if (Utilities.isWellDefinedValue(gameUpdates.difficultyMode)) {
             gameUpdates.gameMode = Utilities.GameMode.newGame;
         }
@@ -140,33 +161,43 @@ export class Game extends React.Component<GameProps, GameState> {
             });
         }
 
-        const nextState: GameState = {
-            period: this.state.period,
-            waiting: this.state.waiting,
-            highScores: [{
-                name: 'banano',
-                value: 100000000,
-                date: '10/19/2018'
-            }, {
-                name: 'manzana',
-                value: 999999,
-                date: '10/18/2018'
-            }], /// TODO
-            playerName: Game.isValidPlayerName(gameUpdates.playerName) ? gameUpdates.playerName : this.state.playerName,
-            score: Utilities.or(gameUpdates.score, this.state.score),
-            combo: Utilities.or(gameUpdates.combo, this.state.combo),
+        if (Utilities.isWellDefinedValue(gameUpdates.points)) {
+            score += (gameUpdates.points * combo);
+            ++combo;
+            // period = TODO
+        }
+
+        if (gameUpdates.gameMode === Utilities.GameMode.gameOver) {
+            const highScore: Utilities.HighScore = {
+                value: score,
+                name: this.state.playerName,
+                date: Utilities.getDateStamp(new Date())
+            };
+
+            highScores = highScores.concat(highScore)
+                                   .sort((a, b) => b.value - a.value)
+                                   .slice(0, Game.numberOfHighScoresToPersist);
+
+            score = 0;
+            combo = 0;
+            period = 0;
+        }
+
+        return {
+            period: period,
+            highScores: highScores,
+            playerName: Utilities.isValidPlayerName(gameUpdates.playerName) ? gameUpdates.playerName : Utilities.defaultPlayerName,
+            score: score,
+            combo: combo,
             gameMode: Utilities.or(gameUpdates.gameMode, this.state.gameMode),
             difficultyMode: Utilities.or(gameUpdates.difficultyMode, this.state.difficultyMode)
         };
+    };
 
-        if (Utilities.isWellDefinedValue(gameUpdates.highScore)) {
-            nextState.highScores = this.state.highScores.concat(gameUpdates.highScore)
-                                                        .sort((a, b) => b.value - a.value)
-                                                        .slice(0, Game.numberOfHighScoresToPersist);;
-        }
-
+    private readonly handleGameUpdates = (gameUpdates: GameUpdates) : void => {
+        const nextState: GameState = this.transformGameState(gameUpdates);
         this.setState(nextState);
-        this.persistGameState(nextState);
+        Game.persistGameState(nextState);
     };
 
     private getOverlay() : JSX.Element {
@@ -192,21 +223,6 @@ export class Game extends React.Component<GameProps, GameState> {
         this.state = Game.getPersistedGameState();
     };
 
-    private readonly keyDownEventActionMap: { [key: string]: () => void } = {
-        p: this.togglePaused,
-        v: this.toggleViewMode,
-        q: this.quit,
-        c: this.cheat
-    };
-
-    private readonly onKeyDown = (keyboardEvent: KeyboardEvent) : void => {
-        const keyDownHandler = this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()];
-
-        if (Utilities.isWellDefinedValue(keyDownHandler)) {
-            keyDownHandler();
-        }
-    };
-
     shouldComponentUpdate(nextProps: GameProps, nextState: GameState) : boolean {
         return nextProps.viewMode !== this.props.viewMode
             || nextState.difficultyMode !== this.state.difficultyMode
@@ -217,21 +233,15 @@ export class Game extends React.Component<GameProps, GameState> {
             || nextState.playerName !== this.state.playerName;
     };
 
-    componentDidMount() {
+    componentDidMount() : void {
         document.addEventListener(Utilities.DomEvent.keyDown, this.onKeyDown);
     };
 
-    componentWillUnmount() {
+    componentWillUnmount() : void {
         document.removeEventListener(Utilities.DomEvent.keyDown, this.onKeyDown);
     };
 
-    render() {
-        /* layoutElements.push(<Grid key={2}
-                                      viewMode={this.state.viewMode}
-                                      gameMode={this.state.gameMode}
-                                      onChanges={this.handleGameUpdates}>
-                                </Grid>);*/
-
+    render() : JSX.Element {
         return <div className={'game ' + this.props.viewMode}>
             {this.getOverlay()}
             <MenuBar viewMode={this.props.viewMode}
@@ -240,6 +250,10 @@ export class Game extends React.Component<GameProps, GameState> {
                      score={this.state.score}
                      onChanges={this.handleGameUpdates}>
             </MenuBar>
+            <Grid viewMode={this.props.viewMode}
+                  gameMode={this.state.gameMode}
+                  onUpdate={this.handleGameUpdates}>
+            </Grid>
         </div>;
     };
 };

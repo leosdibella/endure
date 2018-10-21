@@ -33,16 +33,16 @@ export class Overlay extends React.Component<OverlayProps, OverlayState> {
         title: 'Endure',
         className: 'new-game',
         defaultOptionsIndex: 0,
-        options: ['New Game', 'Set Player Name', 'Set Difficulty', 'View High Scores', 'Set View Mode']
+        options: ['New Game', 'Set Name', 'Difficulty', 'High Scores', 'Settings']
     }, {
-        title: 'Who Are You?',
+        title: 'Name?',
         className: 'player-name',
-        defaultOptionsIndex: 1,
+        defaultOptionsIndex: 0,
         options: ['Remember it!', 'Forget it.']
     }, {
         title: 'Grade Level',
         className: 'select-difficulty',
-        options: ['(Pre-K): I made poop.',  '(K - 5): No I don\'t wanna!', '(6 - 8): Remove the training wheels!', '(9 - 12): Test me sensei!', '(12+): I know kung fu.']
+        options: ['[ Pre-K ] I made poop.',  '[ K - 5 ] No I don\'t wanna!', '[ 6 - 8 ] Remove the training wheels!', '[ 9 - 12 ] Test me sensei!', '[ 12+ ] I know kung fu.']
     },
     undefined,
     {
@@ -61,7 +61,7 @@ export class Overlay extends React.Component<OverlayProps, OverlayState> {
         defaultOptionsIndex: 1,
         options: ['Yep', 'Nope']
     }, {
-        title: 'Class Ranking',
+        title: 'Honor Roll',
         className: 'high-scores',
         defaultOptionsIndex: 0,
         options: ['Leave']
@@ -106,6 +106,12 @@ export class Overlay extends React.Component<OverlayProps, OverlayState> {
 
     private readonly saveNameChanges = () : void => {
         this.updateGame(Utilities.GameMode.newGame, undefined, undefined, this.state.playerName)();
+    };
+
+    private readonly handleNameChanges = (event: React.ChangeEvent<HTMLInputElement>) : void => {
+        this.setState({
+            playerName: event.target.value
+        });
     };
 
     private initializeActions() : void {
@@ -172,33 +178,56 @@ export class Overlay extends React.Component<OverlayProps, OverlayState> {
         if (this.props.gameMode === Utilities.GameMode.highScores) {
             const localHighScores: JSX.Element[] = this.props.highScores.map((s, i) => <div key={i}
                                                                                             className='overlay-high-score'>
-                                                                                            <span>
-                                                                                                {s.date} - {s.name}
-                                                                                            </span>
-                                                                                            <span>
-                                                                                                {s.value}
-                                                                                            </span>
+                                                                                            <div>
+                                                                                                <span>
+                                                                                                    {s.date}
+                                                                                                </span>
+                                                                                                <span>
+                                                                                                    {s.name}
+                                                                                                </span>
+                                                                                            </div>
+                                                                                            <div>
+                                                                                                <span>
+                                                                                                </span>
+                                                                                                <span>
+                                                                                                    {s.value}
+                                                                                                </span>
+                                                                                            </div>
                                                                                        </div>),
                   globalHighScores: JSX.Element[] = [];
 
             return <div key={2}
                         className='overlay-high-scores-listings'>
-                <div className='overlay-high-scores-local overlay-high-scores-listing'>
-                    <div>
-                        Your High Scores:
+                <div className={'overlay-high-scores-local overlay-high-scores-listing ' + this.props.viewMode}>
+                    <div className='overlay-high-scores-listing-title'>
+                        You
                     </div>
                     {localHighScores}
+                    <div className={'overlay-no-high-scores' + (localHighScores.length > 0 ? ' hide' : '')}>
+                        Nothing yet ...
+                    </div>
                 </div>
-                <div className='overlay-high-scores-global overlay-high-scores-listing'>
+                <div className={'overlay-high-scores-listing-separator ' + this.props.viewMode}>
+                </div>
+                <div className={'overlay-high-scores-global overlay-high-scores-listing ' + this.props.viewMode}>
+                    <div className='overlay-high-scores-listing-title'>
+                        The Entire Class
+                    </div>
                     {globalHighScores}
+                    <div className={'overlay-no-high-scores' + (globalHighScores.length > 0 ? ' hide' : '')}>
+                        Nothing yet ...
+                    </div>
                 </div>
             </div>
         }
 
-        if (this.props.gameMode === Utilities.GameMode.newGame) {
+        if (this.props.gameMode === Utilities.GameMode.specifyName) {
             return <div key={2}
-                        className='test'>
-            </div>
+                        className='overlay-player-name-input-container'>
+                        <input value={this.state.playerName}
+                               className={this.props.viewMode}
+                               onChange={this.handleNameChanges}/>
+                   </div>
         }
 
         return undefined;
@@ -280,12 +309,19 @@ export class Overlay extends React.Component<OverlayProps, OverlayState> {
     shouldComponentUpdate(nextProps: OverlayProps, nextState: OverlayState) : boolean {
         return nextProps.gameMode !== this.props.gameMode
             || nextProps.viewMode !== this.props.viewMode
-            || nextState.selectedOptionIndex !== this.state.selectedOptionIndex;
+            || nextState.selectedOptionIndex !== this.state.selectedOptionIndex
+            || nextState.playerName !== this.state.playerName;
     };
     
     componentDidUpdate(previousProps: OverlayProps, previousState: OverlayState) {
         if (previousProps.gameMode !== this.props.gameMode) {
             this.updateOverlayState(this.getDefaultOptionIndex());
+        }
+
+        if (this.props.gameMode !== Utilities.GameMode.specifyName) {
+            this.setState({
+                playerName: this.props.playerName
+            });
         }
     };
 

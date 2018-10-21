@@ -15,11 +15,26 @@ export namespace Utilities {
         export const topBarHeight: number = 100;
         export const lineHeight: number = 25;
         export const sideBarWidth: number = 75;
+        export const numberOfTilesHigh: number = 21;
+        export const numberOfTilesWide: number = 11;
+        export const tileDimension: number = 60;
+        export const totalGridHeight: number =  numberOfTilesHigh * tileDimension;
+        export const totalGridWidth: number = numberOfTilesWide * tileDimension;
+    };
+
+    export function getDateStamp(date: Date) : string {
+        return date.getMonth() + '/' + date.getDate() + '/' + date.getFullYear();
     };
 
     export function or<T>(first: T, second: T) : T {
         return isWellDefinedValue(first) ? first : second;
     };
+
+    export function isValidPlayerName(playerName: string) : boolean {
+        return Utilities.isWellDefinedValue(playerName) && playerName.trim() !== '';
+    };
+
+    export const defaultPlayerName = 'Anonymous';
 
     export enum DomEvent {
         resize = 'resize',
@@ -64,5 +79,14 @@ export namespace Utilities {
         name: string;
         value: number;
         date: string
+    };
+
+    export enum Color {
+        red = 'red',
+        green = 'green',
+        blue = 'blue',
+        violet = 'violet',
+        yellow = 'yellow',
+        orange = 'orange'
     };
 };

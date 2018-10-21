@@ -8,11 +8,10 @@
     high-scores,
     view-mode {
         .overlay-#{$game-mode}-text {
+            @extend %global-flex-row;
             width: 100%;
             text-decoration: underline;
             letter-spacing: 0.1em;
-            display: flex;
-            flex-direction: row;
             justify-content: center;
             margin-bottom: 20px;
         }
@@ -41,10 +40,11 @@
 
 .overlay-button-panel {
     @extend %overlay-flex;
+    margin-bottom: 10px;
 }
 
 .overlay-button {
-    font-size: 15px;
+    font-size: 30px;
     outline: none;
     cursor: pointer;
     margin: 10px;
@@ -102,38 +102,92 @@
 }
 
 .overlay-selected-option {
-    font-size: 20px;
+    font-size: 32px;
     border-radius: 50%;
     border: 1px solid;
     padding: 20px 50px;
 }
 
 .overlay-high-score {
+    @extend %global-flex-column;
     font-size: 20px;
-    display: flex;
     flex: 1;
-    flex-direction: column;
     justify-content: space-between;
     align-items: center;
 }
 
 .overlay-high-scores-listings {
-    display: flex;
+    @extend %global-flex-row;
     flex: 1;
-    flex-direction: row;
     width: 100%;
+    margin-bottom: 20px;
+    justify-content: space-between;
+    align-items: start;
 
     .overlay-high-scores-listing:first-child {
-        font-size: 25px;
+        padding: 0px 20px 0px $global-side-bar-width + 5;
+    }
+
+    .overlay-high-scores-listing:last-child {
+        padding: 0px $global-side-bar-width + 5 0px 20px;
     }
 
     .overlay-high-scores-listing {
-        padding: 0px $global-side-bar-width + 5;
+        flex-basis: 50%;
+
+        .overlay-no-high-scores {
+            text-align: center;
+            font-size: 35px;
+            padding: 10px 0px;
+        }
+
+        .overlay-high-scores-listing-title {
+            text-align: center;
+            border-bottom: 2px solid;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 40px;
+            padding-bottom: 8px;
+        }
 
         .overlay-high-score {
-            border-bottom: 1px solid;
+            border-bottom: 1px dashed;
             margin-bottom: 5px;
+            font-size: 30px;
         }
+
+        .overlay-high-score div {
+            @extend %global-flex-row;
+            flex: 1;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+        }
+    }
+
+    .dark-mode.overlay-high-scores-listing {
+        .overlay-high-scores-listing-title, .overlay-high-score, .overlay-no-high-scores {
+            color: map-get($dark-mode-colors, foreground);
+        }        
+    }
+
+    .light-mode.overlay-high-scores-listing {
+        .overlay-high-scores-listing-title, .overlay-high-score, .overlay-no-high-scores {
+            color: map-get($light-mode-colors, foreground);
+        }
+    }
+
+    .overlay-high-scores-listing-separator {
+        flex-basis: 2px;
+        height: 100%;
+    }
+
+    .dark-mode.overlay-high-scores-listing-separator {
+        background-color: map-get($dark-mode-colors, foreground);
+    }
+
+    .light-mode.overlay-high-scores-listing-separator {
+        background-color: map-get($light-mode-colors, foreground);
     }
 }
 
@@ -190,4 +244,30 @@
 
 .overlay-tile:last-child {
     left: 15px;
+}
+
+.overlay-player-name-input-container {
+    font-size: 80px;
+    margin-bottom: 50px;
+
+    input {
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid;
+        font-size: 40px;
+    }
+
+    input.dark-mode {
+        border-bottom-color: map-get($dark-mode-colors, foreground);
+        color: map-get($dark-mode-colors, foreground);
+    }
+
+    input.light-mode {
+        border-bottom-color: map-get($light-mode-colors, foreground);
+        color: map-get($light-mode-colors, foreground);
+    }
+
+    input, input:focus, input:active, input:hover {
+        outline: none;
+    }
 }

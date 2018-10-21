@@ -4,17 +4,14 @@ TODO:
 	========
 	MenuBar:
 	========
-		- Change count down and move to own file
+		- Add player name and period to the layout
+		- Change combo into bonus and make it a new component
 		- Add Grade
 		- Add animations
 	========
-	Overlay:
-	========
-		- Add High scores display
-	========
 	SideBar:
 	========
-		- Create component with logic for 'Get out of jail free cards'
+		- Create component with logic for free bonus increment for each new period
 	=====
 	Game:
 	=====
@@ -26,8 +23,3 @@ TODO:
 		- Revamp logic and entire component
 		- Gameover animations
 		- Dead tile animations
-	=====
-	Tile:
-	=====
-		- Look into better/different styles and animations
-

@@ -37,6 +37,14 @@ export class App extends React.Component<object, AppState> {
         const focalElement: HTMLElement = document.activeElement as HTMLElement;
 
         if (Utilities.isWellDefinedValue(focalElement)) {
+            if (focalElement instanceof HTMLInputElement) {
+                const input: HTMLInputElement = focalElement as HTMLInputElement;
+
+                if (input.type === 'text') {
+                    return;
+                }
+            }
+
             focalElement.blur();
         }
     };
