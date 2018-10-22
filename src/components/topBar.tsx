@@ -1,7 +1,6 @@
 import * as React from 'react';
-import '../styles/menuBar.scss';
+import '../styles/topBar.scss';
 import { Utilities } from '../utilities/utilities';
-import { GameUpdates } from './game';
 
 enum ComboClass {
     Healthy = 'healthy-combo',
@@ -22,39 +21,39 @@ class CountDown {
     private static readonly decrementInterval: number = 17;
     private static readonly minimumViableCombo: number = 2;
     private milliseconds: number = 0;
-    private menuBar: MenuBar;
+    private topBar: TopBar;
     private interval: NodeJS.Timeout;
 
-    constructor(menuBar: MenuBar) {
-        this.menuBar = menuBar;
+    constructor(topBar: TopBar) {
+        this.topBar = topBar;
     };
 
     private readonly decrement = () => {
-        if (this.menuBar.props.mode === Utilities.Game.Mode.inGame) {
+        if (this.topBar.props.mode === Utilities.Game.Mode.inGame) {
             this.milliseconds -= CountDown.decrementInterval;
 
             if (this.milliseconds <= 0) {
                 this.milliseconds = 0;
 
-                this.menuBar.props.onChanges({
+                this.topBar.props.onChanges({
                     dropCombo: true
                 });
 
                 this.disable();
             } else {
-                this.menuBar.setState({
+                this.topBar.setState({
                     countDown: this
                 });
             }
         }
 
-        if (this.menuBar.props.combo < CountDown.minimumViableCombo) {
+        if (this.topBar.props.combo < CountDown.minimumViableCombo) {
             this.disable();
         }
     };
 
     reinitialize() {
-        if (this.menuBar.props.combo >= CountDown.minimumViableCombo) {
+        if (this.topBar.props.combo >= CountDown.minimumViableCombo) {
             this.milliseconds = 3000;
 
             if (!Utilities.General.isWellDefinedValue(this.interval)) {
@@ -76,21 +75,21 @@ class CountDown {
         const seconds: number = Math.floor(this.milliseconds / CountDown.millisecondsPerSecond),
               milliseconds = this.milliseconds - (seconds * CountDown.millisecondsPerSecond);
 
-        if (milliseconds === 0 || !Utilities.Game.isInProgress(this.menuBar.props.mode)) {
+        if (milliseconds === 0 || !Utilities.Game.isInProgress(this.topBar.props.mode)) {
             this.disable();
             
             return <div>
                    </div>;
         }
         
-        return <span className={'menu-bar-combo-container'}>
-            <span className='menu-bar-combo'>
+        return <span className={'top-bar-combo-container'}>
+            <span className='top-bar-combo'>
                 Combo: x
             </span>
-            <span className='menu-bar-combo'>
-                {this.menuBar.props.combo}
+            <span className='top-bar-combo'>
+                {this.topBar.props.combo}
             </span>
-            <span className={'menu-bar-count-down ' + comboClassMap[seconds]}>
+            <span className={'top-bar-count-down ' + comboClassMap[seconds]}>
                 <span>
                     [
                 </span>
@@ -116,18 +115,18 @@ interface State {
     readonly grade: string;
 }; 
 
-export interface MenuBarProps {
+export interface TopBarProps {
     mode: Utilities.Game.Mode;
     view: Utilities.App.View;
     combo: number;
     score: number;
-    readonly onChanges: (gameUpdates: GameUpdates) => void;
+    readonly onChanges: (updates: Utilities.Game.Updates) => void;
 };
 
-export class MenuBar extends React.Component<MenuBarProps, State> {
+export class TopBar extends React.Component<TopBarProps, State> {
     readonly state: State;
     
-    constructor(props: MenuBarProps) {
+    constructor(props: TopBarProps) {
         super(props);
 
         this.state = {
@@ -136,7 +135,7 @@ export class MenuBar extends React.Component<MenuBarProps, State> {
         };
     };
 
-    componentDidUpdate(previousProps: MenuBarProps) : void {
+    componentDidUpdate(previousProps: TopBarProps) : void {
         if (this.props.combo > previousProps.combo) {
             this.state.countDown.reinitialize();
         }
@@ -148,9 +147,9 @@ export class MenuBar extends React.Component<MenuBarProps, State> {
 
     render() : JSX.Element {
         // TODO Add Grade, period and name
-        return <div className={'menu-bar ' + this.props.view + (!Utilities.Game.isInProgress(this.props.mode) ? ' hide': '')}>
+        return <div className={'top-bar ' + this.props.view + (!Utilities.Game.isInProgress(this.props.mode) ? ' hide': '')}>
             {this.state.countDown.getComboLayout()}
-            <span className='menu-bar-score'>
+            <span className='top-bar-score'>
                 {'Score: ' + this.props.score}
             </span>
         </div>;

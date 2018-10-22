@@ -1,23 +1,19 @@
 import * as React from 'react';
 import '../styles/app.scss';
 import { Utilities } from '../utilities/utilities';
-import { Backdrop } from './backdrop';
+import { AppBackdrop } from './appBackdrop';
 import { Game } from './game';
 
-interface AppState {
+interface State {
     numberOfLines: number;
     view: Utilities.App.View;
 };
 
-export interface AppUpdates {
-    view?: Utilities.App.View;
-};
+export class App extends React.Component<object, State> {
+    readonly state: State;
 
-export class App extends React.Component<object, AppState> {
-    readonly state: AppState;
-
-    private static getPersistedAppState() : AppState {
-        const state: AppState = {
+    private static getPersistedState() : State {
+        const state: State = {
             numberOfLines: 0,
             view: Utilities.App.View.light
         };
@@ -49,20 +45,20 @@ export class App extends React.Component<object, AppState> {
         }
     };
 
-    private static persistAppState(state: AppState) : void {
+    private static persistState(state: State) : void {
         if (Utilities.General.isLocalStorageSupported()) {
             window.localStorage.setItem(Utilities.General.LocalStorageKey.view, state.view);
         }
     };
 
-    private readonly handleAppUpdates = (appUpdates: AppUpdates) : void => {
-        const nextState: AppState = {
+    private readonly handleUpdates = (updates: Utilities.App.Updates) : void => {
+        const nextState: State = {
             numberOfLines: this.state.numberOfLines,
-            view: Utilities.General.or(appUpdates.view, this.state.view)
+            view: Utilities.General.or(updates.view, this.state.view)
         };
 
         this.setState(nextState);
-        App.persistAppState(nextState);
+        App.persistState(nextState);
     };
 
     private readonly setNumberOfLines = (event: UIEvent) : void => {
@@ -76,17 +72,17 @@ export class App extends React.Component<object, AppState> {
     };
 
     private recalculateNumberOfLines() : number {
-        return Math.floor((window.innerHeight - Utilities.Backdrop.topMarginHeight) / Utilities.Backdrop.lineHeight);
+        return Math.floor((window.innerHeight - Utilities.AppBackdrop.topMarginHeight) / Utilities.AppBackdrop.lineHeight);
     };
 
     constructor(props: object) {
         super(props);
 
-        this.state = App.getPersistedAppState();
+        this.state = App.getPersistedState();
         this.state.numberOfLines =  this.recalculateNumberOfLines();
     };
 
-    shouldComponentUpdate(nextProps: object, nextState: AppState) : boolean {
+    shouldComponentUpdate(nextProps: object, nextState: State) : boolean {
         return nextState.numberOfLines !== this.state.numberOfLines || nextState.view !== this.state.view;
     };
 
@@ -104,11 +100,11 @@ export class App extends React.Component<object, AppState> {
 
     render() : JSX.Element {
         return <div className={'app ' + this.state.view}>
-            <Backdrop view={this.state.view}
+            <AppBackdrop view={this.state.view}
                       numberOfLines={this.state.numberOfLines}>
-            </Backdrop>
+            </AppBackdrop>
             <Game view={this.state.view}
-                  onUpdate={this.handleAppUpdates}>
+                  onUpdate={this.handleUpdates}>
             </Game>
         </div>;
     };

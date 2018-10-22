@@ -1,12 +1,11 @@
 import * as React from 'react';
 import '../styles/game.scss';
 import { Grid } from './grid';
-import { MenuBar } from './menuBar';
+import { TopBar } from './topBar';
 import { Utilities } from '../utilities/utilities';
-import { AppUpdates } from './app';
-import { Overlay } from './overlay';
+import { GameOverlay } from './gameOverlay';
 
-class GameState {
+class State {
     mode: Utilities.Game.Mode = Utilities.Game.Mode.newGame;
     combo: number = 0;
     score: number = 0;
@@ -16,26 +15,17 @@ class GameState {
     playerName: string = Utilities.Game.defaultPlayerName;
 };
 
-export interface GameProps {
+interface Props {
     view: Utilities.App.View;
-    readonly onUpdate: (appUpdates: AppUpdates) => void;
+    readonly onUpdate: (updates: Utilities.App.Updates) => void;
 };
 
-export interface GameUpdates {
-    points?: number;
-    mode?: Utilities.Game.Mode;
-    difficulty?: Utilities.Game.Difficulty;
-    view?: Utilities.App.View;
-    playerName?: string;
-    dropCombo?: boolean;
-};
-
-export class Game extends React.Component<GameProps, GameState> {
+export class Game extends React.Component<Props, State> {
     private static readonly numberOfHighScoresToPersist: number = 10;
-    readonly state: GameState;
+    readonly state: State;
 
-    private static getPersistedGameState() : GameState {
-        const state: GameState = new GameState();
+    private static getPersistedState() : State {
+        const state: State = new State();
 
         if (Utilities.General.isLocalStorageSupported()) {
             const difficulty: string = window.localStorage.getItem(Utilities.General.LocalStorageKey.difficulty),
@@ -66,7 +56,7 @@ export class Game extends React.Component<GameProps, GameState> {
         return state;
     };
 
-    private static persistGameState(state: GameState) : void {
+    private static persistState(state: State) : void {
         if (Utilities.General.isLocalStorageSupported()) {
             window.localStorage.setItem(Utilities.General.LocalStorageKey.difficulty, state.difficulty.toString());
             window.localStorage.setItem(Utilities.General.LocalStorageKey.highScores, JSON.stringify(state.highScores));
@@ -139,35 +129,35 @@ export class Game extends React.Component<GameProps, GameState> {
         }
     };
     
-    private transformGameState(gameUpdates: GameUpdates) : GameState {
+    private transformState(updates: Utilities.Game.Updates) : State {
         let period: number = this.state.score,
             score: number = this.state.score,
             combo: number = this.state.combo,
             highScores: Utilities.Game.HighScore[] = this.state.highScores;
 
-        if (gameUpdates.dropCombo) {
+        if (updates.dropCombo) {
             combo = 0;
         }
 
-        if (Utilities.General.isWellDefinedValue(gameUpdates.difficulty)) {
-            gameUpdates.mode = Utilities.Game.Mode.newGame;
+        if (Utilities.General.isWellDefinedValue(updates.difficulty)) {
+            updates.mode = Utilities.Game.Mode.newGame;
         }
 
-        if (Utilities.General.isWellDefinedValue(gameUpdates.view)) {
-            gameUpdates.mode = Utilities.Game.Mode.newGame;
+        if (Utilities.General.isWellDefinedValue(updates.view)) {
+            updates.mode = Utilities.Game.Mode.newGame;
 
             this.props.onUpdate({
-                view: gameUpdates.view
+                view: updates.view
             });
         }
 
-        if (Utilities.General.isWellDefinedValue(gameUpdates.points)) {
-            score += (gameUpdates.points * combo);
+        if (Utilities.General.isWellDefinedValue(updates.points)) {
+            score += (updates.points * combo);
             ++combo;
             // period = TODO
         }
 
-        if (gameUpdates.mode === Utilities.Game.Mode.gameOver) {
+        if (updates.mode === Utilities.Game.Mode.gameOver) {
             const highScore: Utilities.Game.HighScore = {
                 value: score,
                 name: this.state.playerName,
@@ -186,23 +176,23 @@ export class Game extends React.Component<GameProps, GameState> {
         return {
             period: period,
             highScores: highScores,
-            playerName: Utilities.Game.isValidPlayerName(gameUpdates.playerName) ? gameUpdates.playerName : Utilities.Game.defaultPlayerName,
+            playerName: Utilities.Game.isValidPlayerName(updates.playerName) ? updates.playerName : Utilities.Game.defaultPlayerName,
             score: score,
             combo: combo,
-            mode: Utilities.General.or(gameUpdates.mode, this.state.mode),
-            difficulty: Utilities.General.or(gameUpdates.difficulty, this.state.difficulty)
+            mode: Utilities.General.or(updates.mode, this.state.mode),
+            difficulty: Utilities.General.or(updates.difficulty, this.state.difficulty)
         };
     };
 
-    private readonly handleGameUpdates = (gameUpdates: GameUpdates) : void => {
-        const nextState: GameState = this.transformGameState(gameUpdates);
+    private readonly handleUpdates = (updates: Utilities.Game.Updates) : void => {
+        const nextState: State = this.transformState(updates);
         this.setState(nextState);
-        Game.persistGameState(nextState);
+        Game.persistState(nextState);
     };
 
-    private getOverlay() : JSX.Element {
+    private getGameOverlay() : JSX.Element {
         if (this.state.mode !== Utilities.Game.Mode.inGame) {
-            return <Overlay view={this.props.view}
+            return <GameOverlay view={this.props.view}
                             mode={this.state.mode}
                             playerName={this.state.playerName}
                             difficulty={this.state.difficulty}
@@ -211,19 +201,19 @@ export class Game extends React.Component<GameProps, GameState> {
                             onTogglePaused={this.togglePaused}
                             onToggleView={this.toggleView}
                             onStartNewGame={this.startNewGame}
-                            onUpdate={this.handleGameUpdates}>
-                   </Overlay>;
+                            onUpdate={this.handleUpdates}>
+                   </GameOverlay>;
         }
 
         return undefined;
     };
 
-    constructor(props: GameProps) {
+    constructor(props: Props) {
         super(props);
-        this.state = Game.getPersistedGameState();
+        this.state = Game.getPersistedState();
     };
 
-    shouldComponentUpdate(nextProps: GameProps, nextState: GameState) : boolean {
+    shouldComponentUpdate(nextProps: Props, nextState: State) : boolean {
         return nextProps.view !== this.props.view
             || nextState.difficulty !== this.state.difficulty
             || nextState.combo !== this.state.combo
@@ -243,16 +233,16 @@ export class Game extends React.Component<GameProps, GameState> {
 
     render() : JSX.Element {
         return <div className={'game ' + this.props.view}>
-            {this.getOverlay()}
-            <MenuBar view={this.props.view}
+            {this.getGameOverlay()}
+            <TopBar view={this.props.view}
                      mode={this.state.mode}
                      combo={this.state.combo}
                      score={this.state.score}
-                     onChanges={this.handleGameUpdates}>
-            </MenuBar>
+                     onChanges={this.handleUpdates}>
+            </TopBar>
             <Grid view={this.props.view}
                   mode={this.state.mode}
-                  onUpdate={this.handleGameUpdates}>
+                  onUpdate={this.handleUpdates}>
             </Grid>
         </div>;
     };

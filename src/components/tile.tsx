@@ -2,16 +2,15 @@ import * as React from 'react';
 import '../styles/tile.scss';
 import { Utilities } from '../utilities/utilities';
 
-export class TileProps {
-    id: string;
+interface Props {
     colors: Utilities.Grid.Color[];
     row: number;
     column: number;
-    onUpdate?: (row: number, column: number) => void;
+    onUpdate: (row: number, column: number) => void;
 };
 
-export class Tile extends React.Component<TileProps, object> {
-    constructor(props: TileProps) {
+export class Tile extends React.Component<Props, object> {
+    constructor(props: Props) {
         super(props);
     };
 
@@ -26,8 +25,8 @@ export class Tile extends React.Component<TileProps, object> {
 
     private getStyle() : Utilities.General.CssStyle {
         return {
-            top: (this.props.row + Utilities.Grid.numberOfTilesHigh) +'px',
-            left: (this.props.column + Utilities.Grid.numberOfTilesWide) + 'px'
+            top: (this.props.row * Utilities.Grid.numberOfTilesHigh) +'px',
+            left: (this.props.column * Utilities.Grid.numberOfTilesWide) + 'px'
         };
     };
 
@@ -35,9 +34,8 @@ export class Tile extends React.Component<TileProps, object> {
         this.props.onUpdate(this.props.row, this.props.column);
     };
 
-    shouldComponentUpdate(nextProps: TileProps, nextState: object) : boolean {
-        return this.props.id !== nextProps.id
-            || this.props.colors !== nextProps.colors
+    shouldComponentUpdate(nextProps: Props, nextState: object) : boolean {
+        return this.props.colors !== nextProps.colors
             || this.props.row !== nextProps.row
             || this.props.column !== nextProps.column;
     };

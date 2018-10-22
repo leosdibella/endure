@@ -1,6 +1,6 @@
-$menu-bar-side-margin-width: $global-side-bar-width + 10;
+$top-bar-side-margin-width: $global-side-bar-width + 10;
 
-.menu-bar {
+.top-bar {
     @extend %global-flex-row;
     width: 100%;
     top: 0px;
@@ -9,14 +9,14 @@ $menu-bar-side-margin-width: $global-side-bar-width + 10;
     padding: 10px 0px 10px 0px;
     justify-content: space-between;
     flex: 1;
-    margin-left: $menu-bar-side-margin-width;
-    margin-right: $menu-bar-side-margin-width;
+    margin-left: $top-bar-side-margin-width;
+    margin-right: $top-bar-side-margin-width;
     flex-wrap: nowrap;
     max-height: 100px;
 }
 
-.menu-bar.dark {
-    .menu-bar-combo-container {
+.top-bar.dark {
+    .top-bar-combo-container {
         .healthy-combo {
             color: map-get($dark-colors, green);
         }
@@ -30,13 +30,13 @@ $menu-bar-side-margin-width: $global-side-bar-width + 10;
         }
     }
 
-    .menu-bar-score, .menu-bar-combo {
+    .top-bar-score, .top-bar-combo {
         color: map-get($dark-colors, foreground);
     }
 }
 
-.menu-bar.light {
-    .menu-bar-combo-container {
+.top-bar.light {
+    .top-bar-combo-container {
         .healthy-combo {
             color: map-get($light-colors, green);
         }
@@ -50,20 +50,20 @@ $menu-bar-side-margin-width: $global-side-bar-width + 10;
         }
     }
 
-    .menu-bar-score, .menu-bar-combo {
+    .top-bar-score, .top-bar-combo {
         color: map-get($light-colors, foreground);
     }
 }
 
-.menu-bar-combo-container {
+.top-bar-combo-container {
     margin-top: 45px;
 }
 
-.menu-bar-count-down {
+.top-bar-count-down {
     margin-left: 5px;
 }
 
-.menu-bar-count-down {
+.top-bar-count-down {
     span:last-child, span:first-child {
         font-size: 30px;
     }
@@ -77,7 +77,7 @@ $menu-bar-side-margin-width: $global-side-bar-width + 10;
     }
 }
 
-.menu-bar-score {
+.top-bar-score {
     margin-top: 50px;
-    margin-right: $menu-bar-side-margin-width + 90;
+    margin-right: $top-bar-side-margin-width + 90;
 }

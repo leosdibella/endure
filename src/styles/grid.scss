@@ -2,48 +2,12 @@ $spacePixelDimension: 25px;
 $numberOfSpacesWide: 10;
 $numberOfSpacesHigh: 20;
 
-.grid.dark {
-    border: 1px solid #f2f2f2;
-    border-top: none;
-    border-right: none;
-}
-
-.grid.light {
-    border: 1px solid #3d3d3d;
-    border-top: none;
-    border-right: none;
-}
-
 .grid {
     position: relative;
-    display: flex;
     margin: auto;
-    flex-wrap: wrap;
-    flex-direction: row;
-    height: ($spacePixelDimension * $numberOfSpacesHigh) + $numberOfSpacesHigh;
-    width: ($spacePixelDimension * $numberOfSpacesWide) + $numberOfSpacesWide;
 }
 
-.space {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    justify-content: center;
-    font-size: 6px;
-    height: $spacePixelDimension;
-    flex-basis: $spacePixelDimension;
-}
-
-.dark {
-    .space {
-        border-top: 1px solid #f2f2f2;
-        border-right: 1px solid #f2f2f2;
-    }
-}
-
-.light {
-    .space {
-        border-top: 1px solid #3d3d3d;
-        border-right: 1px solid #3d3d3d;
-    }
+.grid-line {
+    border-bottom: 1px solid #000000;
+    margin: 5px 0px;
 }

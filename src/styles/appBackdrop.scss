@@ -1,27 +1,27 @@
-.backdrop.dark {
-    .backdrop-left-margin {
+.app-backdrop.dark {
+    .app-backdrop-left-margin {
         border-right-color: map-get($dark-colors, red);
     }
 
-    .backdrop-right-margin {
+    .app-backdrop-right-margin {
         border-left-color: rgba(255, 120, 117, 0.33);
     }
 
-    .backdrop-lines .backdrop-line {
+    .app-backdrop-lines .app-backdrop-line {
         border-bottom-color: rgb(92, 219, 211);
     }
 }
 
-.backdrop.light {
-    .backdrop-left-margin {
+.app-backdrop.light {
+    .app-backdrop-left-margin {
         border-right-color:  map-get($light-colors, red);
     }
 
-    .backdrop-right-margin {
+    .app-backdrop-right-margin {
         border-left-color: rgba(245, 34, 45, 0.33);
     }
 
-    .backdrop-lines .backdrop-line {
+    .app-backdrop-lines .app-backdrop-line {
         border-bottom-color: rgb(19, 194, 194);
     }
 }
@@ -31,7 +31,7 @@
     background: transparent;
 }
 
-.backdrop {
+.app-backdrop {
     @extend %global-full-view-container;
     @extend %backdrop-position;
 }
@@ -44,13 +44,13 @@
     height: 100%;
 }
 
-.backdrop-left-margin {
+.app-backdrop-left-margin {
     @extend %backdrop-margin;
     border-right: 2px solid;
     left: 0px;
 }
 
-.backdrop-right-margin {
+.app-backdrop-right-margin {
     @extend %backdrop-margin;
     border-left: 2px solid;
     right: 0px;
@@ -62,30 +62,30 @@
     display: flex;
 }
 
-.backdrop-lines {
+.app-backdrop-lines {
     @extend %backdrop-flex;
     left: 0px;
     top: 0px;
     z-index: 0;
 }
 
-.backdrop-line {
+.app-backdrop-line {
     flex-basis: $global-line-height;
     border-bottom: 1px solid;
 }
 
-.backdrop-line:first-child {
+.app-backdrop-line:first-child {
     flex-basis: $global-top-bar-height;
 }
 
-.backdrop-binder-holes {
+.app-backdrop-binder-holes {
     @extend %backdrop-flex;
     justify-content: space-around;
     height: 100%;
     align-items: center;
 }
 
-.backdrop-binder-hole {
+.app-backdrop-binder-hole {
     background-color: #262626;
     border-radius: 50%;
     height: $global-line-height;

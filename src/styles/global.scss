@@ -25,22 +25,8 @@ $light-colors: (
 );
 
 $color-maps: (
-    dark: (
-        0: map-get($dark-colors, red),
-        1: map-get($dark-colors, orange),
-        2: map-get($dark-colors, yellow),
-        3: map-get($dark-colors, green),
-        4: map-get($dark-colors, blue),
-        5: map-get($dark-colors, violet)
-    ),
-    light: (
-        0: map-get($light-colors, red),
-        1: map-get($light-colors, orange),
-        2: map-get($light-colors, yellow),
-        3: map-get($light-colors, green),
-        4: map-get($light-colors, blue),
-        5: map-get($light-colors, violet)
-    )
+    dark: $dark-colors,
+    light: $light-colors
 );
 
 body {
@@ -85,4 +71,11 @@ html, body, #endure {
     padding: 10px;
     border: 10px solid;
     transform: rotate(45deg);
+}
+
+@mixin tileBorder($left-color, $top-color, $right-color, $bottom-color) {
+    border-left-color: $left-color;
+    border-top-color: $top-color;
+    border-right-color: $right-color;
+    border-bottom-color: $bottom-color;
 }

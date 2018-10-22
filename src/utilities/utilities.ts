@@ -1,9 +1,9 @@
 export namespace Utilities {
     export namespace General {
         export interface CssStyle {
-            top?: string;
-            left?: string;
-        };
+            top: string,
+            left: string
+        }
 
         export enum DomEvent {
             resize = 'resize',
@@ -73,6 +73,15 @@ export namespace Utilities {
             date: string
         };
 
+        export interface Updates {
+            points?: number;
+            mode?: Utilities.Game.Mode;
+            difficulty?: Utilities.Game.Difficulty;
+            view?: Utilities.App.View;
+            playerName?: string;
+            dropCombo?: boolean;
+        };
+
         export function isValidPlayerName(playerName: string) : boolean {
             return General.isWellDefinedValue(playerName) && playerName.trim() !== '';
         };
@@ -82,7 +91,7 @@ export namespace Utilities {
         };
     };
 
-    export namespace Overlay {
+    export namespace GameOverlay {
         export interface Menu {
             title: string;
             className: string;
@@ -90,7 +99,7 @@ export namespace Utilities {
             options: string[]
         };
 
-        export const menus: Utilities.Overlay.Menu[] = [{
+        export const menus: Utilities.GameOverlay.Menu[] = [{
             title: 'Endure',
             className: 'new-game',
             defaultOptionsIndex: 0,
@@ -134,7 +143,7 @@ export namespace Utilities {
     };
 
     export namespace Grid {
-        export const numberOfTilesHigh: number = 21;
+        export const numberOfTilesHigh: number = 17;
         export const numberOfTilesWide: number = 11;
         export const tileDimension: number = 60;
 
@@ -146,16 +155,68 @@ export namespace Utilities {
             yellow = 'yellow',
             orange = 'orange'
         };
+
+        const colorValues: Color[] = [
+            Color.red,
+            Color.green,
+            Color.blue,
+            Color.orange,
+            Color.violet,
+            Color.yellow
+        ];
+
+        function getRandomColorIndex(maxIndex: number) : number {
+            return Math.floor(Math.random() * maxIndex);
+        };
+
+        export function getNumberOfSharedColorsInPair(colorPairA: Color[], colorPairB: Color[], skipComparison: boolean = false) : number {
+            if (General.isWellDefinedValue(colorPairA) && General.isWellDefinedValue(colorPairB)) {
+                if (colorPairA[0] === colorPairB[0] && colorPairA[1] === colorPairB[1]) {
+                    return 2;
+                } else if (skipComparison
+                            || (colorPairA[0] === colorPairB[0] || colorPairA[0] === colorPairB[1]
+                            || colorPairA[1] === colorPairB[0] || colorPairA[1] === colorPairB[1])) {
+                    return 1;
+                }
+            }
+    
+            return 0;
+        };
+
+        export function getRandomDistinctColorPair() : Color[] {
+            const colorIndices = colorValues.map((c, i) => i),
+                  colorPair: Color[] = [];
+
+            let randomNumber: number = getRandomColorIndex(colorIndices.length);
+
+            colorPair.push(colorValues[colorIndices[randomNumber]]);
+            colorIndices.splice(randomNumber, 1);
+            randomNumber = getRandomColorIndex(colorIndices.length);
+            colorPair.push(colorValues[colorIndices[randomNumber]]);
+
+            return colorPair;
+        };
+
+        export interface Tile {
+            row: number,
+            column: number,
+            key: string,
+            colors: Color[]
+        };
     };
 
     export namespace App {
+        export interface Updates {
+            view?: Utilities.App.View;
+        };
+        
         export enum View {
             dark = 'dark',
             light = 'light'
         };
     };
 
-    export namespace Backdrop {
+    export namespace AppBackdrop {
         export const topMarginHeight: number = 100;
         export const sideMarginWidth: number = 75;
         export const lineHeight: number = 25;

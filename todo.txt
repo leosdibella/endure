@@ -2,7 +2,7 @@
 TODO:
 =====
 	========
-	MenuBar:
+	TopBar:
 	========
 		- Add player name and period to the layout
 		- Change combo into bonus and make it a new component

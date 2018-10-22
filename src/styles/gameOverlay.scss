@@ -1,4 +1,4 @@
-@each $game-mode in 
+@each $mode in 
     game-over,
     new-game,
     player-name,
@@ -7,7 +7,7 @@
     select-difficulty,
     high-scores,
     view-mode {
-        .overlay-#{$game-mode}-text {
+        .game-overlay-#{$mode}-text {
             @extend %global-flex-row;
             width: 100%;
             text-decoration: underline;
@@ -16,34 +16,34 @@
             margin-bottom: 20px;
         }
 
-        .overlay-container.dark .overlay {
-            .overlay-#{$game-mode}-text {
+        .game-overlay-container.dark .game-overlay {
+            .game-overlay-#{$mode}-text {
                 color: map-get($dark-colors, foreground);
             }
         }
 
-        .overlay-container.light .overlay {
-            .overlay-#{$game-mode}-text {
+        .game-overlay-container.light .game-overlay {
+            .game-overlay-#{$mode}-text {
                 color: map-get($light-colors, foreground);
             }
         }
 }
 
-%overlay-flex {
+%game-overlay-flex {
     @extend %global-flex-column;
     @extend %global-centering;
 }
 
-.overlay-container {
+.game-overlay-container {
     @extend %global-full-view-container;
 }
 
-.overlay-button-panel {
-    @extend %overlay-flex;
+.game-overlay-button-panel {
+    @extend %game-overlay-flex;
     margin-bottom: 10px;
 }
 
-.overlay-button {
+.game-overlay-button {
     font-size: 30px;
     outline: none;
     cursor: pointer;
@@ -54,46 +54,46 @@
     border-width: 1px;
 }
 
-.overlay-button:active,
-.overlay-button:hover,
-.overlay-button:focus {
+.game-overlay-button:active,
+.game-overlay-button:hover,
+.game-overlay-button:focus {
     outline: none;
 }
 
-.dark.overlay-container {
-    .overlay {
+.dark.game-overlay-container {
+    .game-overlay {
         background-color: rgba(0, 0, 0, .5);
     }
 
-    .overlay .overlay-button-panel {
+    .game-overlay .game-overlay-button-panel {
         button {
             color: map-get($dark-colors, foreground);
         }
 
-        .overlay-selected-option {
+        .game-overlay-selected-option {
             border-color: map-get($dark-colors, red);
         }
     }
 }
 
-.light.overlay-container {
-    .overlay {
+.light.game-overlay-container {
+    .game-overlay {
         background-color: rgba(150, 150, 150, .5);
     }
 
-    .overlay .overlay-button-panel {  
+    .game-overlay .game-overlay-button-panel {  
         button {
             color: map-get($light-colors, foreground);
         }
 
-        .overlay-selected-option {
+        .game-overlay-selected-option {
             border-color: map-get($light-colors, red);
         }
     }
 }
 
-.overlay {
-    @extend %overlay-flex;
+.game-overlay {
+    @extend %game-overlay-flex;
     @extend %global-full-view-container;
     font-size: 120px;
     flex: 1;
@@ -101,14 +101,14 @@
     z-index: 3;
 }
 
-.overlay-selected-option {
+.game-overlay-selected-option {
     font-size: 32px;
     border-radius: 50%;
     border: 1px solid;
     padding: 20px 50px;
 }
 
-.overlay-high-score {
+.game-overlay-high-score {
     @extend %global-flex-column;
     font-size: 20px;
     flex: 1;
@@ -116,7 +116,7 @@
     align-items: center;
 }
 
-.overlay-high-scores-listings {
+.game-overlay-high-scores-listings {
     @extend %global-flex-row;
     flex: 1;
     width: 100%;
@@ -124,24 +124,24 @@
     justify-content: space-between;
     align-items: start;
 
-    .overlay-high-scores-listing:first-child {
+    .game-overlay-high-scores-listing:first-child {
         padding: 0px 20px 0px $global-side-bar-width + 5;
     }
 
-    .overlay-high-scores-listing:last-child {
+    .game-overlay-high-scores-listing:last-child {
         padding: 0px $global-side-bar-width + 5 0px 20px;
     }
 
-    .overlay-high-scores-listing {
+    .game-overlay-high-scores-listing {
         flex-basis: 50%;
 
-        .overlay-no-high-scores {
+        .game-overlay-no-high-scores {
             text-align: center;
             font-size: 35px;
             padding: 10px 0px;
         }
 
-        .overlay-high-scores-listing-title {
+        .game-overlay-high-scores-listing-title {
             text-align: center;
             border-bottom: 2px solid;
             margin-bottom: 10px;
@@ -150,13 +150,13 @@
             padding-bottom: 8px;
         }
 
-        .overlay-high-score {
+        .game-overlay-high-score {
             border-bottom: 1px dashed;
             margin-bottom: 5px;
             font-size: 30px;
         }
 
-        .overlay-high-score div {
+        .game-overlay-high-score div {
             @extend %global-flex-row;
             flex: 1;
             width: 100%;
@@ -165,62 +165,74 @@
         }
     }
 
-    .dark.overlay-high-scores-listing {
-        .overlay-high-scores-listing-title, .overlay-high-score, .overlay-no-high-scores {
+    .dark.game-overlay-high-scores-listing {
+        .game-overlay-high-scores-listing-title, .game-overlay-high-score, .game-overlay-no-high-scores {
             color: map-get($dark-colors, foreground);
         }        
     }
 
-    .light.overlay-high-scores-listing {
-        .overlay-high-scores-listing-title, .overlay-high-score, .overlay-no-high-scores {
+    .light.game-overlay-high-scores-listing {
+        .game-overlay-high-scores-listing-title, .game-overlay-high-score, .game-overlay-no-high-scores {
             color: map-get($light-colors, foreground);
         }
     }
 
-    .overlay-high-scores-listing-separator {
+    .game-overlay-high-scores-listing-separator {
         flex-basis: 2px;
         height: 100%;
     }
 
-    .dark.overlay-high-scores-listing-separator {
+    .dark.game-overlay-high-scores-listing-separator {
         background-color: map-get($dark-colors, foreground);
     }
 
-    .light.overlay-high-scores-listing-separator {
+    .light.game-overlay-high-scores-listing-separator {
         background-color: map-get($light-colors, foreground);
     }
 }
 
-@mixin overlayTileBorder($left-color, $top-color, $right-color, $bottom-color) {
-    border-left-color: $left-color;
-    border-top-color: $top-color;
-    border-right-color: $right-color;
-    border-bottom-color: $bottom-color;
-}
+$game-overlay-color-maps: (
+    dark: (
+        0: map-get($dark-colors, red),
+        1: map-get($dark-colors, orange),
+        2: map-get($dark-colors, yellow),
+        3: map-get($dark-colors, green),
+        4: map-get($dark-colors, blue),
+        5: map-get($dark-colors, violet)
+    ),
+    light: (
+        0: map-get($light-colors, red),
+        1: map-get($light-colors, orange),
+        2: map-get($light-colors, yellow),
+        3: map-get($light-colors, green),
+        4: map-get($light-colors, blue),
+        5: map-get($light-colors, violet)
+    )
+);
 
-@each $view-mode-name, $color-map in $color-maps {
-    @keyframes #{$view-mode-name}ModeOverlayTile {
+@each $view, $color-map in $game-overlay-color-maps {
+    @keyframes #{$view}GameOverlayTile {
         @for $i from 0 to 5 {
             #{$i * 16% + 4} {
-                @include overlayTileBorder(map-get($color-map, $i), map-get($color-map, $i + 1), map-get($color-map, $i + 1), map-get($color-map, $i));
+                @include tileBorder(map-get($color-map, $i), map-get($color-map, $i + 1), map-get($color-map, $i + 1), map-get($color-map, $i));
             }
 
             #{$i * 16% + 8} {
-                @include overlayTileBorder(map-get($color-map, $i), map-get($color-map, $i), map-get($color-map, $i + 1), map-get($color-map, $i + 1));
+                @include tileBorder(map-get($color-map, $i), map-get($color-map, $i), map-get($color-map, $i + 1), map-get($color-map, $i + 1));
             }
 
             #{$i * 16% + 12} {
-                @include overlayTileBorder(map-get($color-map, $i + 1), map-get($color-map, $i), map-get($color-map, $i), map-get($color-map, $i + 1));
+                @include tileBorder(map-get($color-map, $i + 1), map-get($color-map, $i), map-get($color-map, $i), map-get($color-map, $i + 1));
             }
             
             #{$i * 16% + 16} {
-                @include overlayTileBorder(map-get($color-map, $i + 1), map-get($color-map, $i + 1), map-get($color-map, $i), map-get($color-map, $i));
+                @include tileBorder(map-get($color-map, $i + 1), map-get($color-map, $i + 1), map-get($color-map, $i), map-get($color-map, $i));
             }
         }
     }   
 }
 
-.overlay-tile {
+.game-overlay-tile {
     @extend %global-tile;
     width: 0px;
     height: 0px;
@@ -228,25 +240,25 @@
     position: relative;
 }
 
-.dark.overlay-tile {
-    @include overlayTileBorder(map-get($dark-colors, foreground), map-get($dark-colors, foreground), map-get($dark-colors, foreground), map-get($dark-colors, foreground));
-    animation: darkModeOverlayTile ease 8s infinite;
+.dark.game-overlay-tile {
+    @include tileBorder(map-get($dark-colors, foreground), map-get($dark-colors, foreground), map-get($dark-colors, foreground), map-get($dark-colors, foreground));
+    animation: darkGameOverlayTile ease 8s infinite;
 }
 
-.light.overlay-tile {
-    @include overlayTileBorder(map-get($light-colors, foreground), map-get($light-colors, foreground), map-get($light-colors, foreground), map-get($light-colors, foreground));
-    animation: lightModeOverlayTile ease 8s infinite;
+.light.game-overlay-tile {
+    @include tileBorder(map-get($light-colors, foreground), map-get($light-colors, foreground), map-get($light-colors, foreground), map-get($light-colors, foreground));
+    animation: lightGameOverlayTile ease 8s infinite;
 }
 
-.overlay-tile:first-child {
+.game-overlay-tile:first-child {
     left: -20px;
 }
 
-.overlay-tile:last-child {
+.game-overlay-tile:last-child {
     left: 15px;
 }
 
-.overlay-player-name-input-container {
+.game-overlay-player-name-input-container {
     font-size: 80px;
     margin-bottom: 50px;
 

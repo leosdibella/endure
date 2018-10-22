@@ -1,14 +1,13 @@
 import * as React from 'react';
 import '../styles/overlay.scss';
 import { Utilities } from '../utilities/utilities';
-import { GameUpdates} from '../components/game';
 
-interface OverlayState {
+interface GameOverlayState {
     playerName: string;
     selectedOptionIndex: number;
 };
 
-export interface OverlayProps {
+export interface GameOverlayProps {
     difficulty: Utilities.Game.Difficulty;
     view: Utilities.App.View;
     mode: Utilities.Game.Mode;
@@ -18,10 +17,10 @@ export interface OverlayProps {
     readonly onQuit: () => void;
     readonly onStartNewGame: () => void;
     readonly onToggleView: () => void;
-    readonly onUpdate: (gameUpdates: GameUpdates) => void;
+    readonly onUpdate: (updates: Utilities.Game.Updates) => void;
 };
 
-export class Overlay extends React.Component<OverlayProps, OverlayState> {
+export class GameOverlay extends React.Component<GameOverlayProps, GameOverlayState> {
     private readonly actions: (() => void)[][] = [];
 
     private readonly keyDownEventActionMap: { [key: string]: () => void } = {
@@ -68,7 +67,7 @@ export class Overlay extends React.Component<OverlayProps, OverlayState> {
     private initializeActions() : void {
         let actions: (() => void)[];
 
-        for (let i = 0; i < Utilities.Overlay.menus.length; ++i) {
+        for (let i = 0; i < Utilities.GameOverlay.menus.length; ++i) {
             this.actions[i] = [];
         }
 
@@ -85,7 +84,7 @@ export class Overlay extends React.Component<OverlayProps, OverlayState> {
 
         actions = this.actions[Utilities.Game.Mode.selectDifficulty];
 
-        for (let i = Utilities.Overlay.menus[Utilities.Game.Mode.selectDifficulty].options.length - 1; i >= 0; --i) {
+        for (let i = Utilities.GameOverlay.menus[Utilities.Game.Mode.selectDifficulty].options.length - 1; i >= 0; --i) {
             actions[i] = this.updateGame(Utilities.Game.Mode.newGame, i);
         }
 
@@ -109,15 +108,15 @@ export class Overlay extends React.Component<OverlayProps, OverlayState> {
         actions[1] = this.updateGame(Utilities.Game.Mode.newGame, undefined, Utilities.App.View.dark);
     };
 
-    private getOverlayTitle() : JSX.Element {
+    private getGameOverlayTitle() : JSX.Element {
         if (this.props.mode !== Utilities.Game.Mode.inGame) {
-            const overlayTile: JSX.Element = <div className={'overlay-tile ' + this.props.view}>
+            const overlayTile: JSX.Element = <div className={'game-overlay-tile ' + this.props.view}>
                                              </div>
 
             return <div key={1}
-                        className={'overlay-' + Utilities.Overlay.menus[this.props.mode].className + '-text'}>
+                        className={'game-overlay-' + Utilities.GameOverlay.menus[this.props.mode].className + '-text'}>
                         {overlayTile}
-                        {Utilities.Overlay.menus[this.props.mode].title}
+                        {Utilities.GameOverlay.menus[this.props.mode].title}
                         {overlayTile}
                    </div>;
         }
@@ -125,10 +124,10 @@ export class Overlay extends React.Component<OverlayProps, OverlayState> {
         return undefined;
     };
 
-    private getOverlayExtras() : JSX.Element {
+    private getGameOverlayExtras() : JSX.Element {
         if (this.props.mode === Utilities.Game.Mode.highScores) {
             const localHighScores: JSX.Element[] = this.props.highScores.map((s, i) => <div key={i}
-                                                                                            className='overlay-high-score'>
+                                                                                            className='game-overlay-high-score'>
                                                                                             <div>
                                                                                                 <span>
                                                                                                     {s.date}
@@ -148,24 +147,24 @@ export class Overlay extends React.Component<OverlayProps, OverlayState> {
                   globalHighScores: JSX.Element[] = [];
 
             return <div key={2}
-                        className='overlay-high-scores-listings'>
-                <div className={'overlay-high-scores-local overlay-high-scores-listing ' + this.props.view}>
-                    <div className='overlay-high-scores-listing-title'>
+                        className='game-overlay-high-scores-listings'>
+                <div className={'game-overlay-high-scores-local game-overlay-high-scores-listing ' + this.props.view}>
+                    <div className='game-overlay-high-scores-listing-title'>
                         You
                     </div>
                     {localHighScores}
-                    <div className={'overlay-no-high-scores' + (localHighScores.length > 0 ? ' hide' : '')}>
+                    <div className={'game-overlay-no-high-scores' + (localHighScores.length > 0 ? ' hide' : '')}>
                         Nothing yet ...
                     </div>
                 </div>
-                <div className={'overlay-high-scores-listing-separator ' + this.props.view}>
+                <div className={'game-overlay-high-scores-listing-separator ' + this.props.view}>
                 </div>
-                <div className={'overlay-high-scores-global overlay-high-scores-listing ' + this.props.view}>
-                    <div className='overlay-high-scores-listing-title'>
+                <div className={'game-overlay-high-scores-global game-overlay-high-scores-listing ' + this.props.view}>
+                    <div className='game-overlay-high-scores-listing-title'>
                         The Entire Class
                     </div>
                     {globalHighScores}
-                    <div className={'overlay-no-high-scores' + (globalHighScores.length > 0 ? ' hide' : '')}>
+                    <div className={'game-overlay-no-high-scores' + (globalHighScores.length > 0 ? ' hide' : '')}>
                         Nothing yet ...
                     </div>
                 </div>
@@ -174,7 +173,7 @@ export class Overlay extends React.Component<OverlayProps, OverlayState> {
 
         if (this.props.mode === Utilities.Game.Mode.specifyName) {
             return <div key={2}
-                        className='overlay-player-name-input-container'>
+                        className='game-overlay-player-name-input-container'>
                         <input value={this.state.playerName}
                                className={this.props.view}
                                onChange={this.handleNameChanges}/>
@@ -184,22 +183,22 @@ export class Overlay extends React.Component<OverlayProps, OverlayState> {
         return undefined;
     };
 
-    private getOverlayButtonPanel() : JSX.Element {
-        const options: string[] = Utilities.Overlay.menus[this.props.mode].options;
+    private getGameOverlayButtonPanel() : JSX.Element {
+        const options: string[] = Utilities.GameOverlay.menus[this.props.mode].options;
 
         if (Utilities.General.isWellDefinedValue(options)) {
             const buttons: JSX.Element[] = [];
 
             for (let i = 0; i < options.length; ++i) {
                 buttons.push(<button key={i}
-                                     className={'overlay-button' + (this.state.selectedOptionIndex === i ? ' overlay-selected-option': '')}
+                                     className={'game-overlay-button' + (this.state.selectedOptionIndex === i ? ' game-overlay-selected-option': '')}
                                      onClick={this.actions[this.props.mode][i]}>
                                  {options[i]}
                              </button>);
             }
 
             return <div key={3}
-                        className='overlay-button-panel'>
+                        className='game-overlay-button-panel'>
                        {buttons}
                    </div>;
         }
@@ -207,11 +206,11 @@ export class Overlay extends React.Component<OverlayProps, OverlayState> {
         return undefined;
     };
 
-    private getOverlayBody() : JSX.Element[] {
+    private getGameOverlayBody() : JSX.Element[] {
         const overleyBody: JSX.Element[] = [
-            this.getOverlayTitle(),
-            this.getOverlayExtras(),
-            this.getOverlayButtonPanel()
+            this.getGameOverlayTitle(),
+            this.getGameOverlayExtras(),
+            this.getGameOverlayButtonPanel()
         ];
 
         return overleyBody.filter(jsx => Utilities.General.isWellDefinedValue(jsx));
@@ -226,27 +225,27 @@ export class Overlay extends React.Component<OverlayProps, OverlayState> {
             return this.props.view === Utilities.App.View.light ? 0 : 1
         }
 
-        return Utilities.Overlay.menus[this.props.mode].defaultOptionsIndex;
+        return Utilities.GameOverlay.menus[this.props.mode].defaultOptionsIndex;
     };
 
-    private updateOverlayState(optionIndex: number) : void {
+    private updateGameOverlayState(optionIndex: number) : void {
         this.setState({
             selectedOptionIndex: optionIndex
         });
     };
 
     private incrementOrDecrementOptionsIndex(direction: number) : void {
-        const options: string[] = Utilities.Overlay.menus[this.props.mode].options;
+        const options: string[] = Utilities.GameOverlay.menus[this.props.mode].options;
 
         if (Utilities.General.isWellDefinedValue(options)) {
             let optionIndex = this.state.selectedOptionIndex + direction;
             optionIndex = optionIndex >= 0 ? (optionIndex % options.length) : (options.length - 1);
 
-            this.updateOverlayState(optionIndex);
+            this.updateGameOverlayState(optionIndex);
         }
     };
 
-    constructor(props: OverlayProps) {
+    constructor(props: GameOverlayProps) {
         super(props);
 
         this.initializeActions();
@@ -257,16 +256,16 @@ export class Overlay extends React.Component<OverlayProps, OverlayState> {
         };
     };
 
-    shouldComponentUpdate(nextProps: OverlayProps, nextState: OverlayState) : boolean {
+    shouldComponentUpdate(nextProps: GameOverlayProps, nextState: GameOverlayState) : boolean {
         return nextProps.mode !== this.props.mode
             || nextProps.view !== this.props.view
             || nextState.selectedOptionIndex !== this.state.selectedOptionIndex
             || nextState.playerName !== this.state.playerName;
     };
     
-    componentDidUpdate(previousProps: OverlayProps, previousState: OverlayState) : void {
+    componentDidUpdate(previousProps: GameOverlayProps, previousState: GameOverlayState) : void {
         if (previousProps.mode !== this.props.mode) {
-            this.updateOverlayState(this.getDefaultOptionIndex());
+            this.updateGameOverlayState(this.getDefaultOptionIndex());
         }
 
         if (this.props.mode !== Utilities.Game.Mode.specifyName) {
@@ -285,9 +284,9 @@ export class Overlay extends React.Component<OverlayProps, OverlayState> {
     };
 
     render() : JSX.Element {
-        return <div className={'overlay-container ' + this.props.view}>
-                   <div className='overlay'>
-                        {this.getOverlayBody()}
+        return <div className={'game-overlay-container ' + this.props.view}>
+                   <div className='game-overlay'>
+                        {this.getGameOverlayBody()}
                    </div>
                </div>;
     };
