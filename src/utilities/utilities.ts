@@ -1,92 +1,164 @@
 export namespace Utilities {
-    export function isWellDefinedValue(value: any) : boolean {
-        return value !== null && value !== undefined;
+    export namespace General {
+        export interface CssStyle {
+            top?: string;
+            left?: string;
+        };
+
+        export enum DomEvent {
+            resize = 'resize',
+            orientationChange = 'orientationchange',
+            keyDown = 'keydown',
+            click = 'click'
+        };
+
+        export enum LocalStorageKey {
+            view = 'ENDURE_VIEW',
+            highScores = 'ENDURE_HIGH_SCORES',
+            difficulty = 'ENDURE_DIFFICULTY',
+            playerName = 'ENDURE_PLAYER_NAME'
+        };
+
+        export function isWellDefinedValue(value: any) : boolean {
+            return value !== null && value !== undefined;
+        };
+
+        export function isLocalStorageSupported() : boolean {
+            return typeof(Storage) !== 'undefined' && isWellDefinedValue(window.localStorage);
+        };
+
+        export function or<T>(first: T, second: T) : T {
+            return isWellDefinedValue(first) ? first : second;
+        };
+
+        function formatDatePart(datePart: number) : string {
+            return (datePart > 10 ? String(datePart) : ('0' + datePart));
+        };
+
+        export function getDateStamp(date: Date) : string {
+            if (isWellDefinedValue(date)) {
+                return formatDatePart(date.getMonth() + 1) + '/' + formatDatePart(date.getDate()) + '/' + formatDatePart(date.getFullYear());
+            }
+
+            return undefined;
+        };
     };
 
-    export function isGameInProgress(gameMode: GameMode): boolean {
-        return gameMode === GameMode.inGame || gameMode === GameMode.paused;
+    export namespace Game {
+        export const defaultPlayerName = 'Anonymous';
+
+        export enum Mode {
+            newGame = 0,
+            specifyName,
+            selectDifficulty,
+            inGame,
+            gameOver,
+            paused,
+            quitConfirmation,
+            highScores,
+            setView
+        };
+    
+        export enum Difficulty {
+            beginnger = 0,
+            low,
+            medium,
+            hard,
+            expert
+        };
+    
+        export interface HighScore {
+            name: string;
+            value: number;
+            date: string
+        };
+
+        export function isValidPlayerName(playerName: string) : boolean {
+            return General.isWellDefinedValue(playerName) && playerName.trim() !== '';
+        };
+
+        export function isInProgress(gameMdode: Mode) : boolean {
+            return gameMdode === Mode.inGame || gameMdode === Mode.paused;
+        };
     };
 
-    export function isLocalStorageSupported() : boolean {
-        return typeof(Storage) !== 'undefined' && Utilities.isWellDefinedValue(window.localStorage);
+    export namespace Overlay {
+        export interface Menu {
+            title: string;
+            className: string;
+            defaultOptionsIndex?: number;
+            options: string[]
+        };
+
+        export const menus: Utilities.Overlay.Menu[] = [{
+            title: 'Endure',
+            className: 'new-game',
+            defaultOptionsIndex: 0,
+            options: ['New Game', 'Set Name', 'Difficulty', 'High Scores', 'Settings']
+        }, {
+            title: 'Name?',
+            className: 'player-name',
+            defaultOptionsIndex: 0,
+            options: ['Remember it!', 'Forget it.']
+        }, {
+            title: 'Grade Level',
+            className: 'select-difficulty',
+            options: ['[ Pre-K ] I made poop.',  '[ K - 5 ] No I don\'t wanna!', '[ 6 - 8 ] Remove the training wheels!', '[ 9 - 12 ] Test me sensei!', '[ 12+ ] I know kung fu.']
+        },
+        undefined,
+        {
+            title: 'Game Over',
+            className: 'game-over',
+            defaultOptionsIndex: 0,
+            options: ['Put me in coach!', 'I Quit.']
+        }, {
+            title: 'Timeout',
+            className: 'paused',
+            defaultOptionsIndex: 0,
+            options: ['Put me in coach!', 'I Quit.']
+        }, {
+            title: 'Quit?',
+            className: 'quit-confirmation',
+            defaultOptionsIndex: 1,
+            options: ['Yep', 'Nope']
+        }, {
+            title: 'Honor Roll',
+            className: 'high-scores',
+            defaultOptionsIndex: 0,
+            options: ['Leave']
+        }, {
+            title: 'Lights On?',
+            className: 'view-mode',
+            options: ['Yep', 'Nope']
+        }];
     };
 
-    export namespace Constants {
-        export const topBarHeight: number = 100;
-        export const lineHeight: number = 25;
-        export const sideBarWidth: number = 75;
+    export namespace Grid {
         export const numberOfTilesHigh: number = 21;
         export const numberOfTilesWide: number = 11;
         export const tileDimension: number = 60;
-        export const totalGridHeight: number =  numberOfTilesHigh * tileDimension;
-        export const totalGridWidth: number = numberOfTilesWide * tileDimension;
+
+        export enum Color {
+            red = 'red',
+            green = 'green',
+            blue = 'blue',
+            violet = 'violet',
+            yellow = 'yellow',
+            orange = 'orange'
+        };
     };
 
-    export function getDateStamp(date: Date) : string {
-        return date.getMonth() + '/' + date.getDate() + '/' + date.getFullYear();
+    export namespace App {
+        export enum View {
+            dark = 'dark',
+            light = 'light'
+        };
     };
 
-    export function or<T>(first: T, second: T) : T {
-        return isWellDefinedValue(first) ? first : second;
-    };
-
-    export function isValidPlayerName(playerName: string) : boolean {
-        return Utilities.isWellDefinedValue(playerName) && playerName.trim() !== '';
-    };
-
-    export const defaultPlayerName = 'Anonymous';
-
-    export enum DomEvent {
-        resize = 'resize',
-        orientationChange = 'orientationchange',
-        keyDown = 'keydown',
-        click = 'click'
-    };
-
-    export enum ViewMode {
-        dark = 'dark-mode',
-        light = 'light-mode'
-    };
-
-    export enum GameMode {
-        newGame = 0,
-        specifyName,
-        selectDifficulty,
-        inGame,
-        gameOver,
-        paused,
-        quitConfirmation,
-        highScores,
-        setViewMode
-    };
-
-    export enum DifficultyMode {
-        beginnger = 0,
-        low,
-        medium,
-        hard,
-        expert
-    };
-
-    export enum LocalStorageKeys {
-        viewMode = 'ENDURE_VIEW_MODE',
-        highScores = 'ENDURE_HIGH_SCORES',
-        difficultyMode = 'ENDURE_DIFFICULTY_MODE',
-        playerName = 'ENDURE_PLAYER_NAME'
-    };
-
-    export interface HighScore {
-        name: string;
-        value: number;
-        date: string
-    };
-
-    export enum Color {
-        red = 'red',
-        green = 'green',
-        blue = 'blue',
-        violet = 'violet',
-        yellow = 'yellow',
-        orange = 'orange'
+    export namespace Backdrop {
+        export const topMarginHeight: number = 100;
+        export const sideMarginWidth: number = 75;
+        export const lineHeight: number = 25;
+        export const numberOfBinderHoles: number = 3;
     };
 };

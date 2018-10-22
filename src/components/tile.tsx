@@ -2,14 +2,9 @@ import * as React from 'react';
 import '../styles/tile.scss';
 import { Utilities } from '../utilities/utilities';
 
-interface TileStyle {
-    top: string;
-    left: string;
-};
-
 export class TileProps {
     id: string;
-    colors: Utilities.Color[];
+    colors: Utilities.Grid.Color[];
     row: number;
     column: number;
     onUpdate?: (row: number, column: number) => void;
@@ -21,7 +16,7 @@ export class Tile extends React.Component<TileProps, object> {
     };
 
     private getClassName() : string {
-        if (Utilities.isWellDefinedValue(this.props.colors)) {
+        if (Utilities.General.isWellDefinedValue(this.props.colors)) {
             return 'tile-' + this.props.colors.map(color => color.toString())
                                               .reduce((previous, next) => previous + '-' + next);
         }
@@ -29,10 +24,10 @@ export class Tile extends React.Component<TileProps, object> {
         return 'tile-annihilated';
     };
 
-    private getStyle() : TileStyle {
+    private getStyle() : Utilities.General.CssStyle {
         return {
-            top: (this.props.row + Utilities.Constants.numberOfTilesHigh) +'px',
-            left: (this.props.column + Utilities.Constants.numberOfTilesWide) + 'px'
+            top: (this.props.row + Utilities.Grid.numberOfTilesHigh) +'px',
+            left: (this.props.column + Utilities.Grid.numberOfTilesWide) + 'px'
         };
     };
 

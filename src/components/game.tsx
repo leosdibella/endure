@@ -7,25 +7,25 @@ import { AppUpdates } from './app';
 import { Overlay } from './overlay';
 
 class GameState {
-    gameMode: Utilities.GameMode = Utilities.GameMode.newGame;
+    mode: Utilities.Game.Mode = Utilities.Game.Mode.newGame;
     combo: number = 0;
     score: number = 0;
     period: number = 0;
-    difficultyMode: Utilities.DifficultyMode = Utilities.DifficultyMode.medium;
-    highScores: Utilities.HighScore[] = [];
-    playerName: string = Utilities.defaultPlayerName;
+    difficulty: Utilities.Game.Difficulty = Utilities.Game.Difficulty.medium;
+    highScores: Utilities.Game.HighScore[] = [];
+    playerName: string = Utilities.Game.defaultPlayerName;
 };
 
 export interface GameProps {
-    viewMode: Utilities.ViewMode;
+    view: Utilities.App.View;
     readonly onUpdate: (appUpdates: AppUpdates) => void;
 };
 
 export interface GameUpdates {
     points?: number;
-    gameMode?: Utilities.GameMode;
-    difficultyMode?: Utilities.DifficultyMode;
-    viewMode?: Utilities.ViewMode;
+    mode?: Utilities.Game.Mode;
+    difficulty?: Utilities.Game.Difficulty;
+    view?: Utilities.App.View;
     playerName?: string;
     dropCombo?: boolean;
 };
@@ -37,20 +37,20 @@ export class Game extends React.Component<GameProps, GameState> {
     private static getPersistedGameState() : GameState {
         const state: GameState = new GameState();
 
-        if (Utilities.isLocalStorageSupported()) {
-            const difficultyMode: string = window.localStorage.getItem(Utilities.LocalStorageKeys.difficultyMode),
-                  highScores: string = window.localStorage.getItem(Utilities.LocalStorageKeys.highScores),
-                  playerName: string = window.localStorage.getItem(Utilities.LocalStorageKeys.playerName);
+        if (Utilities.General.isLocalStorageSupported()) {
+            const difficulty: string = window.localStorage.getItem(Utilities.General.LocalStorageKey.difficulty),
+                  highScores: string = window.localStorage.getItem(Utilities.General.LocalStorageKey.highScores),
+                  playerName: string = window.localStorage.getItem(Utilities.General.LocalStorageKey.playerName);
 
-            if (Utilities.isWellDefinedValue(difficultyMode)) {
-                const parsedFifficultyMode: Utilities.DifficultyMode = parseInt(difficultyMode);
+            if (Utilities.General.isWellDefinedValue(difficulty)) {
+                const parsedFifficultyMode: Utilities.Game.Difficulty = parseInt(difficulty);
 
-                if (parsedFifficultyMode >= Utilities.DifficultyMode.low || parsedFifficultyMode <= Utilities.DifficultyMode.expert) {
-                    state.difficultyMode = parsedFifficultyMode;
+                if (parsedFifficultyMode >= Utilities.Game.Difficulty.low || parsedFifficultyMode <= Utilities.Game.Difficulty.expert) {
+                    state.difficulty = parsedFifficultyMode;
                 }
             };
 
-            if (Utilities.isWellDefinedValue(highScores)) {
+            if (Utilities.General.isWellDefinedValue(highScores)) {
                 const parsedHighScores = JSON.parse(highScores);
 
                 if (Array.isArray(parsedHighScores)) {
@@ -58,7 +58,7 @@ export class Game extends React.Component<GameProps, GameState> {
                 }
             }
 
-            if (Utilities.isValidPlayerName(playerName)) {
+            if (Utilities.Game.isValidPlayerName(playerName)) {
                 state.playerName = playerName;
             }
         }
@@ -67,32 +67,32 @@ export class Game extends React.Component<GameProps, GameState> {
     };
 
     private static persistGameState(state: GameState) : void {
-        if (Utilities.isLocalStorageSupported()) {
-            window.localStorage.setItem(Utilities.LocalStorageKeys.difficultyMode, state.difficultyMode.toString());
-            window.localStorage.setItem(Utilities.LocalStorageKeys.highScores, JSON.stringify(state.highScores));
+        if (Utilities.General.isLocalStorageSupported()) {
+            window.localStorage.setItem(Utilities.General.LocalStorageKey.difficulty, state.difficulty.toString());
+            window.localStorage.setItem(Utilities.General.LocalStorageKey.highScores, JSON.stringify(state.highScores));
 
-            if (Utilities.isValidPlayerName(state.playerName)) {
-                window.localStorage.setItem(Utilities.LocalStorageKeys.playerName, state.playerName);
+            if (Utilities.Game.isValidPlayerName(state.playerName)) {
+                window.localStorage.setItem(Utilities.General.LocalStorageKey.playerName, state.playerName);
             }
         }
     }
 
     private readonly startNewGame = () : void => {
-        if (this.state.gameMode === Utilities.GameMode.newGame) {
+        if (this.state.mode === Utilities.Game.Mode.newGame) {
             this.setState({
-                gameMode: Utilities.GameMode.inGame
+                mode: Utilities.Game.Mode.inGame
             });
         }
     };
 
     private readonly quit = () : void => {
-        if (this.state.gameMode === Utilities.GameMode.inGame) {
+        if (this.state.mode === Utilities.Game.Mode.inGame) {
             this.setState({
-                gameMode: Utilities.GameMode.quitConfirmation
+                mode: Utilities.Game.Mode.quitConfirmation
             });
-        } else if (this.state.gameMode !== Utilities.GameMode.specifyName) {
+        } else if (this.state.mode !== Utilities.Game.Mode.specifyName) {
             this.setState({
-                gameMode: Utilities.GameMode.newGame,
+                mode: Utilities.Game.Mode.newGame,
                 combo: 0,
                 score: 0,
                 period: 0
@@ -101,23 +101,23 @@ export class Game extends React.Component<GameProps, GameState> {
     };
 
     private readonly togglePaused = () : void => {
-        if (Utilities.isGameInProgress(this.state.gameMode)) {
+        if (Utilities.Game.isInProgress(this.state.mode)) {
             this.setState({
-                gameMode: this.state.gameMode === Utilities.GameMode.paused ? Utilities.GameMode.inGame : Utilities.GameMode.paused
+                mode: this.state.mode === Utilities.Game.Mode.paused ? Utilities.Game.Mode.inGame : Utilities.Game.Mode.paused
             });
         }
     };
 
-    private readonly toggleViewMode = () : void => {
-        if (this.state.gameMode !== Utilities.GameMode.specifyName) {
+    private readonly toggleView = () : void => {
+        if (this.state.mode !== Utilities.Game.Mode.specifyName) {
             this.props.onUpdate({
-                viewMode: this.props.viewMode === Utilities.ViewMode.dark ? Utilities.ViewMode.light : Utilities.ViewMode.dark
+                view: this.props.view === Utilities.App.View.dark ? Utilities.App.View.light : Utilities.App.View.dark
             });
         }
     };
     
     private readonly cheat = () : void => {
-        if (Utilities.isGameInProgress(this.state.gameMode)) {
+        if (Utilities.Game.isInProgress(this.state.mode)) {
             this.setState({
                 combo: this.state.combo + 1
             });
@@ -126,7 +126,7 @@ export class Game extends React.Component<GameProps, GameState> {
 
     private readonly keyDownEventActionMap: { [key: string]: () => void } = {
         p: this.togglePaused,
-        v: this.toggleViewMode,
+        v: this.toggleView,
         q: this.quit,
         c: this.cheat
     };
@@ -134,7 +134,7 @@ export class Game extends React.Component<GameProps, GameState> {
     private readonly onKeyDown = (keyboardEvent: KeyboardEvent) : void => {
         const keyDownHandler = this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()];
 
-        if (Utilities.isWellDefinedValue(keyDownHandler)) {
+        if (Utilities.General.isWellDefinedValue(keyDownHandler)) {
             keyDownHandler();
         }
     };
@@ -143,35 +143,35 @@ export class Game extends React.Component<GameProps, GameState> {
         let period: number = this.state.score,
             score: number = this.state.score,
             combo: number = this.state.combo,
-            highScores: Utilities.HighScore[] = this.state.highScores;
+            highScores: Utilities.Game.HighScore[] = this.state.highScores;
 
         if (gameUpdates.dropCombo) {
             combo = 0;
         }
 
-        if (Utilities.isWellDefinedValue(gameUpdates.difficultyMode)) {
-            gameUpdates.gameMode = Utilities.GameMode.newGame;
+        if (Utilities.General.isWellDefinedValue(gameUpdates.difficulty)) {
+            gameUpdates.mode = Utilities.Game.Mode.newGame;
         }
 
-        if (Utilities.isWellDefinedValue(gameUpdates.viewMode)) {
-            gameUpdates.gameMode = Utilities.GameMode.newGame;
+        if (Utilities.General.isWellDefinedValue(gameUpdates.view)) {
+            gameUpdates.mode = Utilities.Game.Mode.newGame;
 
             this.props.onUpdate({
-                viewMode: gameUpdates.viewMode
+                view: gameUpdates.view
             });
         }
 
-        if (Utilities.isWellDefinedValue(gameUpdates.points)) {
+        if (Utilities.General.isWellDefinedValue(gameUpdates.points)) {
             score += (gameUpdates.points * combo);
             ++combo;
             // period = TODO
         }
 
-        if (gameUpdates.gameMode === Utilities.GameMode.gameOver) {
-            const highScore: Utilities.HighScore = {
+        if (gameUpdates.mode === Utilities.Game.Mode.gameOver) {
+            const highScore: Utilities.Game.HighScore = {
                 value: score,
                 name: this.state.playerName,
-                date: Utilities.getDateStamp(new Date())
+                date: Utilities.General.getDateStamp(new Date())
             };
 
             highScores = highScores.concat(highScore)
@@ -186,11 +186,11 @@ export class Game extends React.Component<GameProps, GameState> {
         return {
             period: period,
             highScores: highScores,
-            playerName: Utilities.isValidPlayerName(gameUpdates.playerName) ? gameUpdates.playerName : Utilities.defaultPlayerName,
+            playerName: Utilities.Game.isValidPlayerName(gameUpdates.playerName) ? gameUpdates.playerName : Utilities.Game.defaultPlayerName,
             score: score,
             combo: combo,
-            gameMode: Utilities.or(gameUpdates.gameMode, this.state.gameMode),
-            difficultyMode: Utilities.or(gameUpdates.difficultyMode, this.state.difficultyMode)
+            mode: Utilities.General.or(gameUpdates.mode, this.state.mode),
+            difficulty: Utilities.General.or(gameUpdates.difficulty, this.state.difficulty)
         };
     };
 
@@ -201,15 +201,15 @@ export class Game extends React.Component<GameProps, GameState> {
     };
 
     private getOverlay() : JSX.Element {
-        if (this.state.gameMode !== Utilities.GameMode.inGame) {
-            return <Overlay viewMode={this.props.viewMode}
-                            gameMode={this.state.gameMode}
+        if (this.state.mode !== Utilities.Game.Mode.inGame) {
+            return <Overlay view={this.props.view}
+                            mode={this.state.mode}
                             playerName={this.state.playerName}
-                            difficultyMode={this.state.difficultyMode}
+                            difficulty={this.state.difficulty}
                             highScores={this.state.highScores}
                             onQuit={this.quit}
                             onTogglePaused={this.togglePaused}
-                            onToggleViewMode={this.toggleViewMode}
+                            onToggleView={this.toggleView}
                             onStartNewGame={this.startNewGame}
                             onUpdate={this.handleGameUpdates}>
                    </Overlay>;
@@ -224,34 +224,34 @@ export class Game extends React.Component<GameProps, GameState> {
     };
 
     shouldComponentUpdate(nextProps: GameProps, nextState: GameState) : boolean {
-        return nextProps.viewMode !== this.props.viewMode
-            || nextState.difficultyMode !== this.state.difficultyMode
+        return nextProps.view !== this.props.view
+            || nextState.difficulty !== this.state.difficulty
             || nextState.combo !== this.state.combo
-            || nextState.gameMode !== this.state.gameMode
+            || nextState.mode !== this.state.mode
             || nextState.score !== this.state.score
             || nextState.period !== this.state.period
             || nextState.playerName !== this.state.playerName;
     };
 
     componentDidMount() : void {
-        document.addEventListener(Utilities.DomEvent.keyDown, this.onKeyDown);
+        document.addEventListener(Utilities.General.DomEvent.keyDown, this.onKeyDown);
     };
 
     componentWillUnmount() : void {
-        document.removeEventListener(Utilities.DomEvent.keyDown, this.onKeyDown);
+        document.removeEventListener(Utilities.General.DomEvent.keyDown, this.onKeyDown);
     };
 
     render() : JSX.Element {
-        return <div className={'game ' + this.props.viewMode}>
+        return <div className={'game ' + this.props.view}>
             {this.getOverlay()}
-            <MenuBar viewMode={this.props.viewMode}
-                     gameMode={this.state.gameMode}
+            <MenuBar view={this.props.view}
+                     mode={this.state.mode}
                      combo={this.state.combo}
                      score={this.state.score}
                      onChanges={this.handleGameUpdates}>
             </MenuBar>
-            <Grid viewMode={this.props.viewMode}
-                  gameMode={this.state.gameMode}
+            <Grid view={this.props.view}
+                  mode={this.state.mode}
                   onUpdate={this.handleGameUpdates}>
             </Grid>
         </div>;

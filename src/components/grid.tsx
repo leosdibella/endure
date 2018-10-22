@@ -4,19 +4,15 @@ import { GameUpdates } from './game';
 import { Tile, TileProps } from './tile';
 import { Utilities } from '../utilities/utilities';
 
-class GridState {
-    tiles: TileProps[] = [];
-    column: number = 5;
-    row: number = 11;
-
-    constructor(tiles: TileProps[]) {
-        this.tiles = tiles.map(t => t);
-    }
+interface GridState {
+    tiles: TileProps[];
+    column: number;
+    row: number;
 };
 
 export interface GridProps {
-    viewMode: Utilities.ViewMode;
-    gameMode: Utilities.GameMode;
+    view: Utilities.App.View;
+    mode: Utilities.Game.Mode;
     readonly onUpdate: (gameUpdates: GameUpdates) => void;
 };
 
@@ -24,14 +20,14 @@ export class Grid extends React.Component<GridProps, GridState> {
     readonly state: GridState;
 
     private static getTileIndex(row: number, column: number) : number {
-        return (row * Utilities.Constants.numberOfTilesHigh) + column;
+        return (row * Utilities.Grid.numberOfTilesHigh) + column;
     };
 
     private readonly handleGridUpdates = (row: number, column: number) : void => {
 
     };
 
-    private readonly onKeyPress = (keyboardEvent: KeyboardEvent) : void => {
+    private readonly onKeyDown = (keyboardEvent: KeyboardEvent) : void => {
         switch (keyboardEvent.key.toUpperCase()) {
             case 'A': {
                 if (this.state.column > 0) {
@@ -43,7 +39,7 @@ export class Grid extends React.Component<GridProps, GridState> {
                 break;
             }
             case 'D': {
-                if (this.state.column < Utilities.Constants.numberOfTilesWide - 1) {
+                if (this.state.column < Utilities.Grid.numberOfTilesWide - 1) {
                     this.setState({
                         column: this.state.column + 1
                     });
@@ -55,7 +51,7 @@ export class Grid extends React.Component<GridProps, GridState> {
         }
     };
 
-    private generateTile(row: number, column: number, colors: Utilities.Color[] = undefined) : TileProps {
+    private generateTile(row: number, column: number, colors: Utilities.Grid.Color[] = undefined) : TileProps {
         return {
             id: `${row}_${column}`,
             row: row,
@@ -66,6 +62,12 @@ export class Grid extends React.Component<GridProps, GridState> {
 
     constructor(props: GridProps) {
         super(props);
+
+        this.state = {
+            tiles: [],
+            row: 10,
+            column: 5
+        };
 
         /*this.updateTile(0, 0, [Utilities.Color.blue, Utilities.Color.green]);
         this.updateTile(1, 0, [Utilities.Color.green, Utilities.Color.orange]);
@@ -78,23 +80,23 @@ export class Grid extends React.Component<GridProps, GridState> {
     };
 
     shouldComponentUpdate(nextProps: GridProps, nextState: GridState) : boolean {
-        return nextProps.gameMode !== this.props.gameMode
-            || nextProps.viewMode !== this.props.viewMode
+        return nextProps.mode !== this.props.mode
+            || nextProps.view !== this.props.view
             || nextState.column !== this.state.column
             || nextState.row !== this.state.row
             || nextState.tiles !== this.state.tiles;
     };
 
     componentDidMount() : void {
-        document.addEventListener('keypress', this.onKeyPress);
+        document.addEventListener(Utilities.General.DomEvent.keyDown, this.onKeyDown);
     };
 
     componentWillUnmount() : void {
-        document.removeEventListener('keypress', this.onKeyPress);
+        document.removeEventListener(Utilities.General.DomEvent.keyDown, this.onKeyDown);
     };
 
     render() : JSX.Element {
-        const tiles: JSX.Element[] = this.state.tiles.filter(tile => Utilities.isWellDefinedValue(tile))
+        const tiles: JSX.Element[] = this.state.tiles.filter(tile => Utilities.General.isWellDefinedValue(tile))
                                                      .map(tile => <Tile key={tile.id}
                                                                         id={tile.id}
                                                                         colors={tile.colors}
@@ -102,10 +104,10 @@ export class Grid extends React.Component<GridProps, GridState> {
                                                                         column={tile.column}
                                                                         onUpdate={this.handleGridUpdates}/>);
 
-        return <div className={'grid-container ' + this.props.viewMode}>
-            <div className={'grid ' + (Utilities.isGameInProgress(this.props.gameMode) ? '' : ' hide')}>
-                {tiles}
-            </div>
-        </div>;
+        return <div className={'grid-container ' + this.props.view}>
+                   <div className={'grid ' + (Utilities.Game.isInProgress(this.props.mode) ? '' : ' hide')}>
+                       {tiles}
+                   </div>
+               </div>;
     };
 };

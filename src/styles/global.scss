@@ -2,7 +2,7 @@ $global-line-height: 25px;
 $global-top-bar-height: 100px;
 $global-side-bar-width: 75px;
 
-$dark-mode-colors: (
+$dark-colors: (
     background: #595959,
     foreground: #d9d9d9,
     red: #ff4d4f,
@@ -13,7 +13,7 @@ $dark-mode-colors: (
     violet: #9254de
 );
 
-$light-mode-colors: (
+$light-colors: (
     background: #f5f5f5,
     foreground: #595959,
     red: #cf1322,
@@ -26,20 +26,20 @@ $light-mode-colors: (
 
 $color-maps: (
     dark: (
-        0: map-get($dark-mode-colors, red),
-        1: map-get($dark-mode-colors, orange),
-        2: map-get($dark-mode-colors, yellow),
-        3: map-get($dark-mode-colors, green),
-        4: map-get($dark-mode-colors, blue),
-        5: map-get($dark-mode-colors, violet)
+        0: map-get($dark-colors, red),
+        1: map-get($dark-colors, orange),
+        2: map-get($dark-colors, yellow),
+        3: map-get($dark-colors, green),
+        4: map-get($dark-colors, blue),
+        5: map-get($dark-colors, violet)
     ),
     light: (
-        0: map-get($light-mode-colors, red),
-        1: map-get($light-mode-colors, orange),
-        2: map-get($light-mode-colors, yellow),
-        3: map-get($light-mode-colors, green),
-        4: map-get($light-mode-colors, blue),
-        5: map-get($light-mode-colors, violet)
+        0: map-get($light-colors, red),
+        1: map-get($light-colors, orange),
+        2: map-get($light-colors, yellow),
+        3: map-get($light-colors, green),
+        4: map-get($light-colors, blue),
+        5: map-get($light-colors, violet)
     )
 );
 

@@ -3,22 +3,20 @@ import '../styles/backdrop.scss';
 import { Utilities } from '../utilities/utilities';
 
 export interface BackdropProps {
-    viewMode: Utilities.ViewMode;
+    view: Utilities.App.View;
     numberOfLines: number;
 };
 
 export class Backdrop extends React.Component<BackdropProps, object> {
-    private static readonly numberOfBinderHoles: number = 3;
-
     constructor(props: BackdropProps) {
         super(props);
     };
 
     shouldComponentUpdate(nextProps: BackdropProps, nextState: object) : boolean {
-        return nextProps.numberOfLines !== this.props.numberOfLines || nextProps.viewMode !== this.props.viewMode;
+        return nextProps.numberOfLines !== this.props.numberOfLines || nextProps.view !== this.props.view;
     };
 
-    render() {
+    render() : JSX.Element {
         const backdropLines: JSX.Element[] = [],
               binderHoldes: JSX.Element[] = [];
 
@@ -28,13 +26,13 @@ export class Backdrop extends React.Component<BackdropProps, object> {
                                 </div>);
         }
 
-        for (let i = 0; i < Backdrop.numberOfBinderHoles; ++i) {
+        for (let i = 0; i < Utilities.Backdrop.numberOfBinderHoles; ++i) {
             binderHoldes.push(<div key={i}
                                    className='backdrop-binder-hole'>
                               </div>);
         }
 
-        return <div className={'backdrop ' + this.props.viewMode}>
+        return <div className={'backdrop ' + this.props.view}>
             <div className='backdrop-left-margin'>
                 <div className='backdrop-binder-holes'>
                     {binderHoldes}

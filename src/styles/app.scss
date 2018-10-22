@@ -2,10 +2,10 @@
     @extend %global-full-view-container;
 }
 
-.app.dark-mode {
-        background-color: map-get($dark-mode-colors, background);
+.app.dark {
+        background-color: map-get($dark-colors, background);
 }
 
-.app.light-mode {
-        background-color: map-get($light-mode-colors, background);
+.app.light {
+        background-color: map-get($light-colors, background);
 }

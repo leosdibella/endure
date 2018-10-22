@@ -6,11 +6,11 @@ import { Game } from './game';
 
 interface AppState {
     numberOfLines: number;
-    viewMode: Utilities.ViewMode;
+    view: Utilities.App.View;
 };
 
 export interface AppUpdates {
-    viewMode?: Utilities.ViewMode;
+    view?: Utilities.App.View;
 };
 
 export class App extends React.Component<object, AppState> {
@@ -19,14 +19,14 @@ export class App extends React.Component<object, AppState> {
     private static getPersistedAppState() : AppState {
         const state: AppState = {
             numberOfLines: 0,
-            viewMode: Utilities.ViewMode.light
+            view: Utilities.App.View.light
         };
 
-        if (Utilities.isLocalStorageSupported()) {
-            const viewMode: string = window.localStorage.getItem(Utilities.LocalStorageKeys.viewMode);
+        if (Utilities.General.isLocalStorageSupported()) {
+            const view: string = window.localStorage.getItem(Utilities.General.LocalStorageKey.view);
 
-            if (Utilities.isWellDefinedValue(viewMode) && viewMode === Utilities.ViewMode.dark) {
-                state.viewMode = Utilities.ViewMode.dark;
+            if (Utilities.General.isWellDefinedValue(view) && view === Utilities.App.View.dark) {
+                state.view = Utilities.App.View.dark;
             }
         }
     
@@ -36,7 +36,7 @@ export class App extends React.Component<object, AppState> {
     private static removeElementFocus() : void {
         const focalElement: HTMLElement = document.activeElement as HTMLElement;
 
-        if (Utilities.isWellDefinedValue(focalElement)) {
+        if (Utilities.General.isWellDefinedValue(focalElement)) {
             if (focalElement instanceof HTMLInputElement) {
                 const input: HTMLInputElement = focalElement as HTMLInputElement;
 
@@ -50,15 +50,15 @@ export class App extends React.Component<object, AppState> {
     };
 
     private static persistAppState(state: AppState) : void {
-        if (Utilities.isLocalStorageSupported()) {
-            window.localStorage.setItem(Utilities.LocalStorageKeys.viewMode, state.viewMode);
+        if (Utilities.General.isLocalStorageSupported()) {
+            window.localStorage.setItem(Utilities.General.LocalStorageKey.view, state.view);
         }
     };
 
     private readonly handleAppUpdates = (appUpdates: AppUpdates) : void => {
         const nextState: AppState = {
             numberOfLines: this.state.numberOfLines,
-            viewMode: Utilities.or(appUpdates.viewMode, this.state.viewMode)
+            view: Utilities.General.or(appUpdates.view, this.state.view)
         };
 
         this.setState(nextState);
@@ -76,7 +76,7 @@ export class App extends React.Component<object, AppState> {
     };
 
     private recalculateNumberOfLines() : number {
-        return Math.floor((window.innerHeight - Utilities.Constants.topBarHeight) / Utilities.Constants.lineHeight);
+        return Math.floor((window.innerHeight - Utilities.Backdrop.topMarginHeight) / Utilities.Backdrop.lineHeight);
     };
 
     constructor(props: object) {
@@ -87,27 +87,27 @@ export class App extends React.Component<object, AppState> {
     };
 
     shouldComponentUpdate(nextProps: object, nextState: AppState) : boolean {
-        return nextState.numberOfLines !== this.state.numberOfLines || nextState.viewMode !== this.state.viewMode;
+        return nextState.numberOfLines !== this.state.numberOfLines || nextState.view !== this.state.view;
     };
 
     componentDidMount() : void {
-        window.addEventListener(Utilities.DomEvent.resize, this.handleActionableDomEvent);
-        window.addEventListener(Utilities.DomEvent.orientationChange, this.handleActionableDomEvent);
-        window.addEventListener(Utilities.DomEvent.click, App.removeElementFocus);
+        window.addEventListener(Utilities.General.DomEvent.resize, this.handleActionableDomEvent);
+        window.addEventListener(Utilities.General.DomEvent.orientationChange, this.handleActionableDomEvent);
+        window.addEventListener(Utilities.General.DomEvent.click, App.removeElementFocus);
     };
 
     componentWillUnmount() : void {
-        window.removeEventListener(Utilities.DomEvent.resize, this.handleActionableDomEvent);
-        window.removeEventListener(Utilities.DomEvent.orientationChange, this.handleActionableDomEvent);
-        window.removeEventListener(Utilities.DomEvent.click, App.removeElementFocus);
+        window.removeEventListener(Utilities.General.DomEvent.resize, this.handleActionableDomEvent);
+        window.removeEventListener(Utilities.General.DomEvent.orientationChange, this.handleActionableDomEvent);
+        window.removeEventListener(Utilities.General.DomEvent.click, App.removeElementFocus);
     };
 
     render() : JSX.Element {
-        return <div className={'app ' + this.state.viewMode}>
-            <Backdrop viewMode={this.state.viewMode}
+        return <div className={'app ' + this.state.view}>
+            <Backdrop view={this.state.view}
                       numberOfLines={this.state.numberOfLines}>
             </Backdrop>
-            <Game viewMode={this.state.viewMode}
+            <Game view={this.state.view}
                   onUpdate={this.handleAppUpdates}>
             </Game>
         </div>;

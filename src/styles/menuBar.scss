@@ -15,43 +15,43 @@ $menu-bar-side-margin-width: $global-side-bar-width + 10;
     max-height: 100px;
 }
 
-.menu-bar.dark-mode {
+.menu-bar.dark {
     .menu-bar-combo-container {
         .healthy-combo {
-            color: map-get($dark-mode-colors, green);
+            color: map-get($dark-colors, green);
         }
         
         .warning-combo {
-            color: map-get($dark-mode-colors, orange);
+            color: map-get($dark-colors, orange);
         }
         
         .danger-combo {
-            color: map-get($dark-mode-colors, red);
+            color: map-get($dark-colors, red);
         }
     }
 
     .menu-bar-score, .menu-bar-combo {
-        color: map-get($dark-mode-colors, foreground);
+        color: map-get($dark-colors, foreground);
     }
 }
 
-.menu-bar.light-mode {
+.menu-bar.light {
     .menu-bar-combo-container {
         .healthy-combo {
-            color: map-get($light-mode-colors, green);
+            color: map-get($light-colors, green);
         }
         
         .warning-combo {
-            color: map-get($light-mode-colors, orange);
+            color: map-get($light-colors, orange);
         }
         
         .danger-combo {
-            color: map-get($light-mode-colors, red);
+            color: map-get($light-colors, red);
         }
     }
 
     .menu-bar-score, .menu-bar-combo {
-        color: map-get($light-mode-colors, foreground);
+        color: map-get($light-colors, foreground);
     }
 }
 

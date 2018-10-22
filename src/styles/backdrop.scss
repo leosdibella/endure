@@ -1,6 +1,6 @@
-.backdrop.dark-mode {
+.backdrop.dark {
     .backdrop-left-margin {
-        border-right-color: map-get($dark-mode-colors, red);
+        border-right-color: map-get($dark-colors, red);
     }
 
     .backdrop-right-margin {
@@ -12,9 +12,9 @@
     }
 }
 
-.backdrop.light-mode {
+.backdrop.light {
     .backdrop-left-margin {
-        border-right-color:  map-get($light-mode-colors, red);
+        border-right-color:  map-get($light-colors, red);
     }
 
     .backdrop-right-margin {
