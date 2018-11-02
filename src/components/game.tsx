@@ -2,14 +2,15 @@ import * as React from 'react';
 import '../styles/game.scss';
 import { Grid } from './grid';
 import { TopBar } from './topBar';
-import { Utilities } from '../utilities/utilities';
 import { GameOverlay } from './gameOverlay';
+import { BottomBar } from './bottomBar';
 
 class State {
     mode: Utilities.Game.Mode = Utilities.Game.Mode.newGame;
     combo: number = 0;
     score: number = 0;
-    period: number = 0;
+    stage: number = 0;
+    gradeIndex: Utilities.Game.GradeIndex = 0;
     difficulty: Utilities.Game.Difficulty = Utilities.Game.Difficulty.medium;
     highScores: Utilities.Game.HighScore[] = [];
     playerName: string = Utilities.Game.defaultPlayerName;
@@ -85,7 +86,8 @@ export class Game extends React.Component<Props, State> {
                 mode: Utilities.Game.Mode.newGame,
                 combo: 0,
                 score: 0,
-                period: 0
+                stage: 0,
+                gradeIndex: 0
             });
         }
     };
@@ -130,13 +132,22 @@ export class Game extends React.Component<Props, State> {
     };
     
     private transformState(updates: Utilities.Game.Updates) : State {
-        let period: number = this.state.score,
+        let stage: number = this.state.score,
             score: number = this.state.score,
             combo: number = this.state.combo,
+            gradeIndex: number = this.state.gradeIndex,
             highScores: Utilities.Game.HighScore[] = this.state.highScores;
 
         if (updates.dropCombo) {
             combo = 0;
+        }
+
+        if (Utilities.General.isWellDefinedValue(updates.gradeIndex)) {
+            gradeIndex = updates.gradeIndex;
+        }
+
+        if (gradeIndex === Utilities.Game.GradeIndex.f) {
+            return undefined;
         }
 
         if (Utilities.General.isWellDefinedValue(updates.difficulty)) {
@@ -154,7 +165,7 @@ export class Game extends React.Component<Props, State> {
         if (Utilities.General.isWellDefinedValue(updates.points)) {
             score += (updates.points * combo);
             ++combo;
-            // period = TODO
+            // stage = TODO
         }
 
         if (updates.mode === Utilities.Game.Mode.gameOver) {
@@ -170,15 +181,16 @@ export class Game extends React.Component<Props, State> {
 
             score = 0;
             combo = 0;
-            period = 0;
+            stage = 0;
         }
 
         return {
-            period: period,
+            stage: stage,
             highScores: highScores,
             playerName: Utilities.Game.isValidPlayerName(updates.playerName) ? updates.playerName : Utilities.Game.defaultPlayerName,
             score: score,
             combo: combo,
+            gradeIndex: gradeIndex,
             mode: Utilities.General.or(updates.mode, this.state.mode),
             difficulty: Utilities.General.or(updates.difficulty, this.state.difficulty)
         };
@@ -186,22 +198,29 @@ export class Game extends React.Component<Props, State> {
 
     private readonly handleUpdates = (updates: Utilities.Game.Updates) : void => {
         const nextState: State = this.transformState(updates);
-        this.setState(nextState);
-        Game.persistState(nextState);
+
+        if (!Utilities.General.isWellDefinedValue(nextState)) {
+            this.setState({
+                mode: Utilities.Game.Mode.gameOver //TODO
+            });
+        } else {
+            this.setState(nextState);
+            Game.persistState(nextState);
+        }
     };
 
     private getGameOverlay() : JSX.Element {
         if (this.state.mode !== Utilities.Game.Mode.inGame) {
             return <GameOverlay view={this.props.view}
-                            mode={this.state.mode}
-                            playerName={this.state.playerName}
-                            difficulty={this.state.difficulty}
-                            highScores={this.state.highScores}
-                            onQuit={this.quit}
-                            onTogglePaused={this.togglePaused}
-                            onToggleView={this.toggleView}
-                            onStartNewGame={this.startNewGame}
-                            onUpdate={this.handleUpdates}>
+                                mode={this.state.mode}
+                                playerName={this.state.playerName}
+                                difficulty={this.state.difficulty}
+                                highScores={this.state.highScores}
+                                onQuit={this.quit}
+                                onTogglePaused={this.togglePaused}
+                                onToggleView={this.toggleView}
+                                onStartNewGame={this.startNewGame}
+                                onUpdate={this.handleUpdates}>
                    </GameOverlay>;
         }
 
@@ -219,7 +238,7 @@ export class Game extends React.Component<Props, State> {
             || nextState.combo !== this.state.combo
             || nextState.mode !== this.state.mode
             || nextState.score !== this.state.score
-            || nextState.period !== this.state.period
+            || nextState.stage !== this.state.stage
             || nextState.playerName !== this.state.playerName;
     };
 
@@ -237,13 +256,19 @@ export class Game extends React.Component<Props, State> {
             <TopBar view={this.props.view}
                      mode={this.state.mode}
                      combo={this.state.combo}
+                     difficulty={this.state.difficulty}
+                     gradeIndex={this.state.gradeIndex}
                      score={this.state.score}
-                     onChanges={this.handleUpdates}>
+                     playerName={this.state.playerName}
+                     stage={this.state.stage}
+                     onUpdate={this.handleUpdates}>
             </TopBar>
             <Grid view={this.props.view}
                   mode={this.state.mode}
                   onUpdate={this.handleUpdates}>
             </Grid>
+            <BottomBar>
+            </BottomBar>
         </div>;
     };
 };

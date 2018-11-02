@@ -1,19 +1,14 @@
 import * as React from 'react';
 import '../styles/appBackdrop.scss';
-import { Utilities } from '../utilities/utilities';
 
 interface Props {
     view: Utilities.App.View;
     numberOfLines: number;
 };
 
-export class AppBackdrop extends React.Component<Props, object> {
+export class AppBackdrop extends React.PureComponent<Props, object> {
     constructor(props: Props) {
         super(props);
-    };
-
-    shouldComponentUpdate(nextProps: Props, nextState: object) : boolean {
-        return nextProps.numberOfLines !== this.props.numberOfLines || nextProps.view !== this.props.view;
     };
 
     render() : JSX.Element {

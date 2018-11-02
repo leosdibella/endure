@@ -1,3 +1,8 @@
+@font-face {
+    font-family: 'IBMPlexSansCondensed-Light';
+    src: url('../../fonts/IBMPlexSansCondensed-Light.ttf')  format('truetype')
+}
+
 $global-line-height: 25px;
 $global-top-bar-height: 100px;
 $global-side-bar-width: 75px;
@@ -34,8 +39,8 @@ body {
     font-weight: 200;
 }
 
-body, button {
-    font-family: 'Times New Roman', Times, serif;
+body, button, input {
+    font-family: 'IBMPlexSansCondensed-Light', Fallback, serif;
 }
 
 %global-full-view-container {

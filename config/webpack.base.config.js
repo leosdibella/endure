@@ -27,6 +27,9 @@ module.exports = {
     },
     module: {
         rules: [{
+            test: /\.(png|woff|woff2|eot|ttf|svg)$/,
+            loader: 'file-loader'
+        }, {
             test: /\.tsx?$/,
             loader: 'awesome-typescript-loader',
             exclude: exclusions

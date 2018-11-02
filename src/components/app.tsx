@@ -1,6 +1,5 @@
 import * as React from 'react';
 import '../styles/app.scss';
-import { Utilities } from '../utilities/utilities';
 import { AppBackdrop } from './appBackdrop';
 import { Game } from './game';
 
@@ -101,7 +100,7 @@ export class App extends React.Component<object, State> {
     render() : JSX.Element {
         return <div className={'app ' + this.state.view}>
             <AppBackdrop view={this.state.view}
-                      numberOfLines={this.state.numberOfLines}>
+                         numberOfLines={this.state.numberOfLines}>
             </AppBackdrop>
             <Game view={this.state.view}
                   onUpdate={this.handleUpdates}>

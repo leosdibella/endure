@@ -1,10 +1,10 @@
 import * as React from 'react';
 import '../styles/grid.scss';
 import { Tile } from './tile';
-import { Utilities } from '../utilities/utilities';
+import { GridBackdrop } from './gridBackdrop';
 
 interface State {
-    tiles: Utilities.Grid.Tile[][];
+    tiles: Utilities.Grid.Tile[];
     column: number;
     row: number;
 };
@@ -18,30 +18,28 @@ interface Props {
 export class Grid extends React.Component<Props, State> {
     readonly state: State;
 
-    private static generateTile(row: number, column: number, colors: Utilities.Grid.Color[] = undefined) : Utilities.Grid.Tile {
+    private static generateTile(row: number, column: number, colorIndex: number) : Utilities.Grid.Tile {
         return {
-            key: `${row}_${column}`,
+            index: row * Utilities.Grid.numberOfTilesHigh + column,
             row: row,
             column: column,
-            colors: colors
+            colorIndex: colorIndex
         };
     };
 
-    private static generateInitialTiles() : Utilities.Grid.Tile[][] {
-        const tiles: Utilities.Grid.Tile[][] = [];
+    private static generateInitialTiles() : Utilities.Grid.Tile[] {
+        const tiles: Utilities.Grid.Tile[] = [];
 
         for (let i = 0; i < Utilities.Grid.numberOfTilesHigh; ++i) {
-            tiles.push([]);
-
             for (let j = 0; j < Utilities.Grid.numberOfTilesWide; ++j) {
-                tiles[i].push(this.generateTile(i, j, Utilities.Grid.getRandomDistinctColorPair()));
+                tiles.push(this.generateTile(i, j, Utilities.Grid.getRandomColorIndex()));
             }
         }
 
         return tiles;
     };
 
-    private readonly handleUpdates = (row: number, column: number) : void => {
+    private readonly handleUpdates = (index: number) : void => {
 
     };
 
@@ -96,16 +94,16 @@ export class Grid extends React.Component<Props, State> {
     };
 
     render() : JSX.Element {
-        const tiles: JSX.Element[] = this.state.tiles.map((row, index) => <div key={index}
-                                                                               className='grid-line'>
-                                                                            {row.map(tile => <Tile key={tile.key}
-                                                                                                   colors={tile.colors}
-                                                                                                   row={tile.row}
-                                                                                                   column={tile.column}
-                                                                                                   onUpdate={this.handleUpdates}/>)}
-                                                                          </div>);
+        const tiles: JSX.Element[] = this.state.tiles.map(tile => <Tile key={tile.index}
+                                                                        index={tile.index}
+                                                                        colorIndex={tile.colorIndex}
+                                                                        row={tile.row}
+                                                                        column={tile.column}
+                                                                        onUpdate={this.handleUpdates}/>);
 
         return <div className={'grid' + (Utilities.Game.isInProgress(this.props.mode) ? ' ' : ' hide ') + this.props.view}>
+                    <GridBackdrop>
+                    </GridBackdrop>
                     {tiles}
                </div>;
     };

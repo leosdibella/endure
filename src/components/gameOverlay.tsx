@@ -1,13 +1,12 @@
 import * as React from 'react';
-import '../styles/overlay.scss';
-import { Utilities } from '../utilities/utilities';
+import '../styles/gameOverlay.scss';
 
-interface GameOverlayState {
+interface State {
     playerName: string;
     selectedOptionIndex: number;
 };
 
-export interface GameOverlayProps {
+interface Props {
     difficulty: Utilities.Game.Difficulty;
     view: Utilities.App.View;
     mode: Utilities.Game.Mode;
@@ -20,7 +19,7 @@ export interface GameOverlayProps {
     readonly onUpdate: (updates: Utilities.Game.Updates) => void;
 };
 
-export class GameOverlay extends React.Component<GameOverlayProps, GameOverlayState> {
+export class GameOverlay extends React.Component<Props, State> {
     private readonly actions: (() => void)[][] = [];
 
     private readonly keyDownEventActionMap: { [key: string]: () => void } = {
@@ -228,7 +227,7 @@ export class GameOverlay extends React.Component<GameOverlayProps, GameOverlaySt
         return Utilities.GameOverlay.menus[this.props.mode].defaultOptionsIndex;
     };
 
-    private updateGameOverlayState(optionIndex: number) : void {
+    private updateState(optionIndex: number) : void {
         this.setState({
             selectedOptionIndex: optionIndex
         });
@@ -241,11 +240,11 @@ export class GameOverlay extends React.Component<GameOverlayProps, GameOverlaySt
             let optionIndex = this.state.selectedOptionIndex + direction;
             optionIndex = optionIndex >= 0 ? (optionIndex % options.length) : (options.length - 1);
 
-            this.updateGameOverlayState(optionIndex);
+            this.updateState(optionIndex);
         }
     };
 
-    constructor(props: GameOverlayProps) {
+    constructor(props: Props) {
         super(props);
 
         this.initializeActions();
@@ -256,16 +255,16 @@ export class GameOverlay extends React.Component<GameOverlayProps, GameOverlaySt
         };
     };
 
-    shouldComponentUpdate(nextProps: GameOverlayProps, nextState: GameOverlayState) : boolean {
+    shouldComponentUpdate(nextProps: Props, nextState: State) : boolean {
         return nextProps.mode !== this.props.mode
             || nextProps.view !== this.props.view
             || nextState.selectedOptionIndex !== this.state.selectedOptionIndex
             || nextState.playerName !== this.state.playerName;
     };
     
-    componentDidUpdate(previousProps: GameOverlayProps, previousState: GameOverlayState) : void {
+    componentDidUpdate(previousProps: Props, previousState: State) : void {
         if (previousProps.mode !== this.props.mode) {
-            this.updateGameOverlayState(this.getDefaultOptionIndex());
+            this.updateState(this.getDefaultOptionIndex());
         }
 
         if (this.props.mode !== Utilities.Game.Mode.specifyName) {
