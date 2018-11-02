@@ -1,28 +1,36 @@
 /// <reference path="Utilities.ts" />
 namespace Utilities {
     export namespace Combo {
-        export const millisecondsPerSecond: number = 1000;
+        export const stageDurationModifier: number = 10;
+        export const decrementInterval: number = 17;
         export const minimumViableCombo: number = 2;
 
-        export enum Class {
-            Healthy = 'healthy-combo',
-            Warning = 'warning-combo',
-            Danger = 'danger-combo'
+        export enum CssClass {
+            healthy = 'healthy-combo',
+            warning = 'warning-combo',
+            danger = 'danger-combo'
         };
         
-        export const classMap: { [key: string]: Class; } = {
-            0: Class.Danger,
-            1: Class.Warning,
-            2: Class.Healthy,
-            3: Class.Healthy
+        export function getClassFromMillisecondsRemaining(milliseconds: number, difficulty: Game.Difficulty, stage: number) : CssClass {
+            const totalDuration: number = Utilities.Combo.totalDurationBases[difficulty] + (stage * Utilities.Combo.stageDurationModifier);
+
+            if (milliseconds < totalDuration / 3) {
+                return CssClass.danger;
+            }
+
+            if (milliseconds < 2 * totalDuration / 3) {
+                return CssClass.warning;
+            }
+
+            return CssClass.healthy;
         };
 
-        export const decrementIntervalBases: { [key: string]: number } = {
-            0: 419,
-            1: 379,
-            2: 337,
-            3: 293,
-            4: 257
-        };
+        export const totalDurationBases: number[] = [
+            5000,
+            4500,
+            4000,
+            3500,
+            3000
+        ];
     };
 };

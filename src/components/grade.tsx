@@ -14,19 +14,17 @@ interface Props {
     readonly onUpdate: (updates: Utilities.Game.Updates) => void;
 };
 
-export class Grade extends React.Component<Props, State> {
-    private static readonly timerModifier: number = 12;
+export class Grade extends React.PureComponent<Props, State> {
+    readonly state: State;
 
     private static getTimerDependencies(stage: number, difficulty: Utilities.Game.Difficulty) : Utilities.General.TimerDependencies {
-        let decrementInterval: number = Utilities.Grade.decrementIntervalBases[difficulty] - stage;
+        let decrementInterval: number = Utilities.Grade.decrementIntervalBases[difficulty] + (stage * Utilities.Grade.stageDurationModifier);
 
         return {
             decrementInterval: decrementInterval,
-            totalDuration: decrementInterval * Grade.timerModifier
+            totalDuration: decrementInterval * Utilities.Grade.timerModifier
         };
     };
-
-    readonly state: State;
 
     private readonly handleTimerUpdates = (milliseconds: number) : void => {
         this.setState({
@@ -56,7 +54,7 @@ export class Grade extends React.Component<Props, State> {
 
         this.state = {
             timer: new Utilities.General.Timer(this.handleTimerUpdates),
-            milliseconds: undefined
+            milliseconds: 0
         };
     };
 
@@ -72,14 +70,6 @@ export class Grade extends React.Component<Props, State> {
         } else {
             this.state.timer.disable();
         }
-    };
-
-    shouldComponentUpdate(nextProps: Props, nextState: State) : boolean {
-        return this.state.milliseconds !== nextState.milliseconds
-            || this.props.gradeIndex !== nextProps.gradeIndex
-            || this.props.difficulty !== nextProps.difficulty
-            || this.props.stage !== nextProps.stage
-            || this.props.mode !== nextProps.mode;
     };
 
     render() : JSX.Element {

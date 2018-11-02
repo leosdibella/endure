@@ -4,6 +4,8 @@ namespace Utilities {
             return (datePart > 10 ? String(datePart) : ('0' + datePart));
         };
 
+        export const millisecondsPerSecond: number = 1000;
+
         export interface CssStyle {
             top?: string,
             left?: string,

@@ -13,7 +13,7 @@ export class BottomBar extends React.Component<Props, State> {
     render() : JSX.Element {
         // TODO
         return <div>
-                    
+                    This is the bottom bar
                </div>;
     };
 };

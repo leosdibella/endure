@@ -16,64 +16,64 @@ interface Props {
 };
 
 export class Combo extends React.PureComponent<Props, State> {
-    private decrementInterval: number = 17;
-    private milliseconds: number = 0;
-    private interval: NodeJS.Timeout;
+    readonly state: State;
+
+    private static getTimerDependencies(stage: number, difficulty: Utilities.Game.Difficulty) : Utilities.General.TimerDependencies {
+        return {
+            decrementInterval: Utilities.Combo.decrementInterval,
+            totalDuration: Utilities.Combo.totalDurationBases[difficulty] + (stage * Utilities.Combo.stageDurationModifier)
+        };
+    };
+
+    private readonly handleTimerUpdates = (milliseconds: number) : void => {
+        this.setState({
+            milliseconds: milliseconds
+        });
+
+        if (milliseconds === 0) {
+            const updates: Utilities.Game.Updates = {
+                dropCombo: true
+            };
+
+            this.props.onUpdate(updates);
+        }
+    };
+
+    private initializeTimer() : void {
+        const timerDependencies: Utilities.General.TimerDependencies = Combo.getTimerDependencies(this.props.stage, this.props.difficulty);
+        this.state.timer.initialize(timerDependencies.decrementInterval, timerDependencies.totalDuration);
+    };
 
     constructor(props: Props) {
         super(props);
-    };
 
-    private readonly decrement = () => {
-        if (this.topBar.props.mode === Utilities.Game.Mode.inGame) {
-            this.milliseconds -= Utilities.Combo.decrementInterval;
-
-            if (this.milliseconds <= 0) {
-                this.milliseconds = 0;
-
-                this.topBar.props.onChanges({
-                    dropCombo: true
-                });
-
-                this.disable();
-            } else {
-                this.topBar.setState({
-                    countDown: this
-                });
-            }
-        }
-
-        if (this.topBar.props.combo < CountDown.minimumViableCombo) {
-            this.disable();
-        }
-    };
-
-    reinitialize() {
-        if (this.topBar.props.combo >= CountDown.minimumViableCombo) {
-            this.milliseconds = 3000;
-
-            if (!Utilities.General.isWellDefinedValue(this.interval)) {
-                this.interval = setInterval(this.decrement, CountDown.decrementInterval);
-            }
-        }
-    };
-
-    disable() : void {
-        this.milliseconds = 0;
-
-        if (Utilities.General.isWellDefinedValue(this.interval)) {
-            clearInterval(this.interval);
-            this.interval = undefined;
-        }
+        this.state = {
+            timer: new Utilities.General.Timer(this.handleTimerUpdates),
+            milliseconds: 0
+        };
     };
 
     componentDidUpdate(previousProps: Props, previousState: State) : void {
-
+        if (this.props.mode === Utilities.Game.Mode.paused) {
+            this.state.timer.togglePaused(true);
+        } else if (this.props.mode === Utilities.Game.Mode.inGame) {
+            if (this.props.combo < Utilities.Combo.minimumViableCombo) {
+                this.state.timer.disable();
+            } else {
+                if (this.state.milliseconds === 0) {
+                    this.initializeTimer();
+                } else {
+                    this.state.timer.togglePaused(false);
+                }
+            }
+        } else {
+            this.state.timer.disable();
+        }
     };
-
+    
     render() : JSX.Element {
-        const seconds: number = Math.floor(this.milliseconds / Utilities.Combo.millisecondsPerSecond),
-              milliseconds = this.milliseconds - (seconds * Utilities.Combo.millisecondsPerSecond);
+        const seconds: number = Math.floor(this.state.milliseconds / Utilities.General.millisecondsPerSecond),
+              milliseconds = this.state.milliseconds - (seconds * Utilities.General.millisecondsPerSecond);
 
         return <span className={'top-bar-combo-container'}>
                     <span className='top-bar-combo'>
@@ -82,7 +82,7 @@ export class Combo extends React.PureComponent<Props, State> {
                     <span className='top-bar-combo'>
                         {this.props.combo}
                     </span>
-                    <span className={'top-bar-count-down ' + Utilities.Combo.classMap[seconds]}>
+                    <span className={'top-bar-count-down ' + Utilities.Combo.getClassFromMillisecondsRemaining(seconds, this.props.difficulty, this.props.stage)}>
                         <span>
                             [
                         </span>
