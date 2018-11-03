@@ -1,13 +1,10 @@
-/// <reference path="Utilities.ts" />
-namespace Utilities {
-    export namespace App {
-        export interface Updates {
-            view?: Utilities.App.View;
-        };
-        
-        export enum View {
-            dark = 'dark',
-            light = 'light'
-        };
+export namespace App {
+    export enum View {
+        dark = 'dark',
+        light = 'light'
+    };
+
+    export interface Updates {
+        view?: View;
     };
 };

@@ -1,5 +1,8 @@
 import * as React from 'react';
+import * as Utilities from '../utilities/utilities';
+
 import '../styles/game.scss';
+
 import { Grid } from './grid';
 import { TopBar } from './topBar';
 import { GameOverlay } from './gameOverlay';
@@ -69,7 +72,7 @@ export class Game extends React.PureComponent<Props, State> {
     }
 
     private readonly startNewGame = () : void => {
-        if (this.state.mode === Utilities.Game.Mode.newGame) {
+        if (this.state.mode === Utilities.Game.Mode.newGame || this.state.mode === Utilities.Game.Mode.gameOver) {
             this.setState({
                 mode: Utilities.Game.Mode.inGame
             });

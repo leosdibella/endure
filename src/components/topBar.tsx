@@ -1,5 +1,8 @@
 import * as React from 'react';
+import * as Utilities from '../utilities/utilities';
+
 import '../styles/topBar.scss';
+
 import { Combo } from './combo';
 import { Grade } from './grade';
 
@@ -34,14 +37,12 @@ export class TopBar extends React.PureComponent<Props, object> {
                     {this.props.playerName}
                 </div>
             </div>
-            <div className='top-bar-middle-hud'>
-                <Grade gradeIndex={this.props.gradeIndex}
-                       difficulty={this.props.difficulty}
-                       stage={this.props.stage}
-                       mode={this.props.mode}
-                       onUpdate={this.props.onUpdate}>
-                </Grade>
-            </div>
+            <Grade gradeIndex={this.props.gradeIndex}
+                   difficulty={this.props.difficulty}
+                   stage={this.props.stage}
+                   mode={this.props.mode}
+                   onUpdate={this.props.onUpdate}>
+            </Grade>
             <div className='top-bar-right-hud'>
                 <div className='top-bar-score'>
                     Score: {this.props.score}

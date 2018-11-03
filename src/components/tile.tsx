@@ -1,4 +1,6 @@
 import * as React from 'react';
+import * as Utilities from '../utilities/utilities';
+
 import '../styles/tile.scss';
 
 interface Props {
@@ -6,6 +8,7 @@ interface Props {
     index: number;
     row: number;
     column: number;
+    mode: Utilities.Game.Mode;
     onUpdate: (row: number, column: number) => void;
 };
 
@@ -15,11 +18,11 @@ export class Tile extends React.PureComponent<Props, object> {
     };
 
     private getClassName() : string {
-        if (Utilities.General.isWellDefinedValue(this.props.colorIndex)) {
+        if (this.props.mode === Utilities.Game.Mode.inGame && Utilities.General.isWellDefinedValue(this.props.colorIndex)) {
             return 'tile-' + Utilities.Grid.colors[this.props.colorIndex];
         }
 
-        return 'tile-annihilated';
+        return 'tile';
     };
 
     private getStyle() : Utilities.General.CssStyle {

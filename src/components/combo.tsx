@@ -1,4 +1,6 @@
 import * as React from 'react';
+import * as Utilities from '../utilities/utilities';
+
 import '../styles/combo.scss';
 
 interface State {
@@ -60,7 +62,7 @@ export class Combo extends React.PureComponent<Props, State> {
             if (this.props.combo < Utilities.Combo.minimumViableCombo) {
                 this.state.timer.disable();
             } else {
-                if (this.state.milliseconds === 0) {
+                if (this.state.milliseconds === 0 || this.props.combo > previousProps.combo) {
                     this.initializeTimer();
                 } else {
                     this.state.timer.togglePaused(false);
@@ -75,7 +77,7 @@ export class Combo extends React.PureComponent<Props, State> {
         const seconds: number = Math.floor(this.state.milliseconds / Utilities.General.millisecondsPerSecond),
               milliseconds = this.state.milliseconds - (seconds * Utilities.General.millisecondsPerSecond);
 
-        return <span className={'top-bar-combo-container'}>
+        return <span className={'top-bar-combo-container' + (this.state.milliseconds === 0 ? ' hide': '')}>
                     <span className='top-bar-combo'>
                         Combo: x
                     </span>

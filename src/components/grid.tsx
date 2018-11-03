@@ -1,7 +1,9 @@
 import * as React from 'react';
+import * as Utilities from '../utilities/utilities';
+
 import '../styles/grid.scss';
+
 import { Tile } from './tile';
-import { GridBackdrop } from './gridBackdrop';
 
 interface State {
     tiles: Utilities.Grid.Tile[];
@@ -110,7 +112,7 @@ export class Grid extends React.PureComponent<Props, State> {
         super(props);
 
         this.state = {
-            tiles: Grid.generateInitialTiles(),
+            tiles: [],
             row: 10,
             column: 5,
             processingInput: true
@@ -129,8 +131,17 @@ export class Grid extends React.PureComponent<Props, State> {
         document.removeEventListener(Utilities.General.DomEvent.keyDown, this.onKeyDown);
     };
 
+    componentDidUpdate(previousProps: Props, previousState: State) : void {
+        if (!Utilities.Game.isInProgress(previousProps.mode) && Utilities.Game.isInProgress(this.props.mode)) {
+            this.setState({
+                tiles: Grid.generateInitialTiles()
+            });
+        }
+    };
+
     render() : JSX.Element {
         const tiles: JSX.Element[] = this.state.tiles.map(tile => <Tile key={tile.index}
+                                                                        mode={this.props.mode}
                                                                         index={tile.index}
                                                                         colorIndex={tile.colorIndex}
                                                                         row={tile.row}
@@ -138,8 +149,6 @@ export class Grid extends React.PureComponent<Props, State> {
                                                                         onUpdate={this.handleUpdates}/>);
 
         return <div className={'grid' + (Utilities.Game.isInProgress(this.props.mode) ? ' ' : ' hide ') + this.props.view}>
-                    <GridBackdrop>
-                    </GridBackdrop>
                     {tiles}
                </div>;
     };

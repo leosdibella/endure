@@ -1,4 +1,6 @@
 import * as React from 'react';
+import * as Utilities from '../utilities/utilities';
+
 import '../styles/gameOverlay.scss';
 
 interface State {

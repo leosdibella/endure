@@ -1,0 +1,24 @@
+%grade-container {
+    font-size: 60px;
+    border: 2px solid;
+    border-radius: 100%;
+    padding: 5px 0px;
+    height: 85px;
+    width: 90px;
+}
+
+.light .grade-container { 
+    @extend %grade-container;
+    border-color: map-get($light-colors, red);
+    color: map-get($light-colors, red);
+}
+
+.dark .grade-container {
+    @extend %grade-container;
+    border-color: map-get($dark-colors, red);
+    color: map-get($dark-colors, red);
+}
+
+.grade-container {
+    text-align: center;
+}

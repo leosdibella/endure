@@ -1,26 +1,25 @@
 %tile {
-    @extend %global-tile;
     position: absolute;
-    height: 10px;
-    width: 10px;
-    transform: none;
-    padding: 0px;
-    border: 24px solid;
+    height: 50px;
+    width: 50px;
 }
 
 @each $view, $color-map in $color-maps {
-    @each $key1, $color1 in $color-map {
-        @each $key2, $color2 in $color-map {
-            @if $key1 != $key2 {
-                .#{$view} .tile-#{$key1}-#{$key2} {
-                    @extend %tile;
-                    background-color: map-get($color-map, foreground);
-                    @include tileBorder($color1, $color2, $color1, $color2);
-                    -webkit-animation:#{$view}-#{$key1}-#{key2}-animatedTile 4s ease infinite;
-                    -moz-animation: #{$view}-#{$key1}-#{key2}-animatedTile 4s ease infinite;
-                    animation: #{$view}-#{$key1}-#{key2}-animatedTile 4s ease infinite;
-                }
-            }
+    @each $key, $color in $color-map {
+        .#{$view} .tile-#{$key} {
+            @extend %tile;
+            background-color: $color;
         }
     }
+}
+
+.light .tile {
+    @extend %tile;
+    background-color: map-get($light-colors, midground);
+}
+
+
+.dark .tile {
+    @extend %tile;
+    background-color: map-get($dark-colors, midground);
 }

@@ -1,5 +1,8 @@
 import * as React from 'react';
+import * as Utilities from '../utilities/utilities';
+
 import '../styles/app.scss';
+
 import { AppBackdrop } from './appBackdrop';
 import { Game } from './game';
 
