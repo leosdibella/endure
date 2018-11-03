@@ -19,7 +19,7 @@ interface Props {
     readonly onUpdate: (updates: Utilities.Game.Updates) => void;
 };
 
-export class GameOverlay extends React.Component<Props, State> {
+export class GameOverlay extends React.PureComponent<Props, State> {
     private readonly actions: (() => void)[][] = [];
 
     private readonly keyDownEventActionMap: { [key: string]: () => void } = {
@@ -253,13 +253,6 @@ export class GameOverlay extends React.Component<Props, State> {
             playerName: this.props.playerName,
             selectedOptionIndex: this.getDefaultOptionIndex()
         };
-    };
-
-    shouldComponentUpdate(nextProps: Props, nextState: State) : boolean {
-        return nextProps.mode !== this.props.mode
-            || nextProps.view !== this.props.view
-            || nextState.selectedOptionIndex !== this.state.selectedOptionIndex
-            || nextState.playerName !== this.state.playerName;
     };
     
     componentDidUpdate(previousProps: Props, previousState: State) : void {

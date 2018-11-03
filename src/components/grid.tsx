@@ -7,6 +7,7 @@ interface State {
     tiles: Utilities.Grid.Tile[];
     column: number;
     row: number;
+    processingInput: boolean;
 };
 
 interface Props {
@@ -15,12 +16,12 @@ interface Props {
     readonly onUpdate: (updates: Utilities.Game.Updates) => void;
 };
 
-export class Grid extends React.Component<Props, State> {
+export class Grid extends React.PureComponent<Props, State> {
     readonly state: State;
 
     private static generateTile(row: number, column: number, colorIndex: number) : Utilities.Grid.Tile {
         return {
-            index: row * Utilities.Grid.numberOfTilesHigh + column,
+            index: Utilities.Grid.getTileIndexFromCoordinates(row, column),
             row: row,
             column: column,
             colorIndex: colorIndex
@@ -39,8 +40,25 @@ export class Grid extends React.Component<Props, State> {
         return tiles;
     };
 
-    private readonly handleUpdates = (index: number) : void => {
+    private readonly rotateTiles = (row: number, column: number) : void => {
+        const index: number = Utilities.Grid.getTileIndexFromCoordinates(row, column),
+              transformedTiles: Utilities.Grid.Tile[] = Utilities.Grid.rotateTiles(this.state.tiles, this.state.tiles[index]);
+        
+        // TODO, add animations via GridOverlay, reduce tiles etc
+        this.setState({
+            tiles: transformedTiles,
+            processingInput: false
+        });
+    };
 
+    private readonly handleUpdates = (row: number, column: number) : void => {
+        if (!this.state.processingInput) {
+            this.setState({
+                processingInput: true,
+                column: column,
+                row: row,
+            }, () => this.rotateTiles(row, column));
+        }
     };
 
     private readonly onKeyDown = (keyboardEvent: KeyboardEvent) : void => {
@@ -63,6 +81,27 @@ export class Grid extends React.Component<Props, State> {
 
                 break;
             }
+            case 'W': {
+                if (this.state.row > 0) {
+                    this.setState({
+                        row: this.state.row - 1
+                    });
+                }
+
+                break;
+            }
+            case 'S': {
+                if (this.state.row < Utilities.Grid.numberOfTilesHigh - 1) {
+                    this.setState({
+                        row: this.state.row + 1
+                    });
+                }
+
+                break;
+            }
+            case 'SPACE': {
+                this.handleUpdates(this.state.row, this.state.column);
+            }
             default: break;
         }
     };
@@ -73,20 +112,17 @@ export class Grid extends React.Component<Props, State> {
         this.state = {
             tiles: Grid.generateInitialTiles(),
             row: 10,
-            column: 5
+            column: 5,
+            processingInput: true
         };
-    };
-
-    shouldComponentUpdate(nextProps: Props, nextState: State) : boolean {
-        return nextProps.mode !== this.props.mode
-            || nextProps.view !== this.props.view
-            || nextState.column !== this.state.column
-            || nextState.row !== this.state.row
-            || nextState.tiles !== this.state.tiles;
     };
 
     componentDidMount() : void {
         document.addEventListener(Utilities.General.DomEvent.keyDown, this.onKeyDown);
+
+        this.setState({
+            processingInput: false
+        });
     };
 
     componentWillUnmount() : void {

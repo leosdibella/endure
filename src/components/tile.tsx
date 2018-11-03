@@ -6,10 +6,10 @@ interface Props {
     index: number;
     row: number;
     column: number;
-    onUpdate: (index: number) => void;
+    onUpdate: (row: number, column: number) => void;
 };
 
-export class Tile extends React.Component<Props, object> {
+export class Tile extends React.PureComponent<Props, object> {
     constructor(props: Props) {
         super(props);
     };
@@ -30,14 +30,7 @@ export class Tile extends React.Component<Props, object> {
     };
 
     private readonly onClick = (event: React.MouseEvent<HTMLDivElement>) : void => {
-        this.props.onUpdate(this.props.index);
-    };
-
-    shouldComponentUpdate(nextProps: Props, nextState: object) : boolean {
-        return this.props.colorIndex !== nextProps.colorIndex
-            || this.props.index !== nextProps.index
-            || this.props.row !== nextProps.row
-            || this.props.column !== nextProps.column;
+        this.props.onUpdate(this.props.row, this.props.column);
     };
 
     render() : JSX.Element {

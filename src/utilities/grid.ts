@@ -70,13 +70,29 @@ namespace Utilities {
             
             return wasReduced ? tileGroup : undefined;
         };
+
+        export function getTileCoordinatesFromIndex(index: number) : number[] {
+            const column: number = index % numberOfTilesHigh;
+
+            return [
+                (index - column) / numberOfTilesHigh,
+                column
+            ];
+        };
+
+        export function getTileIndexFromCoordinates(row: number, column: number) : number {
+            return row * Utilities.Grid.numberOfTilesHigh + column;
+        };
     
         function rotateTilesFromRotationMap(tiles: Grid.Tile[], centerTile: Grid.Tile, rotationMap: number[][]) : Grid.Tile[] {
             const rotatedTiles: Grid.Tile[] = [];
             
             let i,
                 to: number[],
-                from: number[];
+                from: number[],
+                toIndex: number,
+                fromIndex: number,
+                coordinates: number[];
     
             for (i = 0; i < tiles.length; ++i) {
                 rotatedTiles.push(tiles[i]);
@@ -85,9 +101,17 @@ namespace Utilities {
             for (i = 0; i < rotationMap.length; ++i) {
                 from = rotationMap[i];
                 to = i > 0 ? rotationMap[i - 1] : rotationMap[rotationMap.length - 1];
+
+                toIndex = ((centerTile.row * Grid.numberOfTilesHigh) + to[0]) + (centerTile.column + to[1]);
+                fromIndex = ((centerTile.row * Grid.numberOfTilesHigh) + from[0]) + (centerTile.column + from[1]);
     
-                rotatedTiles[((centerTile.row * Grid.numberOfTilesHigh) + to[0]) + (centerTile.column + to[1])] = 
-                tiles[((centerTile.row * Grid.numberOfTilesHigh) + from[0]) + (centerTile.column + from[1])];
+                rotatedTiles[toIndex] = tiles[fromIndex];
+                rotatedTiles[toIndex].index = toIndex;
+                
+                coordinates = getTileCoordinatesFromIndex(toIndex);
+
+                rotatedTiles[toIndex].row = coordinates[0];
+                rotatedTiles[toIndex].column = coordinates[1];
             }
     
             return rotatedTiles;

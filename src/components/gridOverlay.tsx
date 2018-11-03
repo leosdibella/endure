@@ -9,11 +9,11 @@ interface Props {
 
 };
 
-export class GridOverlay extends React.Component<Props, State> {
+export class GridOverlay extends React.PureComponent<Props, State> {
     render() : JSX.Element {
         // TODO
         return <div>
-                    
+                    Game Overlay goes here
                </div>;
     };
 };

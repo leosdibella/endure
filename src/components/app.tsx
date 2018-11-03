@@ -8,7 +8,7 @@ interface State {
     view: Utilities.App.View;
 };
 
-export class App extends React.Component<object, State> {
+export class App extends React.PureComponent<object, State> {
     readonly state: State;
 
     private static getPersistedState() : State {
@@ -79,10 +79,6 @@ export class App extends React.Component<object, State> {
 
         this.state = App.getPersistedState();
         this.state.numberOfLines =  this.recalculateNumberOfLines();
-    };
-
-    shouldComponentUpdate(nextProps: object, nextState: State) : boolean {
-        return nextState.numberOfLines !== this.state.numberOfLines || nextState.view !== this.state.view;
     };
 
     componentDidMount() : void {

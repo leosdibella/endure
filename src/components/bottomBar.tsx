@@ -9,7 +9,7 @@ interface Props {
 
 };
 
-export class BottomBar extends React.Component<Props, State> {
+export class BottomBar extends React.PureComponent<Props, State> {
     render() : JSX.Element {
         // TODO
         return <div>

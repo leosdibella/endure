@@ -36,7 +36,7 @@ export class Grade extends React.PureComponent<Props, State> {
                 gradeIndex: this.props.gradeIndex + 1
             };
 
-            if (this.props.gradeIndex === Utilities.Game.GradeIndex.dMinus) {
+            if (updates.gradeIndex === Utilities.Game.GradeIndex.f) {
                 updates.mode = Utilities.Game.Mode.gameOver;
             }
 

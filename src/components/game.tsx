@@ -21,7 +21,7 @@ interface Props {
     readonly onUpdate: (updates: Utilities.App.Updates) => void;
 };
 
-export class Game extends React.Component<Props, State> {
+export class Game extends React.PureComponent<Props, State> {
     private static readonly numberOfHighScoresToPersist: number = 10;
     readonly state: State;
 
@@ -146,10 +146,6 @@ export class Game extends React.Component<Props, State> {
             gradeIndex = updates.gradeIndex;
         }
 
-        if (gradeIndex === Utilities.Game.GradeIndex.f) {
-            return undefined;
-        }
-
         if (Utilities.General.isWellDefinedValue(updates.difficulty)) {
             updates.mode = Utilities.Game.Mode.newGame;
         }
@@ -168,7 +164,7 @@ export class Game extends React.Component<Props, State> {
             // stage = TODO
         }
 
-        if (updates.mode === Utilities.Game.Mode.gameOver) {
+        if (updates.mode === Utilities.Game.Mode.gameOver || gradeIndex === Utilities.Game.GradeIndex.f) {
             const highScore: Utilities.Game.HighScore = {
                 value: score,
                 name: this.state.playerName,
@@ -182,6 +178,8 @@ export class Game extends React.Component<Props, State> {
             score = 0;
             combo = 0;
             stage = 0;
+            gradeIndex = 0;
+            updates.mode = Utilities.Game.Mode.gameOver;
         }
 
         return {
@@ -198,15 +196,8 @@ export class Game extends React.Component<Props, State> {
 
     private readonly handleUpdates = (updates: Utilities.Game.Updates) : void => {
         const nextState: State = this.transformState(updates);
-
-        if (!Utilities.General.isWellDefinedValue(nextState)) {
-            this.setState({
-                mode: Utilities.Game.Mode.gameOver //TODO
-            });
-        } else {
-            this.setState(nextState);
-            Game.persistState(nextState);
-        }
+        this.setState(nextState);
+        Game.persistState(nextState);
     };
 
     private getGameOverlay() : JSX.Element {
@@ -230,16 +221,6 @@ export class Game extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = Game.getPersistedState();
-    };
-
-    shouldComponentUpdate(nextProps: Props, nextState: State) : boolean {
-        return nextProps.view !== this.props.view
-            || nextState.difficulty !== this.state.difficulty
-            || nextState.combo !== this.state.combo
-            || nextState.mode !== this.state.mode
-            || nextState.score !== this.state.score
-            || nextState.stage !== this.state.stage
-            || nextState.playerName !== this.state.playerName;
     };
 
     componentDidMount() : void {
