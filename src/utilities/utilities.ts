@@ -6,6 +6,7 @@ import { GameOverlay } from './gameOverlay';
 import { General } from './general';
 import { Grade } from './grade';
 import { Grid } from './grid';
+import { Tile } from './tile';
 
 export {
     App,
@@ -15,5 +16,6 @@ export {
     GameOverlay,
     General,
     Grade,
-    Grid
+    Grid,
+    Tile
 };

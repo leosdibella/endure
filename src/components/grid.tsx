@@ -63,48 +63,53 @@ export class Grid extends React.PureComponent<Props, State> {
         }
     };
 
+    private readonly moveRight = () : void => {
+        this.setState({
+            column: this.state.column < Utilities.Grid.numberOfTilesWide - 1 ? this.state.column + 1 : 0
+        });
+    };
+    
+    private readonly moveLeft = () : void => {
+        this.setState({
+            column: this.state.column > 0 ? this.state.column - 1 : Utilities.Grid.numberOfTilesWide - 1
+        });
+    };
+
+    private readonly moveUp = () : void => {
+        this.setState({
+            row: this.state.row > 0 ? this.state.row - 1 : Utilities.Grid.numberOfTilesHigh - 1
+        });
+    };
+
+    private readonly moveDown = () : void => {
+        this.setState({
+            row: this.state.row < Utilities.Grid.numberOfTilesHigh - 1 ? this.state.row + 1 : 0
+        });
+    };
+
+    private readonly rotateTile = () : void => {
+        this.handleUpdates(this.state.row, this.state.column);
+    };
+
+    private readonly keyDownEventActionMap: { [key: string]: () => void } = {
+        a: this.moveLeft,
+        d: this.moveRight,
+        w: this.moveUp,
+        s: this.moveDown,
+        arrowup: this.moveUp,
+        arrowdown: this.moveDown,
+        arrowleft: this.moveLeft,
+        arrowright: this.moveRight,
+        ' ': this.rotateTile
+    };
+
     private readonly onKeyDown = (keyboardEvent: KeyboardEvent) : void => {
-        switch (keyboardEvent.key.toUpperCase()) {
-            case 'A': {
-                if (this.state.column > 0) {
-                    this.setState({
-                        column: this.state.column - 1
-                    });
-                }
+        if (this.props.mode === Utilities.Game.Mode.inGame) {
+            const keyDownHandler: () => void = this.keyDownEventActionMap[keyboardEvent.key.toLocaleLowerCase()];
 
-                break;
+            if (Utilities.General.isWellDefinedValue(keyDownHandler)) {
+                keyDownHandler();
             }
-            case 'D': {
-                if (this.state.column < Utilities.Grid.numberOfTilesWide - 1) {
-                    this.setState({
-                        column: this.state.column + 1
-                    });
-                }
-
-                break;
-            }
-            case 'W': {
-                if (this.state.row > 0) {
-                    this.setState({
-                        row: this.state.row - 1
-                    });
-                }
-
-                break;
-            }
-            case 'S': {
-                if (this.state.row < Utilities.Grid.numberOfTilesHigh - 1) {
-                    this.setState({
-                        row: this.state.row + 1
-                    });
-                }
-
-                break;
-            }
-            case 'SPACE': {
-                this.handleUpdates(this.state.row, this.state.column);
-            }
-            default: break;
         }
     };
 
@@ -113,7 +118,7 @@ export class Grid extends React.PureComponent<Props, State> {
 
         this.state = {
             tiles: [],
-            row: 10,
+            row: 8,
             column: 5,
             processingInput: true
         };
@@ -146,6 +151,7 @@ export class Grid extends React.PureComponent<Props, State> {
                                                                         colorIndex={tile.colorIndex}
                                                                         row={tile.row}
                                                                         column={tile.column}
+                                                                        isSelected={this.state.row === tile.row && this.state.column === tile.column}
                                                                         onUpdate={this.handleUpdates}/>);
 
         return <div className={'grid' + (Utilities.Game.isInProgress(this.props.mode) ? ' ' : ' hide ') + this.props.view}>
