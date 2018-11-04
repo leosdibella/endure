@@ -13,7 +13,8 @@ export namespace General {
         top?: string,
         left?: string,
         height?: string,
-        width?: string
+        width?: string,
+        borderRadius?: string
     };
 
     export interface TimerDependencies {
@@ -53,6 +54,26 @@ export namespace General {
         }
 
         return undefined;
+    };
+
+    export function camelCaseToKebabCase(camelCase: string) : string {
+        let i: number,
+            lowerCase: string,
+            snakeCase: string = '';
+
+        if (isWellDefinedValue(camelCase) && camelCase.length > 0) {
+            for (i = 0; i < camelCase.length; ++i) {
+                lowerCase = camelCase[i].toLowerCase();
+
+                if (lowerCase === camelCase[i]) {
+                    snakeCase += lowerCase;
+                } else {
+                    snakeCase += '-' + lowerCase;
+                }
+            }
+        }
+
+        return snakeCase;
     };
 
     export function fillArray<T>(value: T, length: number) : T[] {

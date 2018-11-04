@@ -9,7 +9,7 @@ interface State {
 };
 
 interface Props {
-    gradeIndex: Utilities.Game.GradeIndex;
+    gradeIndex: number;
     stage: number;
     difficulty: Utilities.Game.Difficulty;
     mode: Utilities.Game.Mode;
@@ -38,7 +38,7 @@ export class Grade extends React.PureComponent<Props, State> {
                 gradeIndex: this.props.gradeIndex + 1
             };
 
-            if (updates.gradeIndex === Utilities.Game.GradeIndex.f) {
+            if (updates.gradeIndex === Utilities.Grade.values.length - 1) {
                 updates.mode = Utilities.Game.Mode.gameOver;
             }
 
@@ -77,7 +77,7 @@ export class Grade extends React.PureComponent<Props, State> {
     render() : JSX.Element {
         return <div className='grade-container'>
                     <div>
-                        {Utilities.Game.grades[this.props.gradeIndex]}
+                        {Utilities.Grade.values[this.props.gradeIndex]}
                     </div>
                </div>;
     };

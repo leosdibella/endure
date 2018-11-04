@@ -10,7 +10,7 @@ interface State {
 
 interface Props {
     combo: number;
-    gradeIndex: Utilities.Game.GradeIndex;
+    gradeIndex: number;
     stage: number;
     difficulty: Utilities.Game.Difficulty;
     mode: Utilities.Game.Mode;

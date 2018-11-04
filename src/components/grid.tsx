@@ -6,7 +6,7 @@ import '../styles/grid.scss';
 import { Tile } from './tile';
 
 interface State {
-    tiles: Utilities.Grid.Tile[];
+    tiles: Utilities.Tile.Container[];
     column: number;
     row: number;
     processingInput: boolean;
@@ -21,36 +21,50 @@ interface Props {
 export class Grid extends React.PureComponent<Props, State> {
     readonly state: State;
 
-    private static generateTile(row: number, column: number, colorIndex: number) : Utilities.Grid.Tile {
+    private static generateTile(row: number, column: number, colorIndex: number) : Utilities.Tile.Container {
         return {
             index: Utilities.Grid.getTileIndexFromCoordinates(row, column),
             row: row,
             column: column,
-            colorIndex: colorIndex
+            colorIndex: colorIndex,
+            link: Utilities.Tile.Link.none
         };
     };
 
-    private static generateInitialTiles() : Utilities.Grid.Tile[] {
-        const tiles: Utilities.Grid.Tile[] = [];
+    private static generateInitialTiles() : Utilities.Tile.Container[] {
+        const tiles: Utilities.Tile.Container[] = [];
 
         for (let i = 0; i < Utilities.Grid.numberOfTilesHigh; ++i) {
             for (let j = 0; j < Utilities.Grid.numberOfTilesWide; ++j) {
-                tiles.push(this.generateTile(i, j, Utilities.Grid.getRandomColorIndex()));
+                tiles.push(this.generateTile(i, j, Utilities.Tile.getRandomColorIndex()));
             }
         }
 
         return tiles;
     };
 
-    private readonly rotateTiles = (row: number, column: number) : void => {
-        const index: number = Utilities.Grid.getTileIndexFromCoordinates(row, column),
-              rotatedTiles: Utilities.General.Dictionary<Utilities.Grid.Tile> = Utilities.Grid.rotateTiles(this.state.tiles, this.state.tiles[index]);
+    private readonly reduceTiles = (tiles: Utilities.Tile.Container[] = undefined) : Utilities.Tile.Container[][][] => {
+        return Utilities.Grid.reduceTiles(tiles || this.state.tiles);
+    };
 
-        // TODO, add animations via GridOverlay, reduce tiles etc
+    private readonly removeReducedTiles = (reducedTiles: Utilities.Tile.Container[][][]) => {
+        // TODO: Add Animations
+        
         this.setState({
-            tiles: this.state.tiles.map(t => Utilities.General.isWellDefinedValue(rotatedTiles[t.index]) ? rotatedTiles[t.index] : t),
             processingInput: false
         });
+    };
+
+    private readonly rotateTiles = (row: number, column: number) : void => {
+        const index: number = Utilities.Grid.getTileIndexFromCoordinates(row, column),
+              rotatedTiles: Utilities.General.Dictionary<Utilities.Tile.Container> = Utilities.Grid.rotateTiles(this.state.tiles, this.state.tiles[index]),
+              tiles: Utilities.Tile.Container[] = this.state.tiles.map(t => Utilities.General.isWellDefinedValue(rotatedTiles[t.index]) ? rotatedTiles[t.index] : t),
+              reducedTiles: Utilities.Tile.Container[][][] = this.reduceTiles();
+
+        this.setState({
+            tiles: tiles,
+            processingInput: true
+        }, () => this.removeReducedTiles(reducedTiles));
     };
 
     private readonly handleUpdates = (row: number, column: number) : void => {
@@ -142,7 +156,7 @@ export class Grid extends React.PureComponent<Props, State> {
                 row: Utilities.Grid.initialRow,
                 column: Utilities.Grid.initialColumn,
                 tiles: Grid.generateInitialTiles()
-            });
+            }, );
         }
     };
 
@@ -153,7 +167,9 @@ export class Grid extends React.PureComponent<Props, State> {
                                                                         colorIndex={tile.colorIndex}
                                                                         row={tile.row}
                                                                         column={tile.column}
-                                                                        isSelected={this.state.row === tile.row && this.state.column === tile.column}
+                                                                        selectedRow={this.state.row}
+                                                                        selectedColumn={this.state.column}
+                                                                        link={tile.link}
                                                                         onUpdate={this.handleUpdates}/>);
 
         return <div className={'grid' + (Utilities.Game.isInProgress(this.props.mode) ? ' ' : ' hide ') + this.props.view}>

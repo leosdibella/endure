@@ -12,7 +12,7 @@ class State {
     combo: number = 0;
     score: number = 0;
     stage: number = 0;
-    gradeIndex: Utilities.Game.GradeIndex = 0;
+    gradeIndex: number = 0;
     difficulty: Utilities.Game.Difficulty = Utilities.Game.Difficulty.medium;
     highScores: Utilities.Game.HighScore[] = [];
     playerName: string = Utilities.Game.defaultPlayerName;
@@ -166,7 +166,7 @@ export class Game extends React.PureComponent<Props, State> {
             // stage = TODO
         }
 
-        if (updates.mode === Utilities.Game.Mode.gameOver || gradeIndex === Utilities.Game.GradeIndex.f) {
+        if (updates.mode === Utilities.Game.Mode.gameOver || gradeIndex === Utilities.Grade.values.length - 1) {
             const highScore: Utilities.Game.HighScore = {
                 value: score,
                 name: this.state.playerName,

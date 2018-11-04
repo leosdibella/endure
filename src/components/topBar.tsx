@@ -9,7 +9,7 @@ import { Grade } from './grade';
 interface Props {
     mode: Utilities.Game.Mode;
     view: Utilities.App.View;
-    gradeIndex: Utilities.Game.GradeIndex;
+    gradeIndex: number;
     difficulty: Utilities.Game.Difficulty;
     combo: number;
     score: number;

@@ -1,4 +1,5 @@
 import { General } from './general';
+import { Tile } from './tile';
 
 export namespace Grid {
     export const numberOfTilesHigh: number = 17;
@@ -8,41 +9,10 @@ export namespace Grid {
     export const initialRow: number = 8;
     export const initialColumn: number = 5;
 
-    export enum Color {
-        red = 'red',
-        green = 'green',
-        blue = 'blue',
-        violet = 'violet',
-        yellow = 'yellow',
-        orange = 'orange',
-        grey = 'grey'
-    };
-
-    export const colors: Color[] = [
-        Color.red,
-        Color.green,
-        Color.blue,
-        Color.orange,
-        Color.violet,
-        Color.yellow,
-        Color.grey
-    ];
-
-    export function getRandomColorIndex() : number {
-        return Math.floor(Math.random() * colors.length);
-    };
-
-    export interface Tile {
-        row: number,
-        column: number,
-        index: number,
-        colorIndex: number
-    };
-
-    function reduceTile(ancestors: Tile[][], tile: Tile) : Tile[] {
+    function reduceTile(ancestors: Tile.Container[][], tile: Tile.Container) : Tile.Container[] {
         let wasReduced: boolean = false,
-            tileGroup: Tile[],
-            ancestor: Tile;
+            tileGroup: Tile.Container[],
+            ancestor: Tile.Container;
 
         if (tile.column > 0) {
             tileGroup = ancestors[tile.column - 1];
@@ -50,7 +20,9 @@ export namespace Grid {
             if (tileGroup.length > 0) {
                 ancestor = tileGroup[tileGroup.length - 1];
 
-                if (ancestor.index === tile.index - 1 && ancestor.colorIndex === tile.colorIndex) {
+                if (ancestor.colorIndex === tile.colorIndex && ancestor.index === tile.index - 1) {
+                    tile.link |= Tile.Link.left;
+                    ancestor.link |= Tile.Link.right;
                     tileGroup.push(tile);
                     wasReduced = true;
                 }
@@ -62,8 +34,10 @@ export namespace Grid {
         if (tileGroup.length > 0) {
             ancestor = tileGroup[tileGroup.length - 1];
 
-            if (ancestor.index + numberOfTilesWide === tile.index && ancestor.colorIndex === tile.colorIndex) {
+            if (ancestor.colorIndex === tile.colorIndex && ancestor.index + numberOfTilesWide === tile.index) {
                 if (!wasReduced) {
+                    tile.link |= Tile.Link.top;
+                    ancestor.link |= Tile.Link.bottom;
                     tileGroup.push(tile);
                     wasReduced = true;
                 } else {
@@ -79,8 +53,8 @@ export namespace Grid {
         return row * numberOfTilesWide + column;
     };
 
-    function rotateTilesFromRotationMap(tiles: Tile[], centerTile: Tile, rotationMap: number[][]) : General.Dictionary<Tile> {
-        const rotatedTiles: General.Dictionary<Tile> = {};
+    function rotateTilesFromRotationMap(tiles: Tile.Container[], centerTile: Tile.Container, rotationMap: number[][]) : General.Dictionary<Tile.Container> {
+        const rotatedTiles: General.Dictionary<Tile.Container> = {};
         
         let i,
             to: number[],
@@ -100,7 +74,8 @@ export namespace Grid {
                 index: toIndex,
                 colorIndex: colorIndex,
                 row: toCoordinates[0],
-                column: toCoordinates[1]
+                column: toCoordinates[1],
+                link: Tile.Link.none
             };
         }
 
@@ -194,14 +169,19 @@ export namespace Grid {
         tileRelations.bottomLeft
     ];
 
-    export function reduceTiles(tiles: Tile[]) : Tile[][][] {
-        const colorMap: Tile[][][] = General.fillArray([], colors.length),
-              ancestors: Tile[][] = General.fillArray([], numberOfTilesWide);
+    export function reduceTiles(tiles: Tile.Container[]) : Tile.Container[][][] {
+        const colorMap: Tile.Container[][][] = General.fillArray([], Tile.colors.length),
+              ancestors: Tile.Container[][] = General.fillArray([], numberOfTilesWide);
 
-        let tile: Tile,
-            tileGroup: Tile[];
+        let i: number,
+            tile: Tile.Container,
+            tileGroup: Tile.Container[];
 
-        for (let i: number = 0; i < tiles.length; ++i) {
+        for (i = 0; i < tiles.length; ++i) {
+            tiles[i].link = 0;
+        }
+
+        for (i = 0; i < tiles.length; ++i) {
             tile = tiles[i];
             tileGroup = reduceTile(ancestors, tile);
 
@@ -215,7 +195,7 @@ export namespace Grid {
         return colorMap.map(c => c.filter(ts => ts.length >= minimumTileChainLength));
     };
 
-    export function rotateTiles(tiles: Tile[], centerTile: Tile) : General.Dictionary<Tile> {
+    export function rotateTiles(tiles: Tile.Container[], centerTile: Tile.Container) : General.Dictionary<Tile.Container> {
         let rotationMap: number[][];
 
         if (centerTile.row === 0) {

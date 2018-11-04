@@ -9,7 +9,9 @@ interface Props {
     row: number;
     column: number;
     mode: Utilities.Game.Mode;
-    isSelected: boolean;
+    selectedRow: number;
+    selectedColumn: number;
+    link: Utilities.Tile.Link,
     onUpdate: (row: number, column: number) => void;
 };
 
@@ -18,28 +20,36 @@ export class Tile extends React.PureComponent<Props, object> {
         super(props);
     };
 
-    private getClassName() : string {
+    private getClassName(additionalClass: string) : string {
         let className: string = 'tile';
 
         if (this.props.mode === Utilities.Game.Mode.inGame) {
             className += '-';
-            className += Utilities.General.isWellDefinedValue(this.props.colorIndex) ? Utilities.Grid.colors[this.props.colorIndex] : 'transparent';
-            className += (this.props.isSelected ? ' tile-selected' : '');
+            className += Utilities.General.isWellDefinedValue(this.props.colorIndex) ? Utilities.Tile.colors[this.props.colorIndex] : 'transparent';
+            className += ' '
+            className += additionalClass;
+            className += Utilities.Tile.linkClasses[this.props.link];
         }
 
         return className;
     };
 
-    private getStyle() : Utilities.General.CssStyle {
-        const placementModifier: number = this.props.isSelected && this.props.mode === Utilities.Game.Mode.inGame ? -Utilities.Tile.selectedPlacementModifier : 0,
-              dimension: string = Utilities.Tile.dimension + (this.props.isSelected && this.props.mode === Utilities.Game.Mode.inGame ? Utilities.Tile.selectedDimensionModifier : 0) + 'px';
+    private getStyle(additionalClass: string) : Utilities.General.CssStyle {
+        const placementModifier: number = additionalClass && this.props.mode === Utilities.Game.Mode.inGame ? -Utilities.Tile.selectedPlacementModifier : 0,
+              dimension: string = Utilities.Tile.dimension + (additionalClass && this.props.mode === Utilities.Game.Mode.inGame ? Utilities.Tile.selectedDimensionModifier : 0) + 'px';
 
         return {
             top: (this.props.row * (Utilities.Tile.dimensionWithMargin)) + placementModifier + 'px',
             left: (this.props.column * (Utilities.Tile.dimensionWithMargin)) + placementModifier + 'px',
             height: dimension,
-            width: dimension,
+            width: dimension
         };
+    };
+
+    private getAdditionalClass() : string {
+        let additionalClass: string = '';
+
+        return additionalClass;
     };
 
     private readonly onClick = (event: React.MouseEvent<HTMLDivElement>) : void => {
@@ -47,8 +57,10 @@ export class Tile extends React.PureComponent<Props, object> {
     };
 
     render() : JSX.Element {
-        return <div className={this.getClassName()}
-                    style={this.getStyle()}
+        const additionalClass: string = this.getAdditionalClass();
+
+        return <div className={this.getClassName(additionalClass)}
+                    style={this.getStyle(additionalClass)}
                     onClick={this.onClick}>
                </div>;
     };
