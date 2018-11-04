@@ -5,6 +5,10 @@ export namespace General {
 
     export const millisecondsPerSecond: number = 1000;
 
+    export interface Dictionary<T> {
+        [id: string]: T;
+    };
+
     export interface CssStyle {
         top?: string,
         left?: string,

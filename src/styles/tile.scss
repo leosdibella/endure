@@ -4,9 +4,16 @@
 
 @each $view, $color-map in $color-maps {
     @each $key, $color in $color-map {
-        .#{$view} .tile-#{$key} {
-            @extend %tile;
-            background-color: $color;
+        @if $key == 'foreground' {
+            .#{$view} .tile-grey {
+                @extend %tile;
+                background-color: $color;
+            }
+        } @else if ($key != 'background' && $key != 'midground') {
+            .#{$view} .tile-#{$key} {
+                @extend %tile;
+                background-color: $color;
+            }
         }
     }
 }
@@ -15,6 +22,10 @@
     z-index: 2;
     border-radius: 100%;
     box-shadow: 0px 1px 10px 4px rgba(0, 0, 0, 0.75);
+}
+
+.tile-blank {
+    background-color: transparent;
 }
 
 .light {

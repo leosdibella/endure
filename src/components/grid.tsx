@@ -44,11 +44,11 @@ export class Grid extends React.PureComponent<Props, State> {
 
     private readonly rotateTiles = (row: number, column: number) : void => {
         const index: number = Utilities.Grid.getTileIndexFromCoordinates(row, column),
-              transformedTiles: Utilities.Grid.Tile[] = Utilities.Grid.rotateTiles(this.state.tiles, this.state.tiles[index]);
-        
+              rotatedTiles: Utilities.General.Dictionary<Utilities.Grid.Tile> = Utilities.Grid.rotateTiles(this.state.tiles, this.state.tiles[index]);
+
         // TODO, add animations via GridOverlay, reduce tiles etc
         this.setState({
-            tiles: transformedTiles,
+            tiles: this.state.tiles.map(t => Utilities.General.isWellDefinedValue(rotatedTiles[t.index]) ? rotatedTiles[t.index] : t),
             processingInput: false
         });
     };
@@ -91,7 +91,7 @@ export class Grid extends React.PureComponent<Props, State> {
         this.handleUpdates(this.state.row, this.state.column);
     };
 
-    private readonly keyDownEventActionMap: { [key: string]: () => void } = {
+    private readonly keyDownEventActionMap: Utilities.General.Dictionary<() => void> = {
         a: this.moveLeft,
         d: this.moveRight,
         w: this.moveUp,
@@ -118,8 +118,8 @@ export class Grid extends React.PureComponent<Props, State> {
 
         this.state = {
             tiles: [],
-            row: 8,
-            column: 5,
+            row: Utilities.Grid.initialRow,
+            column: Utilities.Grid.initialColumn,
             processingInput: true
         };
     };
@@ -139,6 +139,8 @@ export class Grid extends React.PureComponent<Props, State> {
     componentDidUpdate(previousProps: Props, previousState: State) : void {
         if (!Utilities.Game.isInProgress(previousProps.mode) && Utilities.Game.isInProgress(this.props.mode)) {
             this.setState({
+                row: Utilities.Grid.initialRow,
+                column: Utilities.Grid.initialColumn,
                 tiles: Grid.generateInitialTiles()
             });
         }

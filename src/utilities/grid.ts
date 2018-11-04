@@ -5,6 +5,8 @@ export namespace Grid {
     export const numberOfTilesWide: number = 11;
     export const tileDimension: number = 60;
     export const minimumTileChainLength = 4;
+    export const initialRow: number = 8;
+    export const initialColumn: number = 5;
 
     export enum Color {
         red = 'red',
@@ -12,7 +14,8 @@ export namespace Grid {
         blue = 'blue',
         violet = 'violet',
         yellow = 'yellow',
-        orange = 'orange'
+        orange = 'orange',
+        grey = 'grey'
     };
 
     export const colors: Color[] = [
@@ -21,7 +24,8 @@ export namespace Grid {
         Color.blue,
         Color.orange,
         Color.violet,
-        Color.yellow
+        Color.yellow,
+        Color.grey
     ];
 
     export function getRandomColorIndex() : number {
@@ -35,10 +39,10 @@ export namespace Grid {
         colorIndex: number
     };
 
-    function reduceTile(ancestors: Grid.Tile[][], tile: Grid.Tile) : Grid.Tile[] {
+    function reduceTile(ancestors: Tile[][], tile: Tile) : Tile[] {
         let wasReduced: boolean = false,
-            tileGroup: Grid.Tile[],
-            ancestor: Grid.Tile;
+            tileGroup: Tile[],
+            ancestor: Tile;
 
         if (tile.column > 0) {
             tileGroup = ancestors[tile.column - 1];
@@ -58,7 +62,7 @@ export namespace Grid {
         if (tileGroup.length > 0) {
             ancestor = tileGroup[tileGroup.length - 1];
 
-            if (ancestor.index + Grid.numberOfTilesWide === tile.index && ancestor.colorIndex === tile.colorIndex) {
+            if (ancestor.index + numberOfTilesWide === tile.index && ancestor.colorIndex === tile.colorIndex) {
                 if (!wasReduced) {
                     tileGroup.push(tile);
                     wasReduced = true;
@@ -71,53 +75,39 @@ export namespace Grid {
         return wasReduced ? tileGroup : undefined;
     };
 
-    export function getTileCoordinatesFromIndex(index: number) : number[] {
-        const column: number = index % numberOfTilesHigh;
-
-        return [
-            (index - column) / numberOfTilesHigh,
-            column
-        ];
-    };
-
     export function getTileIndexFromCoordinates(row: number, column: number) : number {
-        return row * numberOfTilesHigh + column;
+        return row * numberOfTilesWide + column;
     };
 
-    function rotateTilesFromRotationMap(tiles: Grid.Tile[], centerTile: Grid.Tile, rotationMap: number[][]) : Grid.Tile[] {
-        const rotatedTiles: Grid.Tile[] = [];
+    function rotateTilesFromRotationMap(tiles: Tile[], centerTile: Tile, rotationMap: number[][]) : General.Dictionary<Tile> {
+        const rotatedTiles: General.Dictionary<Tile> = {};
         
         let i,
             to: number[],
+            toCoordinates: number[],
             from: number[],
             toIndex: number,
-            fromIndex: number,
-            coordinates: number[];
-
-        for (i = 0; i < tiles.length; ++i) {
-            rotatedTiles.push(tiles[i]);
-        }
+            colorIndex: number;
 
         for (i = 0; i < rotationMap.length; ++i) {
-            from = rotationMap[i];
-            to = i > 0 ? rotationMap[i - 1] : rotationMap[rotationMap.length - 1];
+            from = i > 0 ? rotationMap[i - 1] : rotationMap[rotationMap.length - 1];
+            to = rotationMap[i];
+            toCoordinates = [centerTile.row + to[0], centerTile.column + to[1]];
+            toIndex = (toCoordinates[0] * numberOfTilesWide) + toCoordinates[1];
+            colorIndex = tiles[((centerTile.row + from[0]) * numberOfTilesWide) + (centerTile.column + from[1])].colorIndex;
 
-            toIndex = ((centerTile.row * Grid.numberOfTilesHigh) + to[0]) + (centerTile.column + to[1]);
-            fromIndex = ((centerTile.row * Grid.numberOfTilesHigh) + from[0]) + (centerTile.column + from[1]);
-
-            rotatedTiles[toIndex] = tiles[fromIndex];
-            rotatedTiles[toIndex].index = toIndex;
-            
-            coordinates = getTileCoordinatesFromIndex(toIndex);
-
-            rotatedTiles[toIndex].row = coordinates[0];
-            rotatedTiles[toIndex].column = coordinates[1];
+            rotatedTiles[toIndex] = {
+                index: toIndex,
+                colorIndex: colorIndex,
+                row: toCoordinates[0],
+                column: toCoordinates[1]
+            };
         }
 
         return rotatedTiles;
     };
 
-    const tileRelations: { [key: string]: number[] } = {
+    const tileRelations: General.Dictionary<number[]> = {
         self: [0, 0],
         topLeft: [-1, -1],
         top: [-1, 0],
@@ -204,12 +194,12 @@ export namespace Grid {
         tileRelations.bottomLeft
     ];
 
-    export function reduceTiles(tiles: Grid.Tile[]) : Grid.Tile[][][] {
-        const colorMap: Grid.Tile[][][] = General.fillArray([], Grid.colors.length),
-              ancestors: Grid.Tile[][] = General.fillArray([], Grid.numberOfTilesWide);
+    export function reduceTiles(tiles: Tile[]) : Tile[][][] {
+        const colorMap: Tile[][][] = General.fillArray([], colors.length),
+              ancestors: Tile[][] = General.fillArray([], numberOfTilesWide);
 
-        let tile: Grid.Tile,
-            tileGroup: Grid.Tile[];
+        let tile: Tile,
+            tileGroup: Tile[];
 
         for (let i: number = 0; i < tiles.length; ++i) {
             tile = tiles[i];
@@ -222,31 +212,31 @@ export namespace Grid {
             }
         }
         
-        return colorMap.map(c => c.filter(ts => ts.length >= Grid.minimumTileChainLength));
+        return colorMap.map(c => c.filter(ts => ts.length >= minimumTileChainLength));
     };
 
-    export function rotateTiles(tiles: Grid.Tile[], centerTile: Grid.Tile) : Grid.Tile[] {
+    export function rotateTiles(tiles: Tile[], centerTile: Tile) : General.Dictionary<Tile> {
         let rotationMap: number[][];
 
         if (centerTile.row === 0) {
             if (centerTile.column === 0) {
                 rotationMap = topLeftHandCornerRotationMap;
-            } else if (centerTile.column === Grid.numberOfTilesWide - 1) {
+            } else if (centerTile.column === numberOfTilesWide - 1) {
                 rotationMap = topRightHandCornerRotationMap;
             } else {
                 rotationMap = topSideRotationMap;
             }
-        } else if (centerTile.row === Grid.numberOfTilesHigh - 1) {
+        } else if (centerTile.row === numberOfTilesHigh - 1) {
             if (centerTile.column === 0) {
                 rotationMap = bottomLeftHandCornerRotationMap;
-            } else if (centerTile.column === Grid.numberOfTilesWide - 1) {
+            } else if (centerTile.column === numberOfTilesWide - 1) {
                 rotationMap = bottomRightHandCornerRotationMap;
             } else {
                 rotationMap = bottomSideRotationMap;
             }
         } else if (centerTile.column === 0) {
             rotationMap = leftSideRotationMap;
-        } else if (centerTile.column === Grid.numberOfTilesWide - 1) {
+        } else if (centerTile.column === numberOfTilesWide - 1) {
             rotationMap = rightSideRotationMap;
         } else {
             rotationMap = centralRotationMap;

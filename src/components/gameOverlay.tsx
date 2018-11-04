@@ -24,7 +24,7 @@ interface Props {
 export class GameOverlay extends React.PureComponent<Props, State> {
     private readonly actions: (() => void)[][] = [];
 
-    private readonly keyDownEventActionMap: { [key: string]: () => void } = {
+    private readonly keyDownEventActionMap: Utilities.General.Dictionary<() => void> = {
         arrowup: () => {
             this.incrementOrDecrementOptionsIndex(-1);
         },

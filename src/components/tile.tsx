@@ -19,11 +19,15 @@ export class Tile extends React.PureComponent<Props, object> {
     };
 
     private getClassName() : string {
-        if (this.props.mode === Utilities.Game.Mode.inGame && Utilities.General.isWellDefinedValue(this.props.colorIndex)) {
-            return 'tile-' + Utilities.Grid.colors[this.props.colorIndex] + (this.props.isSelected ? ' tile-selected' : '');
+        let className: string = 'tile';
+
+        if (this.props.mode === Utilities.Game.Mode.inGame) {
+            className += '-';
+            className += Utilities.General.isWellDefinedValue(this.props.colorIndex) ? Utilities.Grid.colors[this.props.colorIndex] : 'transparent';
+            className += (this.props.isSelected ? ' tile-selected' : '');
         }
 
-        return 'tile';
+        return className;
     };
 
     private getStyle() : Utilities.General.CssStyle {

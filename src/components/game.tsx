@@ -6,7 +6,6 @@ import '../styles/game.scss';
 import { Grid } from './grid';
 import { TopBar } from './topBar';
 import { GameOverlay } from './gameOverlay';
-import { BottomBar } from './bottomBar';
 
 class State {
     mode: Utilities.Game.Mode = Utilities.Game.Mode.newGame;
@@ -119,7 +118,7 @@ export class Game extends React.PureComponent<Props, State> {
         }
     };
 
-    private readonly keyDownEventActionMap: { [key: string]: () => void } = {
+    private readonly keyDownEventActionMap: Utilities.General.Dictionary<() => void> = {
         p: this.togglePaused,
         v: this.toggleView,
         q: this.quit,
@@ -251,8 +250,6 @@ export class Game extends React.PureComponent<Props, State> {
                   mode={this.state.mode}
                   onUpdate={this.handleUpdates}>
             </Grid>
-            <BottomBar>
-            </BottomBar>
         </div>;
     };
 };
