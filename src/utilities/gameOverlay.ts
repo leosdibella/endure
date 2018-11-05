@@ -44,7 +44,7 @@ export namespace GameOverlay {
         options: ['Leave']
     }, {
         title: 'Lights On?',
-        className: 'view',
+        className: 'theme',
         options: ['Yep', 'Nope']
     }];
 };

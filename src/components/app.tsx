@@ -7,8 +7,8 @@ import { AppBackdrop } from './appBackdrop';
 import { Game } from './game';
 
 interface State {
-    numberOfLines: number;
-    view: Utilities.App.View;
+    theme: Utilities.App.Theme;
+    orientation: Utilities.App.Orientation;
 };
 
 export class App extends React.PureComponent<object, State> {
@@ -16,15 +16,15 @@ export class App extends React.PureComponent<object, State> {
 
     private static getPersistedState() : State {
         const state: State = {
-            numberOfLines: 0,
-            view: Utilities.App.View.light
+            theme: Utilities.App.Theme.light,
+            orientation: Utilities.App.getOrientation()
         };
 
         if (Utilities.General.isLocalStorageSupported()) {
-            const view: string = window.localStorage.getItem(Utilities.General.LocalStorageKey.view);
+            const theme: string = window.localStorage.getItem(Utilities.General.LocalStorageKey.theme);
 
-            if (Utilities.General.isWellDefinedValue(view) && view === Utilities.App.View.dark) {
-                state.view = Utilities.App.View.dark;
+            if (Utilities.General.isWellDefinedValue(theme) && theme === Utilities.App.Theme.dark) {
+                state.theme = Utilities.App.Theme.dark;
             }
         }
     
@@ -49,59 +49,53 @@ export class App extends React.PureComponent<object, State> {
 
     private static persistState(state: State) : void {
         if (Utilities.General.isLocalStorageSupported()) {
-            window.localStorage.setItem(Utilities.General.LocalStorageKey.view, state.view);
+            window.localStorage.setItem(Utilities.General.LocalStorageKey.theme, state.theme);
         }
     };
 
     private readonly handleUpdates = (updates: Utilities.App.Updates) : void => {
         const nextState: State = {
-            numberOfLines: this.state.numberOfLines,
-            view: Utilities.General.or(updates.view, this.state.view)
+            theme: Utilities.General.or(updates.theme, this.state.theme),
+            orientation: this.state.orientation
         };
 
         this.setState(nextState);
         App.persistState(nextState);
     };
 
-    private readonly setNumberOfLines = (event: UIEvent) : void => {
-        this.setState({
-            numberOfLines: this.recalculateNumberOfLines()
-        });
-    };
-
-    private readonly handleActionableDomEvent = (event: UIEvent) : void => {
-        setTimeout(this.setNumberOfLines, 100);
-    };
-
-    private recalculateNumberOfLines() : number {
-        return Math.floor((window.innerHeight - Utilities.AppBackdrop.topMarginHeight) / Utilities.AppBackdrop.lineHeight);
+    private readonly setOrientation = (event: UIEvent) : void => {
+        setTimeout(() => {
+            this.setState({
+                orientation: Utilities.App.getOrientation()
+            });
+        }, 100);
     };
 
     constructor(props: object) {
         super(props);
 
         this.state = App.getPersistedState();
-        this.state.numberOfLines =  this.recalculateNumberOfLines();
     };
 
     componentDidMount() : void {
-        window.addEventListener(Utilities.General.DomEvent.resize, this.handleActionableDomEvent);
-        window.addEventListener(Utilities.General.DomEvent.orientationChange, this.handleActionableDomEvent);
+        window.addEventListener(Utilities.General.DomEvent.resize, this.setOrientation);
+        window.addEventListener(Utilities.General.DomEvent.orientationChange, this.setOrientation);
         window.addEventListener(Utilities.General.DomEvent.click, App.removeElementFocus);
     };
 
     componentWillUnmount() : void {
-        window.removeEventListener(Utilities.General.DomEvent.resize, this.handleActionableDomEvent);
-        window.removeEventListener(Utilities.General.DomEvent.orientationChange, this.handleActionableDomEvent);
+        window.removeEventListener(Utilities.General.DomEvent.resize, this.setOrientation);
+        window.removeEventListener(Utilities.General.DomEvent.orientationChange, this.setOrientation);
         window.removeEventListener(Utilities.General.DomEvent.click, App.removeElementFocus);
     };
 
     render() : JSX.Element {
-        return <div className={'app ' + this.state.view}>
-            <AppBackdrop view={this.state.view}
-                         numberOfLines={this.state.numberOfLines}>
+        return <div className={'app ' + this.state.theme}>
+            <AppBackdrop theme={this.state.theme}
+                         orientation={this.state.orientation}>
             </AppBackdrop>
-            <Game view={this.state.view}
+            <Game theme={this.state.theme}
+                  orientation={this.state.orientation}
                   onUpdate={this.handleUpdates}>
             </Game>
         </div>;

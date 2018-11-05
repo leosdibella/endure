@@ -8,7 +8,7 @@ import { Grade } from './grade';
 
 interface Props {
     mode: Utilities.Game.Mode;
-    view: Utilities.App.View;
+    theme: Utilities.App.Theme;
     gradeIndex: number;
     difficulty: Utilities.Game.Difficulty;
     combo: number;
@@ -24,7 +24,7 @@ export class TopBar extends React.PureComponent<Props, object> {
     };
 
     render() : JSX.Element {
-        return <div className={'top-bar ' + this.props.view + (!Utilities.Game.isInProgress(this.props.mode) ? ' hide': '')}>
+        return <div className={'top-bar ' + this.props.theme + (!Utilities.Game.isInProgress(this.props.mode) ? ' hide': '')}>
             <div className='top-bar-left-hud'>
                 <Combo combo={this.props.combo}
                        stage={this.props.stage}

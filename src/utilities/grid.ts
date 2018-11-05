@@ -2,51 +2,52 @@ import { General } from './general';
 import { Tile } from './tile';
 
 export namespace Grid {
-    export const numberOfTilesHigh: number = 17;
-    export const numberOfTilesWide: number = 11;
+    export const numberOfTilesHigh: number = 13;
+    export const numberOfTilesWide: number = 9;
     export const tileDimension: number = 60;
     export const minimumTileChainLength = 4;
     export const initialRow: number = 8;
     export const initialColumn: number = 5;
 
     function reduceTile(ancestors: Tile.Container[][], tile: Tile.Container) : Tile.Container[] {
-        let wasReduced: boolean = false,
-            tileGroup: Tile.Container[],
+        let rowReduced: boolean = false,
+            columnReduced: boolean = false,
+            rowTileGroup: Tile.Container[],
+            columnTileGroup: Tile.Container[] = ancestors[tile.column],
             ancestor: Tile.Container;
 
         if (tile.column > 0) {
-            tileGroup = ancestors[tile.column - 1];
+            rowTileGroup = ancestors[tile.column - 1];
 
-            if (tileGroup.length > 0) {
-                ancestor = tileGroup[tileGroup.length - 1];
+            if (rowTileGroup.length > 0) {
+                ancestor = rowTileGroup.filter(t => t.colorIndex === tile.colorIndex && t.index === tile.index - 1)[0];
 
-                if (ancestor.colorIndex === tile.colorIndex && ancestor.index === tile.index - 1) {
+                if (General.isWellDefinedValue(ancestor)) {
                     tile.link |= Tile.Link.left;
                     ancestor.link |= Tile.Link.right;
-                    tileGroup.push(tile);
-                    wasReduced = true;
+                    rowTileGroup.push(tile);
+                    rowReduced = true;
                 }
             }
         }
 
-        tileGroup = ancestors[tile.column];
+        if (columnTileGroup.length > 0) {
+            ancestor = columnTileGroup.filter(t => t.colorIndex === tile.colorIndex && t.index + numberOfTilesWide === tile.index)[0];
 
-        if (tileGroup.length > 0) {
-            ancestor = tileGroup[tileGroup.length - 1];
-
-            if (ancestor.colorIndex === tile.colorIndex && ancestor.index + numberOfTilesWide === tile.index) {
-                if (!wasReduced) {
-                    tile.link |= Tile.Link.top;
-                    ancestor.link |= Tile.Link.bottom;
-                    tileGroup.push(tile);
-                    wasReduced = true;
-                } else {
-                    ancestors[tile.column] = ancestors[tile.column - 1];
-                }
+            if (General.isWellDefinedValue(ancestor)) {
+                tile.link |= Tile.Link.top;
+                ancestor.link |= Tile.Link.bottom;
+                columnTileGroup.push(tile);
+                columnReduced = true;
             }
+        }
+
+        if (rowReduced) {
+            ancestors[tile.column] = rowTileGroup;
+            return rowTileGroup;
         }
         
-        return wasReduced ? tileGroup : undefined;
+        return columnReduced ? columnTileGroup : undefined;
     };
 
     export function getTileIndexFromCoordinates(row: number, column: number) : number {
@@ -178,7 +179,7 @@ export namespace Grid {
             tileGroup: Tile.Container[];
 
         for (i = 0; i < tiles.length; ++i) {
-            tiles[i].link = 0;
+            tiles[i].link = Tile.Link.none;
         }
 
         for (i = 0; i < tiles.length; ++i) {

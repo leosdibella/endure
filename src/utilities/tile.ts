@@ -1,4 +1,5 @@
 import { General } from './general';
+import { Grid } from './grid';
 
 export namespace Tile {
     export const dimension: number = 50;
@@ -33,7 +34,7 @@ export namespace Tile {
         topRight = top | right,
         topBottom = top | bottom,
         topLeft = top | left,
-        bottomRight = bottom | right,
+        rightBottom = bottom | right,
         bottomLeft = bottom | left,
         rightLeft = left | right,
         topRightBottom = top | right | bottom,
@@ -43,13 +44,35 @@ export namespace Tile {
         all = top | right | bottom | left
     };
 
-    export const linkClasses: string[] = Object.keys(Link).map(l => 'tile-link-' + General.camelCaseToKebabCase(l));
+    export const linkClasses: string[] = Object.keys(Link).map(l => 'tile-link-' + General.camelCaseToKebabCase(Link[parseInt(l, 10)]));
 
     export interface Container {
         readonly row: number,
         readonly column: number,
         readonly index: number,
         colorIndex: number,
-        link: number
+        link: Link
+    };
+
+    export function generateTileContainer(row: number, column: number, colorIndex: number) : Container {
+        return {
+            index: Grid.getTileIndexFromCoordinates(row, column),
+            row: row,
+            column: column,
+            colorIndex: colorIndex,
+            link: Link.none
+        };
+    };
+    
+    export function generateTileContainers() : Container[] {
+        const tiles: Container[] = [];
+
+        for (let i = 0; i < Grid.numberOfTilesHigh; ++i) {
+            for (let j = 0; j < Grid.numberOfTilesWide; ++j) {
+                tiles.push(generateTileContainer(i, j, getRandomColorIndex()));
+            }
+        }
+
+        return tiles;
     };
 };

@@ -28,6 +28,7 @@ export class Tile extends React.PureComponent<Props, object> {
             className += Utilities.General.isWellDefinedValue(this.props.colorIndex) ? Utilities.Tile.colors[this.props.colorIndex] : 'transparent';
             className += ' '
             className += additionalClass;
+            className += ' '
             className += Utilities.Tile.linkClasses[this.props.link];
         }
 

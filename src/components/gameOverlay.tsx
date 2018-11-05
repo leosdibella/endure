@@ -10,14 +10,14 @@ interface State {
 
 interface Props {
     difficulty: Utilities.Game.Difficulty;
-    view: Utilities.App.View;
+    theme: Utilities.App.Theme;
     mode: Utilities.Game.Mode;
     highScores: Utilities.Game.HighScore[];
     playerName: string;
     readonly onTogglePaused: () => void;
     readonly onQuit: () => void;
     readonly onStartNewGame: () => void;
-    readonly onToggleView: () => void;
+    readonly onToggleTheme: () => void;
     readonly onUpdate: (updates: Utilities.Game.Updates) => void;
 };
 
@@ -44,12 +44,12 @@ export class GameOverlay extends React.PureComponent<Props, State> {
         }
     };
 
-    private updateGame(mode: Utilities.Game.Mode, difficulty?: Utilities.Game.Difficulty, view?: Utilities.App.View, playerName?: string) : () => void {
+    private updateGame(mode: Utilities.Game.Mode, difficulty?: Utilities.Game.Difficulty, theme?: Utilities.App.Theme, playerName?: string) : () => void {
         return () => {
             this.props.onUpdate({
                 mode: mode,
                 difficulty: difficulty,
-                view: view,
+                theme: theme,
                 playerName: playerName
             });
         };
@@ -77,7 +77,7 @@ export class GameOverlay extends React.PureComponent<Props, State> {
         actions[1] = this.updateGame(Utilities.Game.Mode.specifyName);
         actions[2] = this.updateGame(Utilities.Game.Mode.selectDifficulty);
         actions[3] = this.updateGame(Utilities.Game.Mode.highScores);
-        actions[4] = this.updateGame(Utilities.Game.Mode.setView);
+        actions[4] = this.updateGame(Utilities.Game.Mode.setTheme);
 
         actions = this.actions[Utilities.Game.Mode.specifyName];
         actions[0] = this.saveNameChanges;
@@ -104,14 +104,14 @@ export class GameOverlay extends React.PureComponent<Props, State> {
         actions = this.actions[Utilities.Game.Mode.highScores];
         actions[0] = this.updateGame(Utilities.Game.Mode.newGame);
 
-        actions = this.actions[Utilities.Game.Mode.setView];
-        actions[0] = this.updateGame(Utilities.Game.Mode.newGame, undefined, Utilities.App.View.light);
-        actions[1] = this.updateGame(Utilities.Game.Mode.newGame, undefined, Utilities.App.View.dark);
+        actions = this.actions[Utilities.Game.Mode.setTheme];
+        actions[0] = this.updateGame(Utilities.Game.Mode.newGame, undefined, Utilities.App.Theme.light);
+        actions[1] = this.updateGame(Utilities.Game.Mode.newGame, undefined, Utilities.App.Theme.dark);
     };
 
     private getGameOverlayTitle() : JSX.Element {
         if (this.props.mode !== Utilities.Game.Mode.inGame) {
-            const overlayTile: JSX.Element = <div className={'game-overlay-tile ' + this.props.view}>
+            const overlayTile: JSX.Element = <div className={'game-overlay-tile ' + this.props.theme}>
                                              </div>
 
             return <div key={1}
@@ -149,7 +149,7 @@ export class GameOverlay extends React.PureComponent<Props, State> {
 
             return <div key={2}
                         className='game-overlay-high-scores-listings'>
-                <div className={'game-overlay-high-scores-local game-overlay-high-scores-listing ' + this.props.view}>
+                <div className={'game-overlay-high-scores-local game-overlay-high-scores-listing ' + this.props.theme}>
                     <div className='game-overlay-high-scores-listing-title'>
                         You
                     </div>
@@ -158,9 +158,9 @@ export class GameOverlay extends React.PureComponent<Props, State> {
                         Nothing yet ...
                     </div>
                 </div>
-                <div className={'game-overlay-high-scores-listing-separator ' + this.props.view}>
+                <div className={'game-overlay-high-scores-listing-separator ' + this.props.theme}>
                 </div>
-                <div className={'game-overlay-high-scores-global game-overlay-high-scores-listing ' + this.props.view}>
+                <div className={'game-overlay-high-scores-global game-overlay-high-scores-listing ' + this.props.theme}>
                     <div className='game-overlay-high-scores-listing-title'>
                         The Entire Class
                     </div>
@@ -176,7 +176,7 @@ export class GameOverlay extends React.PureComponent<Props, State> {
             return <div key={2}
                         className='game-overlay-player-name-input-container'>
                         <input value={this.state.playerName}
-                               className={this.props.view}
+                               className={this.props.theme}
                                onChange={this.handleNameChanges}/>
                    </div>
         }
@@ -222,8 +222,8 @@ export class GameOverlay extends React.PureComponent<Props, State> {
             return this.props.difficulty;
         }
 
-        if (this.props.mode === Utilities.Game.Mode.setView) {
-            return this.props.view === Utilities.App.View.light ? 0 : 1
+        if (this.props.mode === Utilities.Game.Mode.setTheme) {
+            return this.props.theme === Utilities.App.Theme.light ? 0 : 1
         }
 
         return Utilities.GameOverlay.menus[this.props.mode].defaultOptionsIndex;
@@ -278,7 +278,7 @@ export class GameOverlay extends React.PureComponent<Props, State> {
     };
 
     render() : JSX.Element {
-        return <div className={'game-overlay-container ' + this.props.view}>
+        return <div className={'game-overlay-container ' + this.props.theme}>
                    <div className='game-overlay'>
                         {this.getGameOverlayBody()}
                    </div>

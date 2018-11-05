@@ -9,22 +9,10 @@ export namespace Grade {
         293,
         257
     ];
-    
-    enum Value {
-        aPlus = 'A+',
-        a = 'A',
-        aMinus = 'A-',
-        bPlus = 'B+',
-        b = 'B',
-        bMinus = 'B-',
-        cPlus = 'C+',
-        c = 'C',
-        cMinus = 'C-',
-        dPlus = 'D+',
-        d = 'D',
-        dMinus = 'D-',
-        f = 'F'
-    };
 
-    export const values: Value[] = Object.keys(Grade).map(g => g as Value);
+    const modifiers: string[] = ['+', '', '-'];
+     
+    export const grades: string[] = ['A', 'B', 'C', 'D'].map(g => modifiers.map(m => g + m))
+                                                        .reduce((a, b) => a.concat(b))
+                                                        .concat('F');
 };

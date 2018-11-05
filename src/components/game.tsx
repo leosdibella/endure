@@ -19,12 +19,12 @@ class State {
 };
 
 interface Props {
-    view: Utilities.App.View;
+    theme: Utilities.App.Theme;
+    orientation: Utilities.App.Orientation;
     readonly onUpdate: (updates: Utilities.App.Updates) => void;
 };
 
 export class Game extends React.PureComponent<Props, State> {
-    private static readonly numberOfHighScoresToPersist: number = 10;
     readonly state: State;
 
     private static getPersistedState() : State {
@@ -102,10 +102,10 @@ export class Game extends React.PureComponent<Props, State> {
         }
     };
 
-    private readonly toggleView = () : void => {
+    private readonly toggleTheme = () : void => {
         if (this.state.mode !== Utilities.Game.Mode.specifyName) {
             this.props.onUpdate({
-                view: this.props.view === Utilities.App.View.dark ? Utilities.App.View.light : Utilities.App.View.dark
+                theme: this.props.theme === Utilities.App.Theme.dark ? Utilities.App.Theme.light : Utilities.App.Theme.dark
             });
         }
     };
@@ -120,7 +120,7 @@ export class Game extends React.PureComponent<Props, State> {
 
     private readonly keyDownEventActionMap: Utilities.General.Dictionary<() => void> = {
         p: this.togglePaused,
-        v: this.toggleView,
+        v: this.toggleTheme,
         q: this.quit,
         c: this.cheat
     };
@@ -152,11 +152,11 @@ export class Game extends React.PureComponent<Props, State> {
             updates.mode = Utilities.Game.Mode.newGame;
         }
 
-        if (Utilities.General.isWellDefinedValue(updates.view)) {
+        if (Utilities.General.isWellDefinedValue(updates.theme)) {
             updates.mode = Utilities.Game.Mode.newGame;
 
             this.props.onUpdate({
-                view: updates.view
+                theme: updates.theme
             });
         }
 
@@ -166,7 +166,7 @@ export class Game extends React.PureComponent<Props, State> {
             // stage = TODO
         }
 
-        if (updates.mode === Utilities.Game.Mode.gameOver || gradeIndex === Utilities.Grade.values.length - 1) {
+        if (updates.mode === Utilities.Game.Mode.gameOver || gradeIndex === Utilities.Grade.grades.length - 1) {
             const highScore: Utilities.Game.HighScore = {
                 value: score,
                 name: this.state.playerName,
@@ -175,7 +175,7 @@ export class Game extends React.PureComponent<Props, State> {
 
             highScores = highScores.concat(highScore)
                                    .sort((a, b) => b.value - a.value)
-                                   .slice(0, Game.numberOfHighScoresToPersist);
+                                   .slice(0, Utilities.Game.numberOfHighScoresToPersist);
 
             score = 0;
             combo = 0;
@@ -204,14 +204,14 @@ export class Game extends React.PureComponent<Props, State> {
 
     private getGameOverlay() : JSX.Element {
         if (this.state.mode !== Utilities.Game.Mode.inGame) {
-            return <GameOverlay view={this.props.view}
+            return <GameOverlay theme={this.props.theme}
                                 mode={this.state.mode}
                                 playerName={this.state.playerName}
                                 difficulty={this.state.difficulty}
                                 highScores={this.state.highScores}
                                 onQuit={this.quit}
                                 onTogglePaused={this.togglePaused}
-                                onToggleView={this.toggleView}
+                                onToggleTheme={this.toggleTheme}
                                 onStartNewGame={this.startNewGame}
                                 onUpdate={this.handleUpdates}>
                    </GameOverlay>;
@@ -234,9 +234,9 @@ export class Game extends React.PureComponent<Props, State> {
     };
 
     render() : JSX.Element {
-        return <div className={'game ' + this.props.view}>
+        return <div className={'game ' + this.props.theme}>
             {this.getGameOverlay()}
-            <TopBar view={this.props.view}
+            <TopBar theme={this.props.theme}
                      mode={this.state.mode}
                      combo={this.state.combo}
                      difficulty={this.state.difficulty}
@@ -246,8 +246,9 @@ export class Game extends React.PureComponent<Props, State> {
                      stage={this.state.stage}
                      onUpdate={this.handleUpdates}>
             </TopBar>
-            <Grid view={this.props.view}
+            <Grid theme={this.props.theme}
                   mode={this.state.mode}
+                  orientation={this.props.orientation}
                   onUpdate={this.handleUpdates}>
             </Grid>
         </div>;

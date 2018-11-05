@@ -6,7 +6,7 @@
     quit-confirmation,
     select-difficulty,
     high-scores,
-    view {
+    theme {
         .game-overlay-#{$mode}-text {
             @extend %global-flex-row;
             width: 100%;
@@ -210,8 +210,8 @@ $game-overlay-color-maps: (
     )
 );
 
-@each $view, $color-map in $game-overlay-color-maps {
-    @keyframes #{$view}GameOverlayTile {
+@each $theme, $color-map in $game-overlay-color-maps {
+    @keyframes #{$theme}GameOverlayTile {
         @for $i from 0 to 5 {
             #{$i * 16% + 4} {
                 @include tileBorder(map-get($color-map, $i), map-get($color-map, $i + 1), map-get($color-map, $i + 1), map-get($color-map, $i));

@@ -30,7 +30,7 @@ export namespace General {
     };
 
     export enum LocalStorageKey {
-        view = 'ENDURE_VIEW',
+        theme = 'ENDURE_THEME',
         highScores = 'ENDURE_HIGH_SCORES',
         difficulty = 'ENDURE_DIFFICULTY',
         playerName = 'ENDURE_PLAYER_NAME'
@@ -80,7 +80,7 @@ export namespace General {
         const array: T[] = [];
 
         for (let i = 0; i < length; ++i) {
-            array.push(value);
+            array.push(Array.isArray(value) && value.length === 0 ? <T><unknown>[]: value);
         }
 
         return array;

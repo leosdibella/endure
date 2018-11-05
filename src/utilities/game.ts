@@ -2,7 +2,8 @@ import { App } from './app';
 import { General } from './general';
 
 export namespace Game {
-    export const defaultPlayerName = 'Anonymous';
+    export const defaultPlayerName: string = 'Anonymous';
+    export const numberOfHighScoresToPersist: number = 10;
 
     export enum Mode {
         newGame = 0,
@@ -13,7 +14,7 @@ export namespace Game {
         paused,
         quitConfirmation,
         highScores,
-        setView
+        setTheme
     };
 
     export enum Difficulty {
@@ -34,7 +35,7 @@ export namespace Game {
         points?: number;
         mode?: Mode;
         difficulty?: Difficulty;
-        view?: App.View;
+        theme?: App.Theme;
         playerName?: string;
         dropCombo?: boolean;
         gradeIndex?: number;
