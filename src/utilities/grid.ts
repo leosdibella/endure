@@ -12,22 +12,18 @@ export namespace Grid {
     function reduceTile(ancestors: Tile.Container[][], tile: Tile.Container) : Tile.Container[] {
         let rowReduced: boolean = false,
             columnReduced: boolean = false,
-            rowTileGroup: Tile.Container[],
+            rowTileGroup: Tile.Container[] = ancestors[tile.column - 1],
             columnTileGroup: Tile.Container[] = ancestors[tile.column],
             ancestor: Tile.Container;
 
-        if (tile.column > 0) {
-            rowTileGroup = ancestors[tile.column - 1];
+        if (General.isWellDefinedValue(rowTileGroup) && rowTileGroup.length > 0) {
+            ancestor = rowTileGroup.filter(t => t.colorIndex === tile.colorIndex && t.index === tile.index - 1)[0];
 
-            if (rowTileGroup.length > 0) {
-                ancestor = rowTileGroup.filter(t => t.colorIndex === tile.colorIndex && t.index === tile.index - 1)[0];
-
-                if (General.isWellDefinedValue(ancestor)) {
-                    tile.link |= Tile.Link.left;
-                    ancestor.link |= Tile.Link.right;
-                    rowTileGroup.push(tile);
-                    rowReduced = true;
-                }
+            if (General.isWellDefinedValue(ancestor)) {
+                tile.link |= Tile.Link.left;
+                ancestor.link |= Tile.Link.right;
+                rowTileGroup.push(tile);
+                rowReduced = true;
             }
         }
 
@@ -44,10 +40,9 @@ export namespace Grid {
 
         if (rowReduced) {
             ancestors[tile.column] = rowTileGroup;
-            return rowTileGroup;
         }
         
-        return columnReduced ? columnTileGroup : undefined;
+        return (rowReduced || columnReduced) ? undefined : [tile];
     };
 
     export function getTileIndexFromCoordinates(row: number, column: number) : number {
@@ -57,14 +52,13 @@ export namespace Grid {
     function rotateTilesFromRotationMap(tiles: Tile.Container[], centerTile: Tile.Container, rotationMap: number[][]) : General.Dictionary<Tile.Container> {
         const rotatedTiles: General.Dictionary<Tile.Container> = {};
         
-        let i,
-            to: number[],
+        let to: number[],
             toCoordinates: number[],
             from: number[],
             toIndex: number,
             colorIndex: number;
 
-        for (i = 0; i < rotationMap.length; ++i) {
+        for (let i = 0; i < rotationMap.length; ++i) {
             from = i > 0 ? rotationMap[i - 1] : rotationMap[rotationMap.length - 1];
             to = rotationMap[i];
             toCoordinates = [centerTile.row + to[0], centerTile.column + to[1]];
@@ -114,8 +108,8 @@ export namespace Grid {
     ];
 
     const topRightHandCornerRotationMap: number[][] = [
-        tileRelations.bottomRight,
-        tileRelations.right,
+        tileRelations.bottomLeft,
+        tileRelations.left,
         tileRelations.self,
         tileRelations.bottom
     ];
@@ -186,8 +180,7 @@ export namespace Grid {
             tile = tiles[i];
             tileGroup = reduceTile(ancestors, tile);
 
-            if (!General.isWellDefinedValue(tileGroup)) {
-                tileGroup = [tile];
+            if (General.isWellDefinedValue(tileGroup)) {
                 ancestors[tile.column] = tileGroup;
                 colorMap[tile.colorIndex].push(tileGroup);
             }
@@ -196,33 +189,26 @@ export namespace Grid {
         return colorMap.map(c => c.filter(ts => ts.length >= minimumTileChainLength));
     };
 
+    const rotationMaps: General.Dictionary<number[][]> = {
+        [Tile.Link.topRight]: topRightHandCornerRotationMap,
+        [Tile.Link.rightBottom]: bottomRightHandCornerRotationMap,
+        [Tile.Link.bottomLeft]: bottomLeftHandCornerRotationMap,
+        [Tile.Link.topLeft]: topLeftHandCornerRotationMap,
+        [Tile.Link.top]: topSideRotationMap,
+        [Tile.Link.right]: rightSideRotationMap,
+        [Tile.Link.bottom]: bottomSideRotationMap,
+        [Tile.Link.left]: leftSideRotationMap,
+        [Tile.Link.none]: centralRotationMap
+    };
+
     export function rotateTiles(tiles: Tile.Container[], centerTile: Tile.Container) : General.Dictionary<Tile.Container> {
-        let rotationMap: number[][];
+        let key: Tile.Link = Tile.Link.none;
 
-        if (centerTile.row === 0) {
-            if (centerTile.column === 0) {
-                rotationMap = topLeftHandCornerRotationMap;
-            } else if (centerTile.column === numberOfTilesWide - 1) {
-                rotationMap = topRightHandCornerRotationMap;
-            } else {
-                rotationMap = topSideRotationMap;
-            }
-        } else if (centerTile.row === numberOfTilesHigh - 1) {
-            if (centerTile.column === 0) {
-                rotationMap = bottomLeftHandCornerRotationMap;
-            } else if (centerTile.column === numberOfTilesWide - 1) {
-                rotationMap = bottomRightHandCornerRotationMap;
-            } else {
-                rotationMap = bottomSideRotationMap;
-            }
-        } else if (centerTile.column === 0) {
-            rotationMap = leftSideRotationMap;
-        } else if (centerTile.column === numberOfTilesWide - 1) {
-            rotationMap = rightSideRotationMap;
-        } else {
-            rotationMap = centralRotationMap;
-        }
+        key |= centerTile.row === 0 ? Tile.Link.top : Tile.Link.none;
+        key |= centerTile.row === numberOfTilesHigh - 1 ? Tile.Link.bottom : Tile.Link.none;
+        key |= centerTile.column === 0 ? Tile.Link.left : Tile.Link.none;
+        key |= centerTile.column === numberOfTilesWide - 1 ? Tile.Link.right : Tile.Link.none;
 
-        return rotateTilesFromRotationMap(tiles, centerTile, rotationMap);
+        return rotateTilesFromRotationMap(tiles, centerTile, rotationMaps[key]);
     };
 };
