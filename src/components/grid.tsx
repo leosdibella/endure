@@ -22,15 +22,20 @@ interface Props {
 export class Grid extends React.PureComponent<Props, State> {
     readonly state: State;
 
-    private removeReducedTiles(reducedTiles: Utilities.Tile.Container[][][]) : void {
-        // TODO: Add Reduction Animations
-        this.setState({
-            processingInput: false
-        });
+    private removeReducedTiles(reducedTiles: Utilities.Tile.Container[]) : void {
+         // TODO: Add Reduction Animations
+
+        if (!Utilities.General.isWellDefinedValue(reducedTiles)) {
+            this.setTiles(reducedTiles);
+        } else {
+            this.setState({
+                processingInput: false
+            });
+        }
     };
 
-    private reduceTiles = (tiles: Utilities.Tile.Container[], row: number = this.state.row, column: number = this.state.column) : void => {
-        const reducedTiles: Utilities.Tile.Container[][][] = Utilities.Grid.reduceTiles(tiles);
+    private setTiles = (tiles: Utilities.Tile.Container[], row: number = this.state.row, column: number = this.state.column) : void => {
+        const reducedTiles: Utilities.Tile.Container[] = Utilities.Grid.reduceTiles(tiles);
 
         this.setState({
             processingInput: true,
@@ -45,7 +50,7 @@ export class Grid extends React.PureComponent<Props, State> {
               rotatedTiles: Utilities.General.Dictionary<Utilities.Tile.Container> = Utilities.Grid.rotateTiles(this.state.tiles, this.state.tiles[index]);
 
         // TODO: Add Rotation Animations
-        this.reduceTiles(this.state.tiles.map(t => Utilities.General.isWellDefinedValue(rotatedTiles[t.index]) ? rotatedTiles[t.index] : t));
+        this.setTiles(this.state.tiles.map(t => Utilities.General.isWellDefinedValue(rotatedTiles[t.index]) ? rotatedTiles[t.index] : t));
     };
 
     private readonly handleUpdates = (row: number, column: number) : void => {
@@ -133,7 +138,7 @@ export class Grid extends React.PureComponent<Props, State> {
 
     componentDidUpdate(previousProps: Props, previousState: State) : void {
         if (!Utilities.Game.isInProgress(previousProps.mode) && Utilities.Game.isInProgress(this.props.mode)) {
-            this.reduceTiles(Utilities.Tile.generateTileContainers(), Utilities.Grid.initialRow, Utilities.Grid.initialColumn);
+            this.setTiles(Utilities.Tile.generateTileContainers(), Utilities.Grid.initialRow, Utilities.Grid.initialColumn);
         }
     };
 

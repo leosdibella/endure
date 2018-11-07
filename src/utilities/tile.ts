@@ -46,21 +46,19 @@ export namespace Tile {
 
     export const linkClasses: string[] = Object.keys(Link).map(l => 'tile-link-' + General.camelCaseToKebabCase(Link[parseInt(l, 10)]));
 
-    export interface Container {
-        readonly row: number,
-        readonly column: number,
-        readonly index: number,
-        colorIndex: number,
-        link: Link
-    };
+    export class Container {
+        readonly row: number;
+        readonly column: number;
+        readonly index: number;
+        colorIndex: number;
+        link: Link;
 
-    export function generateTileContainer(row: number, column: number, colorIndex: number) : Container {
-        return {
-            index: Grid.getTileIndexFromCoordinates(row, column),
-            row: row,
-            column: column,
-            colorIndex: colorIndex,
-            link: Link.none
+        constructor(row: number, column: number, colorIndex: number = undefined, link: Link = Link.none) {
+            this.row = row;
+            this.column = column;
+            this.index = Grid.getTileIndexFromCoordinates(row, column);
+            this.colorIndex = colorIndex;
+            this.link = link;
         };
     };
     
@@ -69,7 +67,7 @@ export namespace Tile {
 
         for (let i = 0; i < Grid.numberOfTilesHigh; ++i) {
             for (let j = 0; j < Grid.numberOfTilesWide; ++j) {
-                tiles.push(generateTileContainer(i, j, getRandomColorIndex()));
+                tiles.push(new Container(i, j, getRandomColorIndex()));
             }
         }
 
