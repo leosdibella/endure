@@ -3,29 +3,13 @@ import * as Utilities from '../utilities/utilities';
 
 import '../styles/tile.scss';
 
-interface Props {
-    colorIndex: number;
-    index: number;
-    row: number;
-    column: number;
-    mode: Utilities.Game.Mode;
-    selectedRow: number;
-    selectedColumn: number;
-    link: Utilities.Tile.Link,
-    onUpdate: (row: number, column: number) => void;
-};
-
-export class Tile extends React.PureComponent<Props, object> {
-    constructor(props: Props) {
-        super(props);
-    };
-
+export class Tile extends React.PureComponent<Utilities.Tile.IProps, object> {
     private getClassName(additionalClass: string) : string {
         let className: string = 'tile';
 
         if (this.props.mode === Utilities.Game.Mode.inGame) {
             className += '-';
-            className += Utilities.General.isWellDefinedValue(this.props.colorIndex) ? Utilities.Tile.colors[this.props.colorIndex] : 'transparent';
+            className += Utilities.General.isWellDefinedValue(this.props.color) ? Utilities.Tile.Color[this.props.color] : 'transparent';
             className += ' '
             className += additionalClass;
             className += ' '
@@ -35,7 +19,7 @@ export class Tile extends React.PureComponent<Props, object> {
         return className;
     };
 
-    private getStyle(additionalClass: string) : Utilities.General.CssStyle {
+    private getStyle(additionalClass: string) : Utilities.General.ICssStyle {
         const placementModifier: number = additionalClass && this.props.mode === Utilities.Game.Mode.inGame ? -Utilities.Tile.selectedPlacementModifier : 0,
               dimension: string = Utilities.Tile.dimension + (additionalClass && this.props.mode === Utilities.Game.Mode.inGame ? Utilities.Tile.selectedDimensionModifier : 0) + 'px';
 

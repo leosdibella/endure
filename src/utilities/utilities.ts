@@ -7,6 +7,7 @@ import { General } from './general';
 import { Grade } from './grade';
 import { Grid } from './grid';
 import { Tile } from './tile';
+import { TopBar } from './topBar';
 
 export {
     App,
@@ -17,5 +18,6 @@ export {
     General,
     Grade,
     Grid,
-    Tile
+    Tile,
+    TopBar
 };

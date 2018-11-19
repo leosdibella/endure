@@ -3,33 +3,14 @@ import * as Utilities from '../utilities/utilities';
 
 import '../styles/appBackdrop.scss';
 
-interface Props {
-    theme: Utilities.App.Theme;
-    orientation: Utilities.App.Orientation;
-};
-
-interface State {
-    numberOfLines: number;
-};
-
-export class AppBackdrop extends React.PureComponent<Props, State> {
-    readonly state: State;
+export class AppBackdrop extends React.PureComponent<Utilities.AppBackdrop.IProps, Utilities.AppBackdrop.State> {
+    readonly state: Utilities.AppBackdrop.State = new Utilities.AppBackdrop.State();
 
     private setNumberOfLines() {
-        this.setState({
-            numberOfLines: Utilities.AppBackdrop.calculateNumberOfLines()
-        });
+        this.setState(new Utilities.AppBackdrop.State());
     };
 
-    constructor(props: Props) {
-        super(props);
-
-        this.state = {
-            numberOfLines: Utilities.AppBackdrop.calculateNumberOfLines()
-        };
-    };
-
-    componentDidUpdate(previousProps: Props, previousState: State) : void {
+    componentDidUpdate(previousProps: Utilities.AppBackdrop.IProps, previousState: Utilities.AppBackdrop.State) : void {
         if (previousProps.orientation !== this.props.orientation) {
             this.setNumberOfLines();
         }
@@ -51,7 +32,7 @@ export class AppBackdrop extends React.PureComponent<Props, State> {
                               </div>);
         }
 
-        return <div className={'app-backdrop ' + this.props.theme}>
+        return <div className={'app-backdrop ' + Utilities.App.Theme[this.props.theme]}>
             <div className='app-backdrop-left-margin'>
                 <div className='app-backdrop-binder-holes'>
                     {binderHoldes}

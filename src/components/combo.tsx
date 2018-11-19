@@ -3,23 +3,7 @@ import * as Utilities from '../utilities/utilities';
 
 import '../styles/combo.scss';
 
-interface State {
-    readonly timer: Utilities.General.Timer;
-    milliseconds: number;
-};
-
-interface Props {
-    combo: number;
-    gradeIndex: number;
-    stage: number;
-    difficulty: Utilities.Game.Difficulty;
-    mode: Utilities.Game.Mode;
-    readonly onUpdate: (updates: Utilities.Game.Updates) => void;
-};
-
-export class Combo extends React.PureComponent<Props, State> {
-    readonly state: State;
-
+export class Combo extends React.PureComponent<Utilities.Combo.IProps, Utilities.Combo.State> {
     private static getTimerDependencies(stage: number, difficulty: Utilities.Game.Difficulty) : Utilities.General.TimerDependencies {
         return {
             decrementInterval: Utilities.Combo.decrementInterval,
@@ -33,7 +17,7 @@ export class Combo extends React.PureComponent<Props, State> {
         });
 
         if (milliseconds === 0) {
-            const updates: Utilities.Game.Updates = {
+            const updates: Utilities.Game.IUpdate = {
                 dropCombo: true
             };
 
@@ -41,21 +25,14 @@ export class Combo extends React.PureComponent<Props, State> {
         }
     };
 
+    readonly state: Utilities.Combo.State = new Utilities.Combo.State(this.handleTimerUpdates);
+
     private initializeTimer() : void {
         const timerDependencies: Utilities.General.TimerDependencies = Combo.getTimerDependencies(this.props.stage, this.props.difficulty);
         this.state.timer.initialize(timerDependencies.decrementInterval, timerDependencies.totalDuration);
     };
 
-    constructor(props: Props) {
-        super(props);
-
-        this.state = {
-            timer: new Utilities.General.Timer(this.handleTimerUpdates),
-            milliseconds: 0
-        };
-    };
-
-    componentDidUpdate(previousProps: Props, previousState: State) : void {
+    componentDidUpdate(previousProps: Utilities.Combo.IProps, previousState: Utilities.Combo.State) : void {
         if (this.props.mode === Utilities.Game.Mode.paused) {
             this.state.timer.togglePaused(true);
         } else if (this.props.mode === Utilities.Game.Mode.inGame) {
@@ -74,17 +51,18 @@ export class Combo extends React.PureComponent<Props, State> {
     };
     
     render() : JSX.Element {
-        const seconds: number = Math.floor(this.state.milliseconds / Utilities.General.millisecondsPerSecond),
-              milliseconds = this.state.milliseconds - (seconds * Utilities.General.millisecondsPerSecond);
+        const seconds: number = Math.floor(this.state.milliseconds / Utilities.General.Timer.millisecondsPerSecond),
+              milliseconds = this.state.milliseconds - (seconds * Utilities.General.Timer.millisecondsPerSecond);
 
-        return <span className={'top-bar-combo-container' + (this.state.milliseconds === 0 ? ' hide': '')}>
+        return <span className={'top-bar-combo-container ' + Utilities.App.Theme[this.props.theme] + (this.state.milliseconds === 0 ? ' hide': '')}>
                     <span className='top-bar-combo'>
                         Combo: x
                     </span>
                     <span className='top-bar-combo'>
                         {this.props.combo}
                     </span>
-                    <span className={'top-bar-count-down ' + Utilities.Combo.getClassFromMillisecondsRemaining(seconds, this.props.difficulty, this.props.stage)}>
+                    <span className='top-bar-count-down '
+                          style={Utilities.Combo.getClassFromMillisecondsRemaining(seconds, this.props.difficulty, this.props.stage, this.props.theme)}>
                         <span>
                             [
                         </span>

@@ -1,39 +1,32 @@
 export namespace General {
-    function formatDatePart(datePart: number) : string {
-        return (datePart > 10 ? String(datePart) : ('0' + datePart));
-    };
-
-    export const millisecondsPerSecond: number = 1000;
-
-    export interface Dictionary<T> {
-        [id: string]: T;
-    };
-
-    export interface CssStyle {
-        top?: string,
-        left?: string,
-        height?: string,
-        width?: string,
-        borderRadius?: string
-    };
-
-    export interface TimerDependencies {
-        decrementInterval: number;
-        totalDuration: number;
-    };
-
     export enum DomEvent {
         resize = 'resize',
         orientationChange = 'orientationchange',
         keyDown = 'keydown',
         click = 'click'
     };
+    
+    function formatDatePart(datePart: number) : string {
+        return (datePart > 10 ? String(datePart) : ('0' + datePart));
+    };
 
-    export enum LocalStorageKey {
-        theme = 'ENDURE_THEME',
-        highScores = 'ENDURE_HIGH_SCORES',
-        difficulty = 'ENDURE_DIFFICULTY',
-        playerName = 'ENDURE_PLAYER_NAME'
+    export interface IDictionary<T> {
+        [id: string]: T;
+    };
+
+    export interface ICssStyle {
+        top?: string;
+        left?: string;
+        height?: string;
+        width?: string;
+        borderRadius?: string;
+        color?: string;
+        backgroundColor?: string;
+    };
+
+    export interface TimerDependencies {
+        decrementInterval: number;
+        totalDuration: number;
     };
 
     export function isWellDefinedValue(value: any) : boolean {
@@ -44,7 +37,7 @@ export namespace General {
         return typeof(Storage) !== 'undefined' && isWellDefinedValue(window.localStorage);
     };
 
-    export function or<T>(first: T, second: T) : T {
+    export function castSafeOr<T>(first: T, second: T) : T {
         return isWellDefinedValue(first) ? first : second;
     };
 
@@ -93,6 +86,8 @@ export namespace General {
         private totalDuration: number;
         private interval: NodeJS.Timeout;
         private callback: (milliseconds: number) => void;
+
+        static readonly millisecondsPerSecond: number = 1000;
     
         constructor(callback: (milliseconds: number) => void) {
             this.callback = callback;

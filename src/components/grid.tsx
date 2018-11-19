@@ -5,49 +5,37 @@ import '../styles/grid.scss';
 
 import { Tile } from './tile';
 
-interface State {
-    tiles: Utilities.Tile.Container[];
-    column: number;
-    row: number;
-    processingInput: boolean;
-};
+export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.Grid.State> {
+    readonly state: Utilities.Grid.State = new Utilities.Grid.State();
 
-interface Props {
-    theme: Utilities.App.Theme;
-    orientation: Utilities.App.Orientation;
-    mode: Utilities.Game.Mode;
-    readonly onUpdate: (updates: Utilities.Game.Updates) => void;
-};
-
-export class Grid extends React.PureComponent<Props, State> {
-    readonly state: State;
-
-    private removeReducedTiles(reducedTiles: Utilities.Tile.Container[]) : void {
+    private removeReducedTiles(reduction: Utilities.Grid.Reduction) : void {
          // TODO: Add Reduction Animations
 
-        if (!Utilities.General.isWellDefinedValue(reducedTiles)) {
-            this.setTiles(reducedTiles);
+         // TODO ---- BELOW
+        if (reduction.collapsingTiles) {
+            this.setTiles(reduction.tiles);
         } else {
             this.setState({
                 processingInput: false
             });
         }
+        // TODO ---- ABOVE
     };
 
     private setTiles = (tiles: Utilities.Tile.Container[], row: number = this.state.row, column: number = this.state.column) : void => {
-        const reducedTiles: Utilities.Tile.Container[] = Utilities.Grid.reduceTiles(tiles);
+        const reduction: Utilities.Grid.Reduction = Utilities.Grid.reduceTiles(tiles);
 
         this.setState({
             processingInput: true,
             row: row,
             column: column,
             tiles: tiles
-        }, () => this.removeReducedTiles(reducedTiles));
+        }, () => this.removeReducedTiles(reduction));
     };
 
     private rotateTiles(row: number, column: number) : void {
         const index: number = Utilities.Grid.getTileIndexFromCoordinates(row, column),
-              rotatedTiles: Utilities.General.Dictionary<Utilities.Tile.Container> = Utilities.Grid.rotateTiles(this.state.tiles, this.state.tiles[index]);
+              rotatedTiles: Utilities.General.IDictionary<Utilities.Tile.Container> = Utilities.Grid.rotateTiles(this.state.tiles, this.state.tiles[index]);
 
         // TODO: Add Rotation Animations
         this.setTiles(this.state.tiles.map(t => Utilities.General.isWellDefinedValue(rotatedTiles[t.index]) ? rotatedTiles[t.index] : t));
@@ -91,7 +79,7 @@ export class Grid extends React.PureComponent<Props, State> {
         this.handleUpdates(this.state.row, this.state.column);
     };
 
-    private readonly keyDownEventActionMap: Utilities.General.Dictionary<() => void> = {
+    private readonly keyDownEventActionMap: Utilities.General.IDictionary<() => void> = {
         a: this.moveLeft,
         d: this.moveRight,
         w: this.moveUp,
@@ -113,17 +101,6 @@ export class Grid extends React.PureComponent<Props, State> {
         }
     };
 
-    constructor(props: Props) {
-        super(props);
-
-        this.state = {
-            tiles: [],
-            row: Utilities.Grid.initialRow,
-            column: Utilities.Grid.initialColumn,
-            processingInput: true
-        };
-    };
-
     componentDidMount() : void {
         document.addEventListener(Utilities.General.DomEvent.keyDown, this.onKeyDown);
 
@@ -136,7 +113,7 @@ export class Grid extends React.PureComponent<Props, State> {
         document.removeEventListener(Utilities.General.DomEvent.keyDown, this.onKeyDown);
     };
 
-    componentDidUpdate(previousProps: Props, previousState: State) : void {
+    componentDidUpdate(previousProps: Utilities.Grid.IProps, previousState: Utilities.Grid.State) : void {
         if (!Utilities.Game.isInProgress(previousProps.mode) && Utilities.Game.isInProgress(this.props.mode)) {
             this.setTiles(Utilities.Tile.generateTileContainers(), Utilities.Grid.initialRow, Utilities.Grid.initialColumn);
         }
@@ -145,8 +122,8 @@ export class Grid extends React.PureComponent<Props, State> {
     render() : JSX.Element {
         const tiles: JSX.Element[] = this.state.tiles.map(tile => <Tile key={tile.index}
                                                                         mode={this.props.mode}
-                                                                        index={tile.index}
-                                                                        colorIndex={tile.colorIndex}
+                                                                        color={tile.color}
+                                                                        detonationRange={tile.detonationRange}
                                                                         row={tile.row}
                                                                         column={tile.column}
                                                                         selectedRow={this.state.row}
@@ -154,7 +131,7 @@ export class Grid extends React.PureComponent<Props, State> {
                                                                         link={tile.link}
                                                                         onUpdate={this.handleUpdates}/>);
 
-        return <div className={'grid' + (Utilities.Game.isInProgress(this.props.mode) ? ' ' : ' hide ') + this.props.theme}>
+        return <div className={'grid ' + (Utilities.Game.isInProgress(this.props.mode) ? '' : 'hide ') + Utilities.App.Theme[this.props.theme]}>
                     {tiles}
                </div>;
     };

@@ -3,21 +3,26 @@ import * as Utilities from '../utilities/utilities';
 
 import '../styles/grade.scss';
 
-interface State {
-    readonly timer: Utilities.General.Timer;
-    milliseconds: number;
-};
+export class Grade extends React.PureComponent<Utilities.Grade.IProps, Utilities.Grade.State> {
+    private readonly handleTimerUpdates = (milliseconds: number) : void => {
+        this.setState({
+            milliseconds: milliseconds
+        });
 
-interface Props {
-    gradeIndex: number;
-    stage: number;
-    difficulty: Utilities.Game.Difficulty;
-    mode: Utilities.Game.Mode;
-    readonly onUpdate: (updates: Utilities.Game.Updates) => void;
-};
+        if (milliseconds === 0) {
+            const updates: Utilities.Game.IUpdate = {
+                letterGrade: this.props.letterGrade + 1
+            };
 
-export class Grade extends React.PureComponent<Props, State> {
-    readonly state: State;
+            if (updates.letterGrade === Utilities.Grade.LetterGrade.f) {
+                updates.mode = Utilities.Game.Mode.gameOver;
+            }
+
+            this.props.onUpdate(updates);
+        }
+    };
+
+    readonly state: Utilities.Grade.State = new Utilities.Grade.State(this.handleTimerUpdates);
 
     private static getTimerDependencies(stage: number, difficulty: Utilities.Game.Difficulty) : Utilities.General.TimerDependencies {
         let decrementInterval: number = Utilities.Grade.decrementIntervalBases[difficulty] + (stage * Utilities.Grade.stageDurationModifier);
@@ -28,39 +33,12 @@ export class Grade extends React.PureComponent<Props, State> {
         };
     };
 
-    private readonly handleTimerUpdates = (milliseconds: number) : void => {
-        this.setState({
-            milliseconds: milliseconds
-        });
-
-        if (milliseconds === 0) {
-            const updates: Utilities.Game.Updates = {
-                gradeIndex: this.props.gradeIndex + 1
-            };
-
-            if (updates.gradeIndex === Utilities.Grade.grades.length - 1) {
-                updates.mode = Utilities.Game.Mode.gameOver;
-            }
-
-            this.props.onUpdate(updates);
-        }
-    };
-
     private initializeTimer() : void {
         const timerDependencies: Utilities.General.TimerDependencies = Grade.getTimerDependencies(this.props.stage, this.props.difficulty);
         this.state.timer.initialize(timerDependencies.decrementInterval, timerDependencies.totalDuration);
     };
 
-    constructor(props: Props) {
-        super(props);
-
-        this.state = {
-            timer: new Utilities.General.Timer(this.handleTimerUpdates),
-            milliseconds: 0
-        };
-    };
-
-    componentDidUpdate(previousProps: Props, previousState: State) : void {
+    componentDidUpdate(previousProps: Utilities.Grade.IProps, previousState: Utilities.Grade.State) : void {
         if (this.props.mode === Utilities.Game.Mode.paused) {
             this.state.timer.togglePaused(true);
         } else if (this.props.mode === Utilities.Game.Mode.inGame) {
@@ -77,7 +55,7 @@ export class Grade extends React.PureComponent<Props, State> {
     render() : JSX.Element {
         return <div className='grade-container'>
                     <div>
-                        {Utilities.Grade.grades[this.props.gradeIndex]}
+                        {Utilities.Grade.letterGrades[this.props.letterGrade]}
                     </div>
                </div>;
     };

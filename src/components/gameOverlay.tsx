@@ -3,28 +3,8 @@ import * as Utilities from '../utilities/utilities';
 
 import '../styles/gameOverlay.scss';
 
-interface State {
-    playerName: string;
-    selectedOptionIndex: number;
-};
-
-interface Props {
-    difficulty: Utilities.Game.Difficulty;
-    theme: Utilities.App.Theme;
-    mode: Utilities.Game.Mode;
-    highScores: Utilities.Game.HighScore[];
-    playerName: string;
-    readonly onTogglePaused: () => void;
-    readonly onQuit: () => void;
-    readonly onStartNewGame: () => void;
-    readonly onToggleTheme: () => void;
-    readonly onUpdate: (updates: Utilities.Game.Updates) => void;
-};
-
-export class GameOverlay extends React.PureComponent<Props, State> {
-    private readonly actions: (() => void)[][] = [];
-
-    private readonly keyDownEventActionMap: Utilities.General.Dictionary<() => void> = {
+export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProps, Utilities.GameOverlay.State> {
+    private readonly keyDownEventActionMap: Utilities.General.IDictionary<() => void> = {
         arrowup: () => {
             this.incrementOrDecrementOptionsIndex(-1);
         },
@@ -32,7 +12,7 @@ export class GameOverlay extends React.PureComponent<Props, State> {
             this.incrementOrDecrementOptionsIndex(1);
         },
         enter: () => {
-            this.actions[this.props.mode][this.state.selectedOptionIndex]();
+            this.state.menu.menuOptions[this.props.mode].actions[this.state.selectedOptionIndex]();
         }
     };
 
@@ -44,19 +24,11 @@ export class GameOverlay extends React.PureComponent<Props, State> {
         }
     };
 
-    private updateGame(mode: Utilities.Game.Mode, difficulty?: Utilities.Game.Difficulty, theme?: Utilities.App.Theme, playerName?: string) : () => void {
-        return () => {
-            this.props.onUpdate({
-                mode: mode,
-                difficulty: difficulty,
-                theme: theme,
-                playerName: playerName
-            });
-        };
-    };
-
     private readonly saveNameChanges = () : void => {
-        this.updateGame(Utilities.Game.Mode.newGame, undefined, undefined, this.state.playerName)();
+        this.props.onUpdate({
+            mode: Utilities.Game.Mode.newGame,
+            playerName: this.state.playerName
+        });
     };
 
     private readonly handleNameChanges = (event: React.ChangeEvent<HTMLInputElement>) : void => {
@@ -65,59 +37,15 @@ export class GameOverlay extends React.PureComponent<Props, State> {
         });
     };
 
-    private initializeActions() : void {
-        let actions: (() => void)[];
-
-        for (let i = 0; i < Utilities.GameOverlay.menus.length; ++i) {
-            this.actions[i] = [];
-        }
-
-        actions = this.actions[Utilities.Game.Mode.newGame];
-        actions[0] = this.props.onStartNewGame;
-        actions[1] = this.updateGame(Utilities.Game.Mode.specifyName);
-        actions[2] = this.updateGame(Utilities.Game.Mode.selectDifficulty);
-        actions[3] = this.updateGame(Utilities.Game.Mode.highScores);
-        actions[4] = this.updateGame(Utilities.Game.Mode.setTheme);
-
-        actions = this.actions[Utilities.Game.Mode.specifyName];
-        actions[0] = this.saveNameChanges;
-        actions[1] = this.updateGame(Utilities.Game.Mode.newGame);
-
-        actions = this.actions[Utilities.Game.Mode.selectDifficulty];
-
-        for (let i = Utilities.GameOverlay.menus[Utilities.Game.Mode.selectDifficulty].options.length - 1; i >= 0; --i) {
-            actions[i] = this.updateGame(Utilities.Game.Mode.newGame, i);
-        }
-
-        actions = this.actions[Utilities.Game.Mode.gameOver];
-        actions[0] = this.props.onStartNewGame;
-        actions[1] = this.props.onQuit;
-
-        actions = this.actions[Utilities.Game.Mode.paused];
-        actions[0] = this.props.onTogglePaused;
-        actions[1] = this.props.onQuit;
-
-        actions = this.actions[Utilities.Game.Mode.quitConfirmation];
-        actions[0] = this.props.onQuit;
-        actions[1] = this.updateGame(Utilities.Game.Mode.inGame);
-
-        actions = this.actions[Utilities.Game.Mode.highScores];
-        actions[0] = this.updateGame(Utilities.Game.Mode.newGame);
-
-        actions = this.actions[Utilities.Game.Mode.setTheme];
-        actions[0] = this.updateGame(Utilities.Game.Mode.newGame, undefined, Utilities.App.Theme.light);
-        actions[1] = this.updateGame(Utilities.Game.Mode.newGame, undefined, Utilities.App.Theme.dark);
-    };
-
     private getGameOverlayTitle() : JSX.Element {
         if (this.props.mode !== Utilities.Game.Mode.inGame) {
-            const overlayTile: JSX.Element = <div className={'game-overlay-tile ' + this.props.theme}>
+            const overlayTile: JSX.Element = <div className={'game-overlay-tile ' + Utilities.App.Theme[this.props.theme]}>
                                              </div>
 
             return <div key={1}
-                        className={'game-overlay-' + Utilities.GameOverlay.menus[this.props.mode].className + '-text'}>
+                        className={'game-overlay-' + this.state.menu.menuOptions[this.props.mode].className + '-text'}>
                         {overlayTile}
-                        {Utilities.GameOverlay.menus[this.props.mode].title}
+                        {this.state.menu.menuOptions[this.props.mode].title}
                         {overlayTile}
                    </div>;
         }
@@ -131,7 +59,7 @@ export class GameOverlay extends React.PureComponent<Props, State> {
                                                                                             className='game-overlay-high-score'>
                                                                                             <div>
                                                                                                 <span>
-                                                                                                    {s.date}
+                                                                                                    {s.dateStamp}
                                                                                                 </span>
                                                                                                 <span>
                                                                                                     {s.name}
@@ -149,7 +77,7 @@ export class GameOverlay extends React.PureComponent<Props, State> {
 
             return <div key={2}
                         className='game-overlay-high-scores-listings'>
-                <div className={'game-overlay-high-scores-local game-overlay-high-scores-listing ' + this.props.theme}>
+                <div className={'game-overlay-high-scores-local game-overlay-high-scores-listing ' + Utilities.App.Theme[this.props.theme]}>
                     <div className='game-overlay-high-scores-listing-title'>
                         You
                     </div>
@@ -158,9 +86,9 @@ export class GameOverlay extends React.PureComponent<Props, State> {
                         Nothing yet ...
                     </div>
                 </div>
-                <div className={'game-overlay-high-scores-listing-separator ' + this.props.theme}>
+                <div className={'game-overlay-high-scores-listing-separator ' + Utilities.App.Theme[this.props.theme]}>
                 </div>
-                <div className={'game-overlay-high-scores-global game-overlay-high-scores-listing ' + this.props.theme}>
+                <div className={'game-overlay-high-scores-global game-overlay-high-scores-listing ' + Utilities.App.Theme[this.props.theme]}>
                     <div className='game-overlay-high-scores-listing-title'>
                         The Entire Class
                     </div>
@@ -176,7 +104,7 @@ export class GameOverlay extends React.PureComponent<Props, State> {
             return <div key={2}
                         className='game-overlay-player-name-input-container'>
                         <input value={this.state.playerName}
-                               className={this.props.theme}
+                               className={Utilities.App.Theme[this.props.theme]}
                                onChange={this.handleNameChanges}/>
                    </div>
         }
@@ -185,7 +113,7 @@ export class GameOverlay extends React.PureComponent<Props, State> {
     };
 
     private getGameOverlayButtonPanel() : JSX.Element {
-        const options: string[] = Utilities.GameOverlay.menus[this.props.mode].options;
+        const options: string[] = this.state.menu.menuOptions[this.props.mode].options;
 
         if (Utilities.General.isWellDefinedValue(options)) {
             const buttons: JSX.Element[] = [];
@@ -193,7 +121,7 @@ export class GameOverlay extends React.PureComponent<Props, State> {
             for (let i = 0; i < options.length; ++i) {
                 buttons.push(<button key={i}
                                      className={'game-overlay-button' + (this.state.selectedOptionIndex === i ? ' game-overlay-selected-option': '')}
-                                     onClick={this.actions[this.props.mode][i]}>
+                                     onClick={this.state.menu.menuOptions[this.props.mode].actions[i]}>
                                  {options[i]}
                              </button>);
             }
@@ -226,40 +154,32 @@ export class GameOverlay extends React.PureComponent<Props, State> {
             return this.props.theme === Utilities.App.Theme.light ? 0 : 1
         }
 
-        return Utilities.GameOverlay.menus[this.props.mode].defaultOptionsIndex;
-    };
+        if (Utilities.General.isWellDefinedValue(this.state)) {
+            return this.state.menu.menuOptions[this.props.mode].defaultOptionsIndex;
+        }
 
-    private updateState(optionIndex: number) : void {
-        this.setState({
-            selectedOptionIndex: optionIndex
-        });
+        return undefined;
     };
 
     private incrementOrDecrementOptionsIndex(direction: number) : void {
-        const options: string[] = Utilities.GameOverlay.menus[this.props.mode].options;
+        const options: string[] = this.state.menu.menuOptions[this.props.mode].options;
 
         if (Utilities.General.isWellDefinedValue(options)) {
             let optionIndex = this.state.selectedOptionIndex + direction;
-            optionIndex = optionIndex >= 0 ? (optionIndex % options.length) : (options.length - 1);
 
-            this.updateState(optionIndex);
+            this.setState({
+                selectedOptionIndex: optionIndex >= 0 ? (optionIndex % options.length) : (options.length - 1)
+            });
         }
     };
 
-    constructor(props: Props) {
-        super(props);
-
-        this.initializeActions();
-
-        this.state = {
-            playerName: this.props.playerName,
-            selectedOptionIndex: this.getDefaultOptionIndex()
-        };
-    };
+    readonly state: Utilities.GameOverlay.State = new Utilities.GameOverlay.State(this.props.playerName, this.getDefaultOptionIndex(), this.props.onUpdate, this.saveNameChanges);
     
-    componentDidUpdate(previousProps: Props, previousState: State) : void {
+    componentDidUpdate(previousProps: Utilities.GameOverlay.IProps, previousState: Utilities.GameOverlay.State) : void {
         if (previousProps.mode !== this.props.mode) {
-            this.updateState(this.getDefaultOptionIndex());
+            this.setState({
+                selectedOptionIndex: this.getDefaultOptionIndex()
+            });
         }
 
         if (this.props.mode !== Utilities.Game.Mode.specifyName) {
@@ -278,7 +198,7 @@ export class GameOverlay extends React.PureComponent<Props, State> {
     };
 
     render() : JSX.Element {
-        return <div className={'game-overlay-container ' + this.props.theme}>
+        return <div className={'game-overlay-container ' + Utilities.App.Theme[this.props.theme]}>
                    <div className='game-overlay'>
                         {this.getGameOverlayBody()}
                    </div>

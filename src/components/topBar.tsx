@@ -6,38 +6,23 @@ import '../styles/topBar.scss';
 import { Combo } from './combo';
 import { Grade } from './grade';
 
-interface Props {
-    mode: Utilities.Game.Mode;
-    theme: Utilities.App.Theme;
-    gradeIndex: number;
-    difficulty: Utilities.Game.Difficulty;
-    combo: number;
-    score: number;
-    stage: number;
-    playerName: string;
-    readonly onUpdate: (updates: Utilities.Game.Updates) => void;
-};
-
-export class TopBar extends React.PureComponent<Props, object> {
-    constructor(props: Props) {
-        super(props);
-    };
-
+export class TopBar extends React.PureComponent<Utilities.TopBar.IProps, object> {
     render() : JSX.Element {
-        return <div className={'top-bar ' + this.props.theme + (!Utilities.Game.isInProgress(this.props.mode) ? ' hide': '')}>
+        return <div className={'top-bar ' + Utilities.App.Theme[this.props.theme] + (!Utilities.Game.isInProgress(this.props.mode) ? ' hide': '')}>
             <div className='top-bar-left-hud'>
                 <Combo combo={this.props.combo}
                        stage={this.props.stage}
+                       theme={this.props.theme}
                        difficulty={this.props.difficulty}
                        onUpdate={this.props.onUpdate}
-                       gradeIndex={this.props.gradeIndex}
+                       letterGrade={this.props.letterGrade}
                        mode={this.props.mode}>
                 </Combo>
                 <div className='top-bar-name'>
                     {this.props.playerName}
                 </div>
             </div>
-            <Grade gradeIndex={this.props.gradeIndex}
+            <Grade letterGrade={this.props.letterGrade}
                    difficulty={this.props.difficulty}
                    stage={this.props.stage}
                    mode={this.props.mode}
