@@ -59,22 +59,20 @@ export class Game extends React.PureComponent<Utilities.Game.IProps, Utilities.G
     private readonly handleUpdates = (update: Utilities.Game.IUpdate) : void => {
         const nextState: Utilities.Game.State = Utilities.Game.getNextStateFromUpdate(update, this.state);
 
-        // TODO --- BELOW
         if (Utilities.General.isWellDefinedValue(update.theme)) {
             this.toggleTheme();
             return;
         }
 
-        if (this.state.mode === Utilities.Game.Mode.newGame || this.state.mode === Utilities.Game.Mode.gameOver) {
-            
-            return;
-        }
-
-        if (update.mode === Utilities.Game.Mode.paused && this.state.mode !== Utilities.Game.Mode.paused) {
+        if (Utilities.Game.isInProgress(this.state.mode) && Utilities.Game.isInProgress(update.mode) && this.state.mode !== update.mode) {
             this.togglePaused();
             return;
         }
-        // TODO --- ABOVE
+
+        if (Utilities.Game.isInProgress(this.state.mode) && update.mode === Utilities.Game.Mode.newGame) {
+            this.quit();
+            return;
+        }
 
         this.setState(nextState);
         Utilities.Game.persistState(nextState);

@@ -126,6 +126,11 @@ export namespace Game {
         }
     }
 
+    function getStage(score: number) : number {
+        let stage: number = Math.log(score);
+        return Math.floor(stage * stage);
+    };
+
     export function getNextStateFromUpdate(update: IUpdate, state: State) : State {
         let stage: number = state.score,
             score: number = state.score,
@@ -136,7 +141,7 @@ export namespace Game {
         if (General.isWellDefinedValue(update.points)) {
             score += (update.points * combo);
             ++combo;
-            // stage = TODO
+            stage = getStage(score);
         }
 
         if (letterGrade === Grade.LetterGrade.f) {
@@ -153,12 +158,13 @@ export namespace Game {
             highScores = highScores.concat(highScore)
                                    .sort((a, b) => b.value - a.value)
                                    .slice(0, numberOfHighScoresToPersist);
+        }
 
+        if (update.mode === Mode.gameOver || update.mode === Mode.newGame) {
             score = 0;
             combo = 0;
             stage = 0;
-            letterGrade = 0;
-            update.mode = Mode.gameOver;
+            letterGrade = Grade.LetterGrade.aPlus;
         }
 
         return new State(General.castSafeOr(update.mode, this.state.mode),
