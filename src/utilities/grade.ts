@@ -1,17 +1,23 @@
+import { Animate } from './animate';
 import { Game } from './game';
 import { General } from './general';
 
 export namespace Grade {
-    export const stageDurationModifier: number = 10;
-    export const timerModifier: number = 12;
+    export const durationModifiers: General.IDictionary<number> = {
+        [Game.Difficulty.beginnger]: 10,
+        [Game.Difficulty.low]: 15,
+        [Game.Difficulty.medium]: 20,
+        [Game.Difficulty.hard]: 25,
+        [Game.Difficulty.expert]: 30
+    };
 
-    export const decrementIntervalBases: number[] = [
-        419,
-        379,
-        337,
-        293,
-        257
-    ];
+    export const durations: General.IDictionary<number> = {
+        [Game.Difficulty.beginnger]: 5000,
+        [Game.Difficulty.low]: 4500,
+        [Game.Difficulty.medium]: 4000,
+        [Game.Difficulty.hard]: 3500,
+        [Game.Difficulty.expert]: 3000
+    };
 
     export enum LetterGrade {
         aPlus = 0,
@@ -36,12 +42,10 @@ export namespace Grade {
                                                               .concat('F');
 
     export class State {
-        readonly timer: General.Timer;
-        milliseconds: number;
+        readonly animation: Animate.Animation;
 
-        constructor(timerCallback: (milliseconds: number) => void) {
-            this.milliseconds = 0;
-            this.timer = new General.Timer(timerCallback);
+        constructor(draw: (timeFraction: number) => void, duration: number, callback: () => void) {
+            this.animation = new Animate.Animation(draw, duration, Animate.Timing.linear, callback);
         };
     };
     

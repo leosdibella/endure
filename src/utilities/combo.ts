@@ -1,28 +1,37 @@
+import { Animate } from './animate';
 import { App } from './app';
 import { Game } from './game';
 import { General } from './general';
 import { Grade } from './grade';
 
 export namespace Combo {
-    export const stageDurationModifier: number = 10;
-    export const decrementInterval: number = 17;
-    export const minimumViableCombo: number = 2;
+    enum CssClass {
+        healthy = 0,
+        warning,
+        danger
+    };
 
-    export const totalDurationBases: number[] = [
-        5000,
-        4500,
-        4000,
-        3500,
-        3000
-    ];
+    export const durationModifiers: General.IDictionary<number> = {
+        [Game.Difficulty.beginnger]: 10,
+        [Game.Difficulty.low]: 15,
+        [Game.Difficulty.medium]: 20,
+        [Game.Difficulty.hard]: 25,
+        [Game.Difficulty.expert]: 30
+    };
+
+    export const durations: General.IDictionary<number> = {
+        [Game.Difficulty.beginnger]: 3000,
+        [Game.Difficulty.low]: 2800,
+        [Game.Difficulty.medium]: 2600,
+        [Game.Difficulty.hard]: 2400,
+        [Game.Difficulty.expert]: 2200
+    };
 
     export class State {
-        readonly timer: General.Timer;
-        milliseconds: number;
+        readonly animation: Animate.Animation;
 
-        constructor(timerCallback: (milliseconds: number) => void) {
-            this.milliseconds = 0;
-            this.timer = new General.Timer(timerCallback);
+        constructor(draw: (timeFraction: number) => void, duration: number, callback: () => void) {
+            this.animation = new Animate.Animation(draw, duration, Animate.Timing.linear, callback);
         };
     };
     
@@ -36,17 +45,17 @@ export namespace Combo {
         readonly onUpdate: (updates: Game.IUpdate) => void;
     };
     
-    function getComboColor(milliseconds: number, totalDuration: number, stage: number, theme: App.Theme) : string {
-        let color: string = '';
-        return color;
-    };
+    export function getClassFromTimeFraction(timeFraction: number) : string {
+        let cssClass: string = 'combo-';
 
-    export function getClassFromMillisecondsRemaining(milliseconds: number, difficulty: Game.Difficulty, stage: number, theme: App.Theme) : General.ICssStyle {
-        const totalDuration: number = totalDurationBases[difficulty] + (stage * stageDurationModifier),
-              cssStyle: General.ICssStyle = {
-                  color: getComboColor(milliseconds, totalDuration, stage, theme)
-              };
+        if (timeFraction >= 0.67) {
+            cssClass += CssClass[CssClass.healthy];
+        } else if (timeFraction >= 0.33) {
+            cssClass += CssClass[CssClass.warning];
+        } else {
+            cssClass += CssClass[CssClass.danger];
+        }
 
-        return cssStyle;
+        return cssClass;
     };
 };
