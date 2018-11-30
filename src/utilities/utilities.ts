@@ -1,4 +1,4 @@
-import { Animate } from './animate';
+import { Animation } from './animation';
 import { App } from './app';
 import { AppBackdrop } from './appBackdrop';
 import { Combo } from './combo';
@@ -11,7 +11,7 @@ import { Tile } from './tile';
 import { TopBar } from './topBar';
 
 export {
-    Animate,
+    Animation,
     App,
     AppBackdrop,
     Combo,

@@ -4,58 +4,50 @@ import * as Utilities from '../utilities/utilities';
 import '../styles/grade.scss';
 
 export class Grade extends React.PureComponent<Utilities.Grade.IProps, Utilities.Grade.State> {
-    private readonly handleTimerUpdates = (milliseconds: number) : void => {
+    private expandGradeFill(timeFraction: number) : void {
         this.setState({
-            milliseconds: milliseconds
+            fillRadiusPercentage: ((1 - timeFraction) * 100).toFixed(2) + '%'
         });
-
-        if (milliseconds === 0) {
-            const updates: Utilities.Game.IUpdate = {
-                letterGrade: this.props.letterGrade + 1
-            };
-
-            if (updates.letterGrade === Utilities.Grade.LetterGrade.f) {
-                updates.mode = Utilities.Game.Mode.gameOver;
-            }
-
-            this.props.onUpdate(updates);
-        }
     };
 
-    readonly state: Utilities.Grade.State = new Utilities.Grade.State(this.handleTimerUpdates);
-
-    private static getTimerDependencies(stage: number, difficulty: Utilities.Game.Difficulty) : Utilities.General.TimerDependencies {
-        let decrementInterval: number = Utilities.Grade.decrementIntervalBases[difficulty] + (stage * Utilities.Grade.stageDurationModifier);
-
-        return {
-            decrementInterval: decrementInterval,
-            totalDuration: decrementInterval * Utilities.Grade.timerModifier
-        };
+    private onAnimationComplete() : void {
+        this.props.onUpdate({
+            letterGrade: this.props.letterGrade + 1
+        });
     };
 
-    private initializeTimer() : void {
-        const timerDependencies: Utilities.General.TimerDependencies = Grade.getTimerDependencies(this.props.stage, this.props.difficulty);
-        this.state.timer.initialize(timerDependencies.decrementInterval, timerDependencies.totalDuration);
+    private getDuration() : number {
+        return Utilities.Grade.durations[this.props.difficulty] - (Utilities.Grade.durationModifiers[this.props.difficulty] * this.props.stage);
     };
+
+    readonly state: Utilities.Grade.State = new Utilities.Grade.State(this.expandGradeFill, this.getDuration(), this.onAnimationComplete);
 
     componentDidUpdate(previousProps: Utilities.Grade.IProps, previousState: Utilities.Grade.State) : void {
         if (this.props.mode === Utilities.Game.Mode.paused) {
-            this.state.timer.togglePaused(true);
+            this.state.animator.togglePaused();
         } else if (this.props.mode === Utilities.Game.Mode.inGame) {
-            if (this.state.milliseconds === 0 || previousProps.stage !== this.props.stage) {
-                this.initializeTimer();
-            } else {
-                this.state.timer.togglePaused(false);
+            if (previousProps.mode === Utilities.Game.Mode.paused) {
+                this.state.animator.togglePaused();
+            } else if (this.props.letterGrade !== previousProps.letterGrade && this.props.letterGrade !== Utilities.Grade.LetterGrade.f) {
+                this.state.animator.animate(this.getDuration());
             }
         } else {
-            this.state.timer.disable();
+            this.state.animator.cancel();
         }
     };
 
     render() : JSX.Element {
-        return <div className='grade-container'>
-                    <div>
+        const style: Utilities.General.ICssStyle = {
+            width: this.state.fillRadiusPercentage,
+            height: this.state.fillRadiusPercentage
+        };
+
+        return <div className={'grade-container ' + Utilities.App.Theme[this.props.theme]}>
+                    <div className='grade-letter-grade'>
                         {Utilities.Grade.letterGrades[this.props.letterGrade]}
+                    </div>
+                    <div className='grade-fill'
+                         style={style}>
                     </div>
                </div>;
     };

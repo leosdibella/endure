@@ -1,6 +1,7 @@
-import { Animate } from './animate';
+import { Animation } from './animation';
 import { Game } from './game';
 import { General } from './general';
+import { App } from './utilities';
 
 export namespace Grade {
     export const durationModifiers: General.IDictionary<number> = {
@@ -42,14 +43,17 @@ export namespace Grade {
                                                               .concat('F');
 
     export class State {
-        readonly animation: Animate.Animation;
+        readonly animator: Animation.Animator;
+        fillRadiusPercentage: string;
 
-        constructor(draw: (timeFraction: number) => void, duration: number, callback: () => void) {
-            this.animation = new Animate.Animation(draw, duration, Animate.Timing.linear, callback);
+        constructor(draw: (timeFraction: number) => void, duration: number, onComplete: () => void) {
+            this.animator = new Animation.Animator(draw, duration, Animation.Timing.linear, onComplete);
+            this.fillRadiusPercentage = '0%';
         };
     };
     
     export interface IProps {
+        theme: App.Theme;
         letterGrade: number;
         stage: number;
         difficulty: Game.Difficulty;

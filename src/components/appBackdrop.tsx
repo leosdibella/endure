@@ -6,13 +6,11 @@ import '../styles/appBackdrop.scss';
 export class AppBackdrop extends React.PureComponent<Utilities.AppBackdrop.IProps, Utilities.AppBackdrop.State> {
     readonly state: Utilities.AppBackdrop.State = new Utilities.AppBackdrop.State();
 
-    private setNumberOfLines() {
-        this.setState(new Utilities.AppBackdrop.State());
-    };
-
     componentDidUpdate(previousProps: Utilities.AppBackdrop.IProps, previousState: Utilities.AppBackdrop.State) : void {
-        if (previousProps.orientation !== this.props.orientation) {
-            this.setNumberOfLines();
+        const nextState: Utilities.AppBackdrop.State = new Utilities.AppBackdrop.State();
+
+        if (nextState.numberOfLines !== previousState.numberOfLines) {
+            this.setState(nextState);
         }
     };
 

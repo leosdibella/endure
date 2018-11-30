@@ -1,4 +1,4 @@
-import { Animate } from './animate';
+import { Animation } from './animation';
 import { App } from './app';
 import { Game } from './game';
 import { General } from './general';
@@ -26,12 +26,18 @@ export namespace Combo {
         [Game.Difficulty.hard]: 2400,
         [Game.Difficulty.expert]: 2200
     };
+    
+    export const minimumViableCombo: number = 2;
 
     export class State {
-        readonly animation: Animate.Animation;
+        readonly animator: Animation.Animator;
+        overlayWidthPercentage: string;
+        overlayClass: string;
 
         constructor(draw: (timeFraction: number) => void, duration: number, callback: () => void) {
-            this.animation = new Animate.Animation(draw, duration, Animate.Timing.linear, callback);
+            this.animator = new Animation.Animator(draw, duration, Animation.Timing.linear, callback);
+            this.overlayWidthPercentage = undefined;
+            this.overlayClass = '';
         };
     };
     

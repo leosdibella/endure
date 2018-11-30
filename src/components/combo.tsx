@@ -4,81 +4,57 @@ import * as Utilities from '../utilities/utilities';
 import '../styles/combo.scss';
 
 export class Combo extends React.PureComponent<Utilities.Combo.IProps, Utilities.Combo.State> {
-    private static getTimerDependencies(stage: number, difficulty: Utilities.Game.Difficulty) : Utilities.General.TimerDependencies {
-        return {
-            decrementInterval: Utilities.Combo.decrementInterval,
-            totalDuration: Utilities.Combo.totalDurationBases[difficulty] + (stage * Utilities.Combo.stageDurationModifier)
-        };
+    private adjustOverlay(timeFraction: number) : void {
+        this.setState({
+            overlayWidthPercentage: ((1 - timeFraction) * 100).toFixed(2) + '%',
+            overlayClass: Utilities.Combo.getClassFromTimeFraction(timeFraction)
+        });
     };
 
-    private readonly handleTimerUpdates = (milliseconds: number) : void => {
+    private onAnimationComplete() : void {
         this.setState({
-            milliseconds: milliseconds
+            overlayWidthPercentage: undefined,
+            overlayClass: ''
         });
 
-        if (milliseconds === 0) {
-            const updates: Utilities.Game.IUpdate = {
-                dropCombo: true
-            };
-
-            this.props.onUpdate(updates);
-        }
+        this.props.onUpdate({
+            dropCombo: true
+        });
     };
 
-    readonly state: Utilities.Combo.State = new Utilities.Combo.State(this.handleTimerUpdates);
-
-    private initializeTimer() : void {
-        const timerDependencies: Utilities.General.TimerDependencies = Combo.getTimerDependencies(this.props.stage, this.props.difficulty);
-        this.state.timer.initialize(timerDependencies.decrementInterval, timerDependencies.totalDuration);
+    private getDuration() : number {
+        return Utilities.Combo.durations[this.props.difficulty] - (Utilities.Combo.durationModifiers[this.props.difficulty] * this.props.stage);
     };
+
+    readonly state: Utilities.Combo.State = new Utilities.Combo.State(this.adjustOverlay, this.getDuration(), this.onAnimationComplete);
 
     componentDidUpdate(previousProps: Utilities.Combo.IProps, previousState: Utilities.Combo.State) : void {
         if (this.props.mode === Utilities.Game.Mode.paused) {
-            this.state.timer.togglePaused(true);
+            this.state.animator.togglePaused();
         } else if (this.props.mode === Utilities.Game.Mode.inGame) {
-            if (this.props.combo < Utilities.Combo.minimumViableCombo) {
-                this.state.timer.disable();
-            } else {
-                if (this.state.milliseconds === 0 || this.props.combo > previousProps.combo) {
-                    this.initializeTimer();
-                } else {
-                    this.state.timer.togglePaused(false);
-                }
+            if (previousProps.mode === Utilities.Game.Mode.paused) {
+                this.state.animator.togglePaused();
+            } else if (this.props.combo >= Utilities.Combo.minimumViableCombo && this.props.combo !== previousProps.combo) {
+                this.state.animator.animate(this.getDuration());
             }
         } else {
-            this.state.timer.disable();
+            this.state.animator.cancel();
         }
     };
     
     render() : JSX.Element {
-        const seconds: number = Math.floor(this.state.milliseconds / Utilities.General.Timer.millisecondsPerSecond),
-              milliseconds = this.state.milliseconds - (seconds * Utilities.General.Timer.millisecondsPerSecond);
+        const style: Utilities.General.ICssStyle = {
+            width: this.state.overlayWidthPercentage
+        };
 
-        return <span className={'top-bar-combo-container ' + Utilities.App.Theme[this.props.theme] + (this.state.milliseconds === 0 ? ' hide': '')}>
-                    <span className='top-bar-combo'>
-                        Combo: x
-                    </span>
-                    <span className='top-bar-combo'>
-                        {this.props.combo}
-                    </span>
-                    <span className='top-bar-count-down '
-                          style={Utilities.Combo.getClassFromMillisecondsRemaining(seconds, this.props.difficulty, this.props.stage, this.props.theme)}>
-                        <span>
-                            [
-                        </span>
-                        <span>
-                            {seconds}
-                        </span>
-                        <span>
-                            .
-                        </span>
-                        <span>
-                            {milliseconds}
-                        </span>
-                        <span>
-                            ]
-                        </span> 
-                    </span>
+        return <span className={'top-bar-combo-container ' + Utilities.App.Theme[this.props.theme] + (!Utilities.General.isWellDefinedValue(this.state.overlayWidthPercentage) ? ' hide': '')}>
+                    <div className='top-bar-combo combo-bar-base'>
+                        Combo: x{this.props.combo}
+                    </div>
+                    <div className={'top-bar-combo combo-bar-overlay ' + this.state.overlayClass}
+                         style={style}>
+                        Combo: x{this.props.combo}
+                    </div>
               </span>;
     };
 };

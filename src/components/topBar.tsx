@@ -22,7 +22,8 @@ export class TopBar extends React.PureComponent<Utilities.TopBar.IProps, object>
                     {this.props.playerName}
                 </div>
             </div>
-            <Grade letterGrade={this.props.letterGrade}
+            <Grade theme={this.props.theme}
+                   letterGrade={this.props.letterGrade}
                    difficulty={this.props.difficulty}
                    stage={this.props.stage}
                    mode={this.props.mode}

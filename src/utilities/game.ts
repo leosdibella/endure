@@ -134,7 +134,7 @@ export namespace Game {
     export function getNextStateFromUpdate(update: IUpdate, state: State) : State {
         let stage: number = state.score,
             score: number = state.score,
-            combo: number = update.dropCombo ? 0 : state.combo,
+            combo: number = General.isWellDefinedValue(update.dropCombo) && update.dropCombo ? 0 : state.combo,
             letterGrade: number = General.castSafeOr(update.letterGrade, state.letterGrade),
             highScores: IHighScore[] = this.state.highScores;
 

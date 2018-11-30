@@ -110,6 +110,27 @@ export namespace Grid {
         [Tile.Link.none]: centralRotationMap
     };
 
+    export class State {
+        tiles: Tile.Container[];
+        column: number;
+        row: number;
+        processingInput: boolean;
+
+        constructor() {
+            this.tiles = [];
+            this.row = initialRow;
+            this.column = initialColumn;
+            this.processingInput = true;
+        };
+    };
+    
+    export interface IProps {
+        theme: App.Theme;
+        orientation: App.Orientation;
+        mode: Game.Mode;
+        readonly onUpdate: (updates: Game.IUpdate) => void;
+    };
+
     export function getTileIndexFromCoordinates(row: number, column: number) : number {
         return row * numberOfTilesWide + column;
     };
@@ -288,26 +309,5 @@ export namespace Grid {
         key |= centerTile.column === numberOfTilesWide - 1 ? Tile.Link.right : Tile.Link.none;
 
         return rotateTilesFromRotationMap(tiles, centerTile, rotationMaps[key]);
-    };
-
-    export class State {
-        tiles: Tile.Container[];
-        column: number;
-        row: number;
-        processingInput: boolean;
-
-        constructor() {
-            this.tiles = [];
-            this.row = initialRow;
-            this.column = initialColumn;
-            this.processingInput = true;
-        };
-    };
-    
-    export interface IProps {
-        theme: App.Theme;
-        orientation: App.Orientation;
-        mode: Game.Mode;
-        readonly onUpdate: (updates: Game.IUpdate) => void;
     };
 };
