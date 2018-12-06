@@ -12,16 +12,12 @@ export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProp
             this.incrementOrDecrementOptionsIndex(1);
         },
         enter: () => {
-            this.state.menu.menuOptions[this.props.mode].actions[this.state.selectedOptionIndex]();
+            this.state.menu.menuOptions[this.props.mode].justDo(mo => mo.actions[this.state.selectedOptionIndex]());
         }
     };
 
     private readonly onKeyDown = (keyboardEvent: KeyboardEvent) : void => {
-        const keyDownHandler = this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()];
-
-        if (Utilities.General.isWellDefinedValue(keyDownHandler)) {
-            keyDownHandler();
-        }
+        Utilities.Maybe.maybe(this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()]).justDo(kdh => kdh());
     };
 
     private readonly saveNameChanges = () : void => {
@@ -37,25 +33,22 @@ export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProp
         });
     };
 
-    private getGameOverlayTitle() : JSX.Element {
-        if (this.props.mode !== Utilities.Game.Mode.inGame) {
+    private getGameOverlayTitle() : Utilities.Maybe<JSX.Element> {
+        return this.state.menu.menuOptions[this.props.mode].bind(mo => {
             const overlayTile: JSX.Element = <div className={'game-overlay-tile ' + Utilities.App.Theme[this.props.theme]}>
-                                             </div>
+                                             </div>;
 
-            return <div key={1}
-                        className={'game-overlay-' + this.state.menu.menuOptions[this.props.mode].className + '-text'}>
-                        {overlayTile}
-                        {this.state.menu.menuOptions[this.props.mode].title}
-                        {overlayTile}
-                   </div>;
-        }
-
-        return undefined;
+            return Utilities.Maybe.just(<div key={1}
+                                             className={'game-overlay-' + mo.className + '-text'}>
+                                            {overlayTile}
+                                            {mo.title}
+                                            {overlayTile}
+                                        </div>);
+        });
     };
 
-    private getGameOverlayExtras() : JSX.Element {
-        if (this.props.mode === Utilities.Game.Mode.highScores) {
-            const localHighScores: JSX.Element[] = this.props.highScores.map((s, i) => <div key={i}
+    private getHighScoresOverlayExtras() : JSX.Element {
+        const localHighScores: JSX.Element[] = this.props.highScores.map((s, i) => <div key={i}
                                                                                             className='game-overlay-high-score'>
                                                                                             <div>
                                                                                                 <span>
@@ -73,7 +66,7 @@ export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProp
                                                                                                 </span>
                                                                                             </div>
                                                                                        </div>),
-                  globalHighScores: JSX.Element[] = [];
+               globalHighScores: JSX.Element[] = [];
 
             return <div key={2}
                         className='game-overlay-high-scores-listings'>
@@ -97,52 +90,49 @@ export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProp
                         Nothing yet ...
                     </div>
                 </div>
-            </div>
-        }
-
-        if (this.props.mode === Utilities.Game.Mode.specifyName) {
-            return <div key={2}
-                        className='game-overlay-player-name-input-container'>
-                        <input value={this.state.playerName}
-                               className={Utilities.App.Theme[this.props.theme]}
-                               onChange={this.handleNameChanges}/>
-                   </div>
-        }
-
-        return undefined;
+            </div>;
     };
 
-    private getGameOverlayButtonPanel() : JSX.Element {
-        const options: string[] = this.state.menu.menuOptions[this.props.mode].options;
+    private getGameOverlayExtras() : Utilities.Maybe<JSX.Element> {
+        let maybeJsx: Utilities.Maybe<JSX.Element> = Utilities.Maybe.nothing();
+        
+        Utilities.Maybe.maybe(this.props.mode === Utilities.Game.Mode.highScores).justDo(t => {
+            maybeJsx = Utilities.Maybe.just(this.getHighScoresOverlayExtras());
+        }).otherwiseDo(Utilities.Maybe.just(this.props.mode === Utilities.Game.Mode.specifyName), t => {
+            maybeJsx = Utilities.Maybe.just(<div key={2}
+                                                 className='game-overlay-player-name-input-container'>
+                                                <input value={this.state.playerName}
+                                                       className={Utilities.App.Theme[this.props.theme]}
+                                                       onChange={this.handleNameChanges}/>
+                                            </div>);
+        });
 
-        if (Utilities.General.isWellDefinedValue(options)) {
-            const buttons: JSX.Element[] = [];
+        return maybeJsx;
+    };
 
-            for (let i = 0; i < options.length; ++i) {
-                buttons.push(<button key={i}
-                                     className={'game-overlay-button' + (this.state.selectedOptionIndex === i ? ' game-overlay-selected-option': '')}
-                                     onClick={this.state.menu.menuOptions[this.props.mode].actions[i]}>
-                                 {options[i]}
-                             </button>);
-            }
+    private getGameOverlayButtonPanel() : Utilities.Maybe<JSX.Element> {
+        return this.state.menu.menuOptions[this.props.mode].bind(mo => {
+            const buttons: JSX.Element[] = Utilities.General.iterateIntoArray(mo.options.length, i => {
+                return <button key={i}
+                               className={'game-overlay-button' + (this.state.selectedOptionIndex === i ? ' game-overlay-selected-option': '')}
+                               onClick={mo.actions[i]}>
+                            {mo.options[i]}
+                       </button>;
+            });
 
-            return <div key={3}
-                        className='game-overlay-button-panel'>
-                       {buttons}
-                   </div>;
-        }
-
-        return undefined;
+            return Utilities.Maybe.just(<div key={3}
+                                             className='game-overlay-button-panel'>
+                                            {buttons}
+                                        </div>);
+        });
     };
 
     private getGameOverlayBody() : JSX.Element[] {
-        const overleyBody: JSX.Element[] = [
+        return Utilities.Maybe.filterCollection([
             this.getGameOverlayTitle(),
             this.getGameOverlayExtras(),
             this.getGameOverlayButtonPanel()
-        ];
-
-        return overleyBody.filter(jsx => Utilities.General.isWellDefinedValue(jsx));
+        ]);
     };
 
     private getDefaultOptionIndex() : number {
@@ -154,23 +144,20 @@ export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProp
             return this.props.theme === Utilities.App.Theme.light ? 0 : 1
         }
 
-        if (Utilities.General.isWellDefinedValue(this.state)) {
-            return this.state.menu.menuOptions[this.props.mode].defaultOptionsIndex;
-        }
-
-        return undefined;
+        return this.state.menu.menuOptions[this.props.mode].caseOf({
+            just: mo => mo.defaultOptionsIndex.getOrDefault(Utilities.GameOverlay.defaultDefaultOptionsIndex),
+            nothing: () => Utilities.GameOverlay.defaultDefaultOptionsIndex
+        });
     };
 
     private incrementOrDecrementOptionsIndex(direction: number) : void {
-        const options: string[] = this.state.menu.menuOptions[this.props.mode].options;
-
-        if (Utilities.General.isWellDefinedValue(options)) {
+        this.state.menu.menuOptions[this.props.mode].justDo(mo => {
             let optionIndex = this.state.selectedOptionIndex + direction;
 
             this.setState({
-                selectedOptionIndex: optionIndex >= 0 ? (optionIndex % options.length) : (options.length - 1)
+                selectedOptionIndex: optionIndex >= 0 ? (optionIndex % mo.options.length) : (mo.options.length - 1)
             });
-        }
+        });
     };
 
     readonly state: Utilities.GameOverlay.State = new Utilities.GameOverlay.State(this.props.playerName, this.getDefaultOptionIndex(), this.props.onUpdate, this.saveNameChanges);

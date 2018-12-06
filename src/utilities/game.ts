@@ -1,14 +1,10 @@
 import { App } from './app';
 import { General } from './general';
-import { Grade } from './utilities';
+import { Grade } from './grade';
+import { Maybe } from './maybe';
+import { PersistentStorage } from './persistentStorage';
 
 export namespace Game {
-    const highScoresLocalStorageKey: string = 'ENDURE_HIGH_SCORES';
-    const difficultyLocalStorageKey: string = 'ENDURE_DIFFICULTY';
-    const playerNameLocalStorageKey: string = 'ENDURE_PLAYER_NAME';
-    const defaultPlayerName: string = 'Anonymous';
-    const numberOfHighScoresToPersist: number = 10;
-
     export enum Mode {
         newGame = 0,
         specifyName,
@@ -29,10 +25,16 @@ export namespace Game {
         expert
     };
 
-    export interface IHighScore {
+    export class HighScore {
         name: string;
         value: number;
         dateStamp: string;
+
+        constructor(name: string, value: number, dateStamp: string) {
+            this.name = name;
+            this.value = value;
+            this.dateStamp = dateStamp;
+        };
     };
 
     export interface IUpdate {
@@ -45,6 +47,13 @@ export namespace Game {
         letterGrade?: number;
     };
 
+    const highScoresLocalStorageKey: string = 'ENDURE_HIGH_SCORES';
+    const difficultyLocalStorageKey: string = 'ENDURE_DIFFICULTY';
+    const playerNameLocalStorageKey: string = 'ENDURE_PLAYER_NAME';
+    const defaultPlayerName: string = 'Anonymous';
+    const defaultDifficulty: Difficulty = Difficulty.medium;
+    const numberOfHighScoresToPersist: number = 10;
+
     export class State {
         mode: Mode;
         combo: number;
@@ -52,24 +61,24 @@ export namespace Game {
         stage: number;
         letterGrade: number;
         difficulty: Difficulty;
-        highScores: IHighScore[];
+        highScores: HighScore[];
         playerName: string;
 
         constructor(mode: Mode,
                     difficulty: Difficulty,
-                    highScores: IHighScore[],
+                    highScores: HighScore[],
                     playerName: string,
-                    combo: number,
-                    score: number,
-                    stage: number,
-                    letterGrade: Grade.LetterGrade) {
-            this.mode = General.isWellDefinedValue(Mode[mode]) ? mode : Mode.newGame;
-            this.difficulty = General.isWellDefinedValue(Difficulty[difficulty]) ? difficulty : Difficulty.medium;
+                    combo: number = 0,
+                    score: number = 0,
+                    stage: number = 0,
+                    letterGrade: Grade.LetterGrade = Grade.LetterGrade.aPlus) {
+            this.mode = mode;
+            this.difficulty = difficulty;
             this.playerName = isValidPlayerName(playerName) ? playerName : defaultPlayerName;
-            this.combo = General.castSafeOr(combo, 0);
-            this.score = General.castSafeOr(score, 0);;
-            this.stage = General.castSafeOr(stage, 0);;
-            this.letterGrade = General.isWellDefinedValue(Grade.LetterGrade[letterGrade]) ? letterGrade : Grade.LetterGrade.aPlus;
+            this.combo = combo;
+            this.score = score;
+            this.stage = stage;
+            this.letterGrade = letterGrade;
             this.highScores = highScores;
         };
     };
@@ -81,49 +90,53 @@ export namespace Game {
     };
 
     export function isValidPlayerName(playerName: string) : boolean {
-        return General.isWellDefinedValue(playerName) && playerName.trim() !== '';
+        return playerName.trim() !== '';
     };
 
     export function isInProgress(gameMdode: Mode) : boolean {
         return gameMdode === Mode.inGame || gameMdode === Mode.paused;
     };
-    
-    export function getPersistedState() : State {
-        let playerName: string,
-            highScores: string,
-            difficulty: number,
-            parsedHighScores: any;
 
-        if (General.isLocalStorageSupported()) {
-            highScores = window.localStorage.getItem(highScoresLocalStorageKey);
-            playerName = window.localStorage.getItem(playerNameLocalStorageKey);
-            difficulty = parseInt(window.localStorage.getItem(difficultyLocalStorageKey));
+    function getHighScores(highScores: any) : HighScore[] {
+        const highScoreArray: HighScore[] = [];
+        let highScore: any;
 
-            if (General.isWellDefinedValue(highScores)) {
-                parsedHighScores = JSON.parse(highScores);
+        if (Array.isArray(highScores)) {
+            for (let i: number = 0; i < highScores.length; ++i) {
+                highScore = highScores[i];
 
-                if (!Array.isArray(parsedHighScores) || parsedHighScores.length === 0) {
-                    parsedHighScores = [];
+                if (General.isObject(highScore)
+                        && General.isString(highScore.name)
+                        && General.isString(highScore.dateStamp)
+                        && General.isInteger(highScore.value)) {
+                    highScoreArray.push(new HighScore(highScore.name, highScore.dateStamp,highScore.value));
                 }
             }
         }
 
+        return highScoreArray;
+    };
+    
+    export function getPersistedState() : State {
+        const playerName: string = PersistentStorage.fetch(playerNameLocalStorageKey).getOrDefault(defaultPlayerName),
+              highScores: HighScore[] = PersistentStorage.fetch(highScoresLocalStorageKey).caseOf({
+                 just: hs => getHighScores(hs),
+                 nothing: () => []
+              }), difficulty: Difficulty = PersistentStorage.fetch(difficultyLocalStorageKey).caseOf({
+                 just: d => Maybe.maybe(Difficulty[d]).switchInto(d, defaultDifficulty),
+                 nothing: () => defaultDifficulty
+              });
+
         return new State(Mode.newGame,
-                         difficulty as Difficulty,
-                         parsedHighScores,
-                         playerName,
-                         0,
-                         0,
-                         0,
-                         0);
+                         difficulty,
+                         highScores,
+                         playerName);
     };
     
     export function persistState(state: State) : void {
-        if (General.isLocalStorageSupported()) {
-            window.localStorage.setItem(difficultyLocalStorageKey, state.difficulty.toString());
-            window.localStorage.setItem(highScoresLocalStorageKey, JSON.stringify(state.highScores));
-            window.localStorage.setItem(playerNameLocalStorageKey, isValidPlayerName(state.playerName) ? state.playerName : defaultPlayerName);
-        }
+        PersistentStorage.persist(difficultyLocalStorageKey, state.difficulty);
+        PersistentStorage.persist(highScoresLocalStorageKey, state.highScores);
+        PersistentStorage.persist(playerNameLocalStorageKey, isValidPlayerName(state.playerName) ? state.playerName : defaultPlayerName);
     }
 
     function getStage(score: number) : number {
@@ -134,43 +147,48 @@ export namespace Game {
     export function getNextStateFromUpdate(update: IUpdate, state: State) : State {
         let stage: number = state.score,
             score: number = state.score,
-            combo: number = General.isWellDefinedValue(update.dropCombo) && update.dropCombo ? 0 : state.combo,
-            letterGrade: number = General.castSafeOr(update.letterGrade, state.letterGrade),
-            highScores: IHighScore[] = this.state.highScores;
+            playerName: string = Maybe.maybe(update.playerName).getOrDefault(state.playerName),
+            mode: Game.Mode = Maybe.maybe(update.mode).getOrDefault(state.mode),
+            letterGrade: number = Maybe.maybe(update.letterGrade).getOrDefault(state.letterGrade),
+            highScores: HighScore[] = state.highScores,
+            combo: number = Maybe.maybe(update.dropCombo).caseOf({
+                just: p => 0,
+                nothing: () => state.combo
+            });
 
-        if (General.isWellDefinedValue(update.points)) {
-            score += (update.points * combo);
+        Maybe.maybe(update.points).justDo(p => {
+            score += (p * Math.max(combo, 1));
             ++combo;
             stage = getStage(score);
-        }
+        });
 
         if (letterGrade === Grade.LetterGrade.f) {
-            update.mode = Mode.gameOver;
+            mode = Mode.gameOver;
         }
 
-        if (update.mode === Mode.gameOver) {
-            const highScore: IHighScore = {
-                value: score,
-                name: this.state.playerName,
-                dateStamp: General.getDateStamp(new Date())
-            };
-
-            highScores = highScores.concat(highScore)
+        if (mode === Mode.gameOver) {
+            highScores = highScores.concat(new HighScore(state.playerName, score, General.getDateStamp(new Date())))
                                    .sort((a, b) => b.value - a.value)
                                    .slice(0, numberOfHighScoresToPersist);
+        } else if (isInProgress(state.mode) && isInProgress(mode) && state.mode !== mode) {
+            mode === Mode.paused ? Mode.inGame : Mode.paused;
         }
-
-        if (update.mode === Mode.gameOver || update.mode === Mode.newGame) {
+        
+        if (mode === Mode.gameOver || mode === Mode.newGame) {
             score = 0;
             combo = 0;
             stage = 0;
             letterGrade = Grade.LetterGrade.aPlus;
         }
 
-        return new State(General.castSafeOr(update.mode, this.state.mode),
+        if (mode === Mode.newGame && state.mode === Mode.inGame) {
+            mode = Mode.quitConfirmation;
+        }
+
+        return new State(mode,
                          state.difficulty,
                          highScores,
-                         isValidPlayerName(update.playerName) ? update.playerName : defaultPlayerName,
+                         playerName,
                          combo,
                          score,
                          stage,

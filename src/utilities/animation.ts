@@ -1,4 +1,5 @@
 import { General } from './general';
+import { Maybe } from './maybe';
 
 export namespace Animation {
     export enum Timing {
@@ -38,75 +39,62 @@ export namespace Animation {
         private readonly onComplete: () => void;
         private readonly timing: Timing;
         private duration: number;
-        private pausedTime: number;
-        private startTime: number;
-        private id: number;
+        private pausedTime: Maybe<number>;
+        private startTime: Maybe<number>;
+        private id: Maybe<number>;
         
-        constructor(draw: (progress: number) => void, duration: number, timing: Timing, onComplete: () => void = undefined) {
+        constructor(draw: (progress: number) => void, duration: number, timing: Timing, onComplete: () => void) {
             this.draw = draw;
             this.onComplete = onComplete;
             this.duration = duration;
-            this.timing = General.castSafeOr(timing, Timing.linear);
-            this.id = undefined;
+            this.timing = Maybe.maybe(Timing[timing]).switchInto(timing, Timing.linear);
+            this.id = Maybe.nothing();
         };
 
-        private resetAnimationParameters(drawFinalFrame: boolean = false) : void {
-            if (General.isWellDefinedValue(this.id)) {
-                cancelAnimationFrame(this.id);
-            }
-
-            this.id = undefined;
-            this.startTime = undefined;
-            this.pausedTime = undefined;
-
-            if (drawFinalFrame) {
-                this.draw(1);
-            }
-
-            if (General.isWellDefinedValue(this.onComplete)) {
-                this.onComplete();
-            }
+        private resetAnimationParameters() : void {
+            this.id.justDo(id => cancelAnimationFrame(id));
+            this.id = Maybe.nothing();
+            this.startTime = Maybe.nothing();
+            this.pausedTime = Maybe.nothing();
+            this.onComplete();
         };
 
         private loopAnimation(time: number) : void {
-            let timeFraction = (time - this.startTime) / this.duration;
+            let timeFraction: number = (time - this.startTime.getOrDefault(time)) / this.duration;
             timeFraction = Math.min(timeFraction, 1);
     
             if (timeFraction < 1) {
                 this.draw(timingFunctions[this.timing](timeFraction));
-                this.id = requestAnimationFrame(this.loopAnimation);
+                this.id = Maybe.just(requestAnimationFrame(this.loopAnimation));
             } else {
-                this.resetAnimationParameters(true);
-            }
-        };
-
-        animate(duration: number = undefined) : void {
-            if (General.isWellDefinedValue(this.startTime)) {
                 this.resetAnimationParameters();
-                this.duration = General.castSafeOr(duration, this.duration);
             }
-
-            this.startTime = performance.now();
-            this.draw(0);
-            this.id = requestAnimationFrame(this.loopAnimation);
         };
 
-        cancel(drawFinalFrame: boolean = true) : void {
-            if (General.isWellDefinedValue(this.id)) {
-                this.resetAnimationParameters(drawFinalFrame);
-            }
+        animate(duration?: number) : void {
+            this.startTime.justDo(t => {
+                this.resetAnimationParameters();
+                this.duration = Maybe.maybe(duration).getOrDefault(this.duration);
+            });
+
+            this.startTime = Maybe.just(performance.now());
+            this.id = Maybe.just(requestAnimationFrame(this.loopAnimation));
+        };
+
+        cancel() : void {
+            this.id.justDo(this.resetAnimationParameters);
         };
 
         togglePaused() : void {
-            if (General.isWellDefinedValue(this.pausedTime)) {
-                this.startTime = performance.now() - (this.pausedTime - this.startTime);
-                this.pausedTime = undefined;
-                this.id = requestAnimationFrame(this.loopAnimation);
-            } else if (General.isWellDefinedValue(this.id)) {
-                cancelAnimationFrame(this.id);
-                this.id = undefined;
-                this.pausedTime = performance.now();
-            }
+            this.pausedTime.justDo(pt => {
+                this.startTime = Maybe.just(performance.now() - (pt- this.startTime.getOrDefault(pt)));
+                this.pausedTime = Maybe.nothing();
+                this.id = Maybe.just(requestAnimationFrame(this.loopAnimation));
+            }).otherwiseDo(this.id, t => {
+                cancelAnimationFrame(t);
+                this.id = Maybe.nothing();
+                this.pausedTime = Maybe.just(performance.now());
+            });
         };
     };
 };

@@ -7,6 +7,8 @@ import { GameOverlay } from './gameOverlay';
 import { General } from './general';
 import { Grade } from './grade';
 import { Grid } from './grid';
+import { PersistentStorage } from './persistentStorage';
+import { Maybe } from './maybe';
 import { Tile } from './tile';
 import { TopBar } from './topBar';
 
@@ -20,6 +22,8 @@ export {
     General,
     Grade,
     Grid,
+    Maybe,
+    PersistentStorage,
     Tile,
     TopBar
 };

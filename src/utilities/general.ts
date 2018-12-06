@@ -33,20 +33,32 @@ export namespace General {
         return value !== null && value !== undefined;
     };
 
-    export function isLocalStorageSupported() : boolean {
-        return typeof(Storage) !== 'undefined' && isWellDefinedValue(window.localStorage);
+    export function isFunction(value: any) : boolean {
+        return typeof(value) === 'function';
     };
 
-    export function castSafeOr<T>(first: T, second: T) : T {
-        return isWellDefinedValue(first) ? first : second;
+    export function isObject(value: any) : boolean {
+        return typeof(value) === 'object' && value !== null;
+    };
+
+    export function isString(value: any) : boolean {
+        return typeof(value) === 'string';
+    };
+
+    export function isNumber(value: any) : boolean {
+        return typeof(value) === 'number';
+    };
+
+    export function isFiniteNumber(value: any) : boolean {
+        return isNumber(value) && isFinite(value);
+    };
+
+    export function isInteger(value: any) : boolean {
+        return isFiniteNumber(value) && Math.floor(value) === value;
     };
 
     export function getDateStamp(date: Date) : string {
-        if (isWellDefinedValue(date)) {
-            return formatDatePart(date.getMonth() + 1) + '/' + formatDatePart(date.getDate()) + '/' + formatDatePart(date.getFullYear());
-        }
-
-        return undefined;
+        return formatDatePart(date.getMonth() + 1) + '/' + formatDatePart(date.getDate()) + '/' + formatDatePart(date.getFullYear());
     };
 
     export function camelCaseToKebabCase(camelCase: string) : string {
@@ -54,7 +66,7 @@ export namespace General {
             lowerCase: string,
             snakeCase: string = '';
 
-        if (isWellDefinedValue(camelCase) && camelCase.length > 0) {
+        if (camelCase.length > 0) {
             for (i = 0; i < camelCase.length; ++i) {
                 lowerCase = camelCase[i].toLowerCase();
 
@@ -67,6 +79,16 @@ export namespace General {
         }
 
         return snakeCase;
+    };
+
+    export function iterateIntoArray<T>(length: number, f: (index: number) => T) : T[] {
+        const array: T[] = [];
+
+        for (let i: number = 0; i < length; ++i) {
+            array.push(f(i));
+        }
+
+        return array;
     };
 
     export function fillArray<T>(value: T, length: number) : T[] {

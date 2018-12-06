@@ -10,34 +10,33 @@ import { GameOverlay } from './gameOverlay';
 export class Game extends React.PureComponent<Utilities.Game.IProps, Utilities.Game.State> {
     readonly state: Utilities.Game.State = Utilities.Game.getPersistedState();
 
-    private readonly quit = () : void => {
-        if (this.state.mode === Utilities.Game.Mode.inGame) {
-            this.setState({
-                mode: Utilities.Game.Mode.quitConfirmation
-            });
-        } else if (this.state.mode !== Utilities.Game.Mode.specifyName) {
-            this.setState({
-                mode: Utilities.Game.Mode.newGame,
-                combo: 0,
-                score: 0,
-                stage: 0,
-                letterGrade: Utilities.Grade.LetterGrade.aPlus
+    private readonly toggleTheme = () : void => {
+        if (this.state.mode !== Utilities.Game.Mode.specifyName) {
+            this.props.onUpdate({
+                theme: this.props.theme === Utilities.App.Theme.dark ? Utilities.App.Theme.light : Utilities.App.Theme.dark
             });
         }
+    };
+
+    private readonly handleUpdates = (update: Utilities.Game.IUpdate) : void => {
+        Utilities.Maybe.maybe(update.theme).justDo(this.toggleTheme).otherwiseDo(Utilities.Maybe.just(true), t => {
+            const nextState: Utilities.Game.State = Utilities.Game.getNextStateFromUpdate(update, this.state);
+
+            this.setState(nextState);
+            Utilities.Game.persistState(nextState);
+        });
+    };
+
+    private readonly quit = () : void => {
+        this.handleUpdates({
+            mode: Utilities.Game.Mode.newGame
+        });
     };
 
     private readonly togglePaused = () : void => {
         if (Utilities.Game.isInProgress(this.state.mode)) {
             this.setState({
                 mode: this.state.mode === Utilities.Game.Mode.paused ? Utilities.Game.Mode.inGame : Utilities.Game.Mode.paused
-            });
-        }
-    };
-
-    private readonly toggleTheme = () : void => {
-        if (this.state.mode !== Utilities.Game.Mode.specifyName) {
-            this.props.onUpdate({
-                theme: this.props.theme === Utilities.App.Theme.dark ? Utilities.App.Theme.light : Utilities.App.Theme.dark
             });
         }
     };
@@ -49,36 +48,10 @@ export class Game extends React.PureComponent<Utilities.Game.IProps, Utilities.G
     };
 
     private readonly onKeyDown = (keyboardEvent: KeyboardEvent) : void => {
-        const keyDownHandler = this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()];
-
-        if (Utilities.General.isWellDefinedValue(keyDownHandler)) {
-            keyDownHandler();
-        }
+        Utilities.Maybe.maybe(this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()]).justDo(kdh => kdh());
     };
 
-    private readonly handleUpdates = (update: Utilities.Game.IUpdate) : void => {
-        const nextState: Utilities.Game.State = Utilities.Game.getNextStateFromUpdate(update, this.state);
-
-        if (Utilities.General.isWellDefinedValue(update.theme)) {
-            this.toggleTheme();
-            return;
-        }
-
-        if (Utilities.Game.isInProgress(this.state.mode) && Utilities.Game.isInProgress(update.mode) && this.state.mode !== update.mode) {
-            this.togglePaused();
-            return;
-        }
-
-        if (Utilities.Game.isInProgress(this.state.mode) && update.mode === Utilities.Game.Mode.newGame) {
-            this.quit();
-            return;
-        }
-
-        this.setState(nextState);
-        Utilities.Game.persistState(nextState);
-    };
-
-    private getGameOverlay() : JSX.Element {
+    private getGameOverlay() : JSX.Element | boolean {
         if (this.state.mode !== Utilities.Game.Mode.inGame) {
             return <GameOverlay theme={this.props.theme}
                                 mode={this.state.mode}
@@ -89,7 +62,7 @@ export class Game extends React.PureComponent<Utilities.Game.IProps, Utilities.G
                    </GameOverlay>;
         }
 
-        return undefined;
+        return false;
     };
 
     componentDidMount() : void {

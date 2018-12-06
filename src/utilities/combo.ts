@@ -31,12 +31,12 @@ export namespace Combo {
 
     export class State {
         readonly animator: Animation.Animator;
-        overlayWidthPercentage: string;
+        overlayWidthPercentage: number;
         overlayClass: string;
 
         constructor(draw: (timeFraction: number) => void, duration: number, callback: () => void) {
             this.animator = new Animation.Animator(draw, duration, Animation.Timing.linear, callback);
-            this.overlayWidthPercentage = undefined;
+            this.overlayWidthPercentage = 0;
             this.overlayClass = '';
         };
     };

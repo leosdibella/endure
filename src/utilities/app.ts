@@ -1,4 +1,5 @@
-import { General } from './general';
+import { Maybe } from './maybe';
+import { PersistentStorage } from './persistentStorage';
 
 export namespace App {
     export enum Theme {
@@ -37,38 +38,23 @@ export namespace App {
     };
 
     export function getPersistedState() : State {
-        let theme: number;
+        const theme: Theme = PersistentStorage.fetch(themeLocalStorageKey).caseOf({
+            just: t => Maybe.maybe(Theme[t]).switchInto(t, defaultTheme),
+            nothing: () => defaultTheme
+        });
 
-        if (General.isLocalStorageSupported()) {
-            theme = parseInt(window.localStorage.getItem(themeLocalStorageKey));
-
-            if (!General.isWellDefinedValue(Theme[theme])) {
-                theme = defaultTheme;
-            }
-        }
-
-        return new State(theme as Theme, getOrientation());;
+        return new State(theme, getOrientation());
     };
     
     export function removeElementFocus() : void {
-        const focalElement: HTMLElement = document.activeElement as HTMLElement;
-
-        if (General.isWellDefinedValue(focalElement)) {
-            if (focalElement instanceof HTMLInputElement) {
-                const input: HTMLInputElement = focalElement as HTMLInputElement;
-
-                if (input.type === 'text') {
-                    return;
-                }
+        Maybe.maybe(document.activeElement as HTMLElement).justDo(e => {
+            if (!(e instanceof HTMLInputElement) || e.type !== 'text') {
+                e.blur();
             }
-
-            focalElement.blur();
-        }
+        });
     };
 
     export function persistState(state: State) : void {
-        if (General.isLocalStorageSupported()) {
-            window.localStorage.setItem(themeLocalStorageKey, String(state.theme));
-        }
+        PersistentStorage.persist(themeLocalStorageKey, state.theme);
     };
 };

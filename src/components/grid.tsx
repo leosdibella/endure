@@ -6,7 +6,7 @@ import '../styles/grid.scss';
 import { Tile } from './tile';
 
 export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.Grid.State> {
-    readonly state: Utilities.Grid.State = new Utilities.Grid.State();
+    readonly state: Utilities.Grid.State = new Utilities.Grid.State(this.props.orientation);
 
     private removeReducedTiles(reduction: Utilities.Grid.Reduction) : void {
          // TODO: Add Reduction Animations
@@ -33,12 +33,11 @@ export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.G
         }, () => this.removeReducedTiles(reduction));
     };
 
-    private rotateTiles(row: number, column: number) : void {
-        const index: number = Utilities.Grid.getTileIndexFromCoordinates(row, column),
-              rotatedTiles: Utilities.General.IDictionary<Utilities.Tile.Container> = Utilities.Grid.rotateTiles(this.state.tiles, this.state.tiles[index]);
+    private rotateTiles() : void {
+        const rotatedTiles: Utilities.General.IDictionary<Utilities.Tile.Container> = Utilities.Grid.rotateTiles(this.state);
 
         // TODO: Add Rotation Animations
-        this.setTiles(this.state.tiles.map(t => Utilities.General.isWellDefinedValue(rotatedTiles[t.index]) ? rotatedTiles[t.index] : t));
+        this.setTiles(this.state.tiles.map(t => Utilities.Maybe.maybe(rotatedTiles[t.index]).getOrDefault(t)));
     };
 
     private readonly handleUpdates = (row: number, column: number) : void => {
@@ -47,7 +46,7 @@ export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.G
                 processingInput: true,
                 column: column,
                 row: row,
-            }, () => this.rotateTiles(row, column));
+            }, () => this.rotateTiles());
         }
     };
 
@@ -93,11 +92,7 @@ export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.G
 
     private readonly onKeyDown = (keyboardEvent: KeyboardEvent) : void => {
         if (this.props.mode === Utilities.Game.Mode.inGame) {
-            const keyDownHandler: () => void = this.keyDownEventActionMap[keyboardEvent.key.toLocaleLowerCase()];
-
-            if (Utilities.General.isWellDefinedValue(keyDownHandler)) {
-                keyDownHandler();
-            }
+            Utilities.Maybe.maybe(this.keyDownEventActionMap[keyboardEvent.key.toLocaleLowerCase()]).justDo(kdh => kdh());
         }
     };
 
@@ -115,7 +110,7 @@ export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.G
 
     componentDidUpdate(previousProps: Utilities.Grid.IProps, previousState: Utilities.Grid.State) : void {
         if (!Utilities.Game.isInProgress(previousProps.mode) && Utilities.Game.isInProgress(this.props.mode)) {
-            this.setTiles(Utilities.Tile.generateTileContainers(), Utilities.Grid.initialRow, Utilities.Grid.initialColumn);
+            this.setTiles(Utilities.Grid.generateTiles(), Utilities.Grid.initialRow, Utilities.Grid.initialColumn);
         }
     };
 

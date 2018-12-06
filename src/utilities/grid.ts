@@ -110,14 +110,45 @@ export namespace Grid {
         [Tile.Link.none]: centralRotationMap
     };
 
+    function initializeGraph(numberOfRows: number, numberOfColumns: number) : General.IDictionary<number>[] {
+        const graph: General.IDictionary<number>[] = [];
+        let index: number;
+
+        for (let i: number = 0; i < numberOfRows; ++i) {
+            for (let j: number = 0; j < numberOfColumns; ++j) {
+                graph.push({});
+                index = getTileIndexFromCoordinates(i, j);
+
+                if (i > 0) {
+                    graph[index][Tile.Link.top] = getTileIndexFromCoordinates(i - 1, j);
+                }
+    
+                if (j < numberOfColumns - 1) {
+                    graph[index][Tile.Link.right] = getTileIndexFromCoordinates(i, j+ 1);
+                }
+    
+                if (i < numberOfRows - 1) {
+                    graph[index][Tile.Link.bottom] = getTileIndexFromCoordinates(i + 1, j);
+                }
+                if (j > 0) {
+                    graph[index][Tile.Link.left] = getTileIndexFromCoordinates(i, j - 1);
+                }
+            }
+        }
+
+        return graph;
+    };
+
     export class State {
         tiles: Tile.Container[];
+        graph: General.IDictionary<number>[];
         column: number;
         row: number;
         processingInput: boolean;
 
-        constructor() {
+        constructor(orientation: App.Orientation) {
             this.tiles = [];
+            this.graph = initializeGraph();
             this.row = initialRow;
             this.column = initialColumn;
             this.processingInput = true;
@@ -247,7 +278,7 @@ export namespace Grid {
         readonly tiles: Tile.Container[];
     };
 
-    export function reduceTiles(tiles: Tile.Container[]) : Reduction {
+    export function reduceTiles(state: State) : Reduction {
         const visited: General.IDictionary<boolean> = {};
 
         let keys: string[],
@@ -281,7 +312,7 @@ export namespace Grid {
         return reduction;
     };
 
-    function rotateTilesFromRotationMap(tiles: Tile.Container[], centerTile: Tile.Container, rotationMap: number[][]) : General.IDictionary<Tile.Container> {
+    function rotateTilesFromRotationMap(state: State, centerTile: Tile.Container, rotationMap: number[][]) : General.IDictionary<Tile.Container> {
         const rotatedTiles: General.IDictionary<Tile.Container> = {};
         
         let to: number[],
@@ -292,15 +323,16 @@ export namespace Grid {
         for (let i = 0; i < rotationMap.length; ++i) {
             from = i > 0 ? rotationMap[i - 1] : rotationMap[rotationMap.length - 1];
             to = rotationMap[i];
-            toTile = tiles[getTileIndexFromCoordinates(centerTile.row + to[0], centerTile.column + to[1])]
-            fromTile = tiles[getTileIndexFromCoordinates(centerTile.row + from[0], centerTile.column + from[1])];
+            toTile = state.tiles[getTileIndexFromCoordinates(centerTile.row + to[0], centerTile.column + to[1])]
+            fromTile = state.tiles[getTileIndexFromCoordinates(centerTile.row + from[0], centerTile.column + from[1])];
             rotatedTiles[toTile.index] = toTile.cloneWith(fromTile.color, fromTile.link, fromTile.detonationRange);
         }
 
         return rotatedTiles;
     };
 
-    export function rotateTiles(tiles: Tile.Container[], centerTile: Tile.Container) : General.IDictionary<Tile.Container> {
+    export function rotateTiles(state: State) : General.IDictionary<Tile.Container> {
+        const centerTile: Tile.Container = state.tiles[getTileIndexFromCoordinates(state.row, state.column)];
         let key: Tile.Link = Tile.Link.none;
 
         key |= centerTile.row === 0 ? Tile.Link.top : Tile.Link.none;
@@ -308,6 +340,18 @@ export namespace Grid {
         key |= centerTile.column === 0 ? Tile.Link.left : Tile.Link.none;
         key |= centerTile.column === numberOfTilesWide - 1 ? Tile.Link.right : Tile.Link.none;
 
-        return rotateTilesFromRotationMap(tiles, centerTile, rotationMaps[key]);
+        return rotateTilesFromRotationMap(state, centerTile, rotationMaps[key]);
+    };
+
+    export function generateTiles() : Tile.Container[] {
+        const tiles: Tile.Container[] = [];
+
+        for (let i: number = 0; i < numberOfTilesHigh; ++i) {
+            for (let j: number = 0; j < numberOfTilesWide; ++j) {
+                tiles.push(new Tile.Container(i, j, Tile.getRandomColor()));
+            }
+        }
+
+        return tiles;
     };
 };

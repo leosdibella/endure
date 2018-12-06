@@ -6,14 +6,14 @@ import '../styles/combo.scss';
 export class Combo extends React.PureComponent<Utilities.Combo.IProps, Utilities.Combo.State> {
     private adjustOverlay(timeFraction: number) : void {
         this.setState({
-            overlayWidthPercentage: ((1 - timeFraction) * 100).toFixed(2) + '%',
+            overlayWidthPercentage: ((1 - timeFraction) * 100),
             overlayClass: Utilities.Combo.getClassFromTimeFraction(timeFraction)
         });
     };
 
     private onAnimationComplete() : void {
         this.setState({
-            overlayWidthPercentage: undefined,
+            overlayWidthPercentage: 0,
             overlayClass: ''
         });
 
@@ -44,10 +44,10 @@ export class Combo extends React.PureComponent<Utilities.Combo.IProps, Utilities
     
     render() : JSX.Element {
         const style: Utilities.General.ICssStyle = {
-            width: this.state.overlayWidthPercentage
+            width: this.state.overlayWidthPercentage.toFixed(2) + '%'
         };
 
-        return <span className={'top-bar-combo-container ' + Utilities.App.Theme[this.props.theme] + (!Utilities.General.isWellDefinedValue(this.state.overlayWidthPercentage) ? ' hide': '')}>
+        return <span className={'top-bar-combo-container ' + Utilities.App.Theme[this.props.theme] + (this.props.combo < Utilities.Combo.minimumViableCombo ? ' hide': '')}>
                     <div className='top-bar-combo combo-bar-base'>
                         Combo: x{this.props.combo}
                     </div>
@@ -55,6 +55,6 @@ export class Combo extends React.PureComponent<Utilities.Combo.IProps, Utilities
                          style={style}>
                         Combo: x{this.props.combo}
                     </div>
-              </span>;
+               </span>;
     };
 };

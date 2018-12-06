@@ -6,12 +6,13 @@ import '../styles/app.scss';
 import { AppBackdrop } from './appBackdrop';
 import { Game } from './game';
 
-
 export class App extends React.PureComponent<object, Utilities.App.State> {
     readonly state: Utilities.App.State = Utilities.App.getPersistedState();
 
     private readonly handleUpdate = (updates: Utilities.App.IUpdate) : void => {
-        const nextState: Utilities.App.State = new Utilities.App.State(Utilities.General.castSafeOr(updates.theme, this.state.theme), this.state.orientation);
+        const theme: Utilities.App.Theme = Utilities.Maybe.maybe(updates.theme).getOrDefault(this.state.theme),
+              nextState: Utilities.App.State = new Utilities.App.State(theme, this.state.orientation);
+
         this.setState(nextState);
         Utilities.App.persistState(nextState);
     };

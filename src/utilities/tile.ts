@@ -92,7 +92,6 @@ export namespace Tile {
         readonly row: number;
         readonly column: number;
         readonly index: number;
-        readonly neighbors: General.IDictionary<Container>;
         color: Tile.Color;
         link: Link;
         detonationRange: DetonationRange;
@@ -101,58 +100,18 @@ export namespace Tile {
                     column: number,
                     color: Tile.Color,
                     detonationRange: DetonationRange = DetonationRange.none,
-                    link: Link = Link.none,
-                    index?: number,
-                    neighbors?: General.IDictionary<Container>) {
+                    link: Link = Link.none) {
             this.row = row;
             this.column = column;
             this.color = color;
             this.detonationRange = detonationRange;
             this.link = link;
-            this.index = General.castSafeOr(index, Grid.getTileIndexFromCoordinates(row, column));
-            this.neighbors = General.castSafeOr(neighbors, {});
+            this.index = Grid.getTileIndexFromCoordinates(row, column);
         };
 
         cloneWith(color: Color, link: Link, detonationRange: DetonationRange) : Container {
-            return new Container(this.row, this.column, color, detonationRange, link, this.index, this.neighbors);
+            return new Container(this.row, this.column, color, detonationRange, link);
         };
-    };
-
-    function initializeNeighbors(tiles: Container[]) : void {
-        let tile: Container;
-
-        for (let i = 0; i < tiles.length; ++i) {
-            tile = tiles[i];
-
-            if (tile.row > 0) {
-                tile.neighbors[Link.top] = tiles[Grid.getTileIndexFromCoordinates(tile.row - 1, tile.column)];
-            }
-
-            if (tile.column < Grid.numberOfTilesWide - 1) {
-                tile.neighbors[Link.right] = tiles[Grid.getTileIndexFromCoordinates(tile.row, tile.column + 1)];
-            }
-
-            if (tile.row < Grid.numberOfTilesHigh - 1) {
-                tile.neighbors[Link.bottom] = tiles[Grid.getTileIndexFromCoordinates(tile.row + 1, tile.column)];
-            }
-            if (tile.column > 0) {
-                tile.neighbors[Link.left] = tiles[Grid.getTileIndexFromCoordinates(tile.row, tile.column - 1)];
-            }
-        }
-    };
-    
-    export function generateTileContainers() : Container[] {
-        const tiles: Container[] = [];
-
-        for (let i = 0; i < Grid.numberOfTilesHigh; ++i) {
-            for (let j = 0; j < Grid.numberOfTilesWide; ++j) {
-                tiles.push(new Container(i, j, getRandomColor()));
-            }
-        }
-
-        initializeNeighbors(tiles);
-
-        return tiles;
     };
 
     export interface IProps {
