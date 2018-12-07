@@ -113,7 +113,7 @@ export namespace Grid {
         initialColumn: number;
     };
 
-    export const dimensions: General.IDictionary<IGridDimension> = {
+    const dimensions: General.IDictionary<IGridDimension> = {
         [App.Orientation.landscape]: {
             numberOfRows: 9,
             numberOfColumns: 13,
@@ -183,7 +183,7 @@ export namespace Grid {
     };
 
     export function getGridDimension(props: IProps) : IGridDimension {
-        return getGridDimension(props);
+        return dimensions[props.orientation];
     };
 
     export function getTileIndexFromCoordinates(dimension: IGridDimension, row: number, column: number) : number {

@@ -24,11 +24,6 @@ export namespace General {
         backgroundColor?: string;
     };
 
-    export interface TimerDependencies {
-        decrementInterval: number;
-        totalDuration: number;
-    };
-
     export function isWellDefinedValue(value: any) : boolean {
         return value !== null && value !== undefined;
     };

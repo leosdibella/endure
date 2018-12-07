@@ -1,6 +1,5 @@
 import { Game } from './game';
 import { General } from './general';
-import { Grid } from './grid';
 
 export namespace Tile {
     export const dimension: number = 50;
