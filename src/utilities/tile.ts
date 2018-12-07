@@ -98,6 +98,7 @@ export namespace Tile {
 
         constructor(row: number,
                     column: number,
+                    index: number,
                     color: Tile.Color,
                     detonationRange: DetonationRange = DetonationRange.none,
                     link: Link = Link.none) {
@@ -106,11 +107,11 @@ export namespace Tile {
             this.color = color;
             this.detonationRange = detonationRange;
             this.link = link;
-            this.index = Grid.getTileIndexFromCoordinates(row, column);
+            this.index = index;
         };
 
         cloneWith(color: Color, link: Link, detonationRange: DetonationRange) : Container {
-            return new Container(this.row, this.column, color, detonationRange, link);
+            return new Container(this.row, this.column, this.index, color, detonationRange, link);
         };
     };
 

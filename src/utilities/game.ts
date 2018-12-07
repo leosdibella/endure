@@ -119,13 +119,9 @@ export namespace Game {
     
     export function getPersistedState() : State {
         const playerName: string = PersistentStorage.fetch(playerNameLocalStorageKey).getOrDefault(defaultPlayerName),
-              highScores: HighScore[] = PersistentStorage.fetch(highScoresLocalStorageKey).caseOf({
-                 just: hs => getHighScores(hs),
-                 nothing: () => []
-              }), difficulty: Difficulty = PersistentStorage.fetch(difficultyLocalStorageKey).caseOf({
-                 just: d => Maybe.maybe(Difficulty[d]).switchInto(d, defaultDifficulty),
-                 nothing: () => defaultDifficulty
-              });
+              highScores: HighScore[] = PersistentStorage.fetch(highScoresLocalStorageKey).caseOf(hs => getHighScores(hs), () => []),
+              difficulty: Difficulty = PersistentStorage.fetch(difficultyLocalStorageKey).caseOf(d => new Maybe(Difficulty[d]).switchInto(d, defaultDifficulty),
+                                                                                                 () => defaultDifficulty);
 
         return new State(Mode.newGame,
                          difficulty,
@@ -147,16 +143,13 @@ export namespace Game {
     export function getNextStateFromUpdate(update: IUpdate, state: State) : State {
         let stage: number = state.score,
             score: number = state.score,
-            playerName: string = Maybe.maybe(update.playerName).getOrDefault(state.playerName),
-            mode: Game.Mode = Maybe.maybe(update.mode).getOrDefault(state.mode),
-            letterGrade: number = Maybe.maybe(update.letterGrade).getOrDefault(state.letterGrade),
+            playerName: string = new Maybe(update.playerName).getOrDefault(state.playerName),
+            mode: Game.Mode = new Maybe(update.mode).getOrDefault(state.mode),
+            letterGrade: number = new Maybe(update.letterGrade).getOrDefault(state.letterGrade),
             highScores: HighScore[] = state.highScores,
-            combo: number = Maybe.maybe(update.dropCombo).caseOf({
-                just: p => 0,
-                nothing: () => state.combo
-            });
+            combo: number = new Maybe(update.dropCombo).caseOf(p => 0, () => state.combo);
 
-        Maybe.maybe(update.points).justDo(p => {
+        new Maybe(update.points).justDo(p => {
             score += (p * Math.max(combo, 1));
             ++combo;
             stage = getStage(score);

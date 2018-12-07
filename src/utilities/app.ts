@@ -38,16 +38,13 @@ export namespace App {
     };
 
     export function getPersistedState() : State {
-        const theme: Theme = PersistentStorage.fetch(themeLocalStorageKey).caseOf({
-            just: t => Maybe.maybe(Theme[t]).switchInto(t, defaultTheme),
-            nothing: () => defaultTheme
-        });
+        const theme: Theme = PersistentStorage.fetch(themeLocalStorageKey).caseOf(t => new Maybe(Theme[t]).switchInto(t, defaultTheme), () => defaultTheme);
 
         return new State(theme, getOrientation());
     };
     
     export function removeElementFocus() : void {
-        Maybe.maybe(document.activeElement as HTMLElement).justDo(e => {
+        new Maybe(document.activeElement as HTMLElement).justDo(e => {
             if (!(e instanceof HTMLInputElement) || e.type !== 'text') {
                 e.blur();
             }

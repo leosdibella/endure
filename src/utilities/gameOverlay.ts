@@ -17,12 +17,12 @@ export namespace GameOverlay {
             this.className = className;
             this.options = options;
             this.actions = [];
-            this.defaultOptionsIndex = Maybe.maybe(defaultOptionsIndex);
+            this.defaultOptionsIndex = new Maybe(defaultOptionsIndex);
         };
     };
 
     const menuOptionInitializers: Maybe<((callback: (update: Game.IUpdate) => void, onNameChange: () => void) => MenuOption)>[] = [
-        Maybe.just((callback: (update: Game.IUpdate) => void) : MenuOption => {
+        new Maybe((callback: (update: Game.IUpdate) => void) : MenuOption => {
             const menuOption: MenuOption = new MenuOption('Endure', 'new-game', ['New Game', 'Set Name', 'Difficulty', 'High Scores', 'Settings'], 0),
                   gameModes: Game.Mode[] = [Game.Mode.newGame, Game.Mode.specifyName, Game.Mode.selectDifficulty, Game.Mode.highScores, Game.Mode.setTheme];
 
@@ -34,7 +34,7 @@ export namespace GameOverlay {
 
             return menuOption;
         }),
-        Maybe.just((callback: (update: Game.IUpdate) => void, onNameChange: () => void) : MenuOption => {
+        new Maybe((callback: (update: Game.IUpdate) => void, onNameChange: () => void) : MenuOption => {
             const menuOption: MenuOption = new MenuOption('Name?', 'player-name', ['Remember it!', 'Forget it.'], 0);
 
             menuOption.actions.push(onNameChange);
@@ -45,7 +45,7 @@ export namespace GameOverlay {
 
             return menuOption;
         }),
-        Maybe.just((callback: (update: Game.IUpdate) => void) : MenuOption => {
+        new Maybe((callback: (update: Game.IUpdate) => void) : MenuOption => {
             const menuOption: MenuOption = new MenuOption( 'Grade Level', 'select-difficulty', ['[ Pre-K ] I made poop.',  '[ K - 5 ] No I don\'t wanna!', '[ 6 - 8 ] Remove the training wheels!', '[ 9 - 12 ] Test me sensei!', '[ 12+ ] I know kung fu.']),
                   difficulties: string[] = Object.keys(Game.Difficulty);
 
@@ -58,8 +58,8 @@ export namespace GameOverlay {
 
             return menuOption;
         }),
-        Maybe.nothing(),
-        Maybe.just((callback: (update: Game.IUpdate) => void) : MenuOption => {
+        new Maybe(),
+        new Maybe((callback: (update: Game.IUpdate) => void) : MenuOption => {
             const menuOption: MenuOption = new MenuOption('Game Over', 'game-over', ['Put me in coach!', 'I Quit.'], 0),
                   gameModes: Game.Mode[] = [Game.Mode.inGame, Game.Mode.newGame];
 
@@ -71,7 +71,7 @@ export namespace GameOverlay {
 
             return menuOption;
         }),
-        Maybe.just((callback: (update: Game.IUpdate) => void) : MenuOption => {
+        new Maybe((callback: (update: Game.IUpdate) => void) : MenuOption => {
             const menuOption: MenuOption = new MenuOption('Timeout', 'paused', ['Put me in coach!', 'I Quit.'], 0),
                   gameModes: Game.Mode[] = [Game.Mode.paused, Game.Mode.newGame];
 
@@ -83,7 +83,7 @@ export namespace GameOverlay {
 
             return menuOption;
         }),
-        Maybe.just((callback: (update: Game.IUpdate) => void) : MenuOption => {
+        new Maybe((callback: (update: Game.IUpdate) => void) : MenuOption => {
             const menuOption: MenuOption = new MenuOption('Quit?', 'quit-confirmation', ['Yep', 'Nope'], 1),
                   gameModes: Game.Mode[] = [Game.Mode.newGame, Game.Mode.inGame];
 
@@ -95,7 +95,7 @@ export namespace GameOverlay {
 
             return menuOption;
         }),
-        Maybe.just((callback: (update: Game.IUpdate) => void) : MenuOption => {
+        new Maybe((callback: (update: Game.IUpdate) => void) : MenuOption => {
             const menuOption: MenuOption = new MenuOption('Honor Roll', 'high-scores', ['Leave'], 0);
 
             menuOption.actions.push(() => callback({
@@ -104,7 +104,7 @@ export namespace GameOverlay {
 
             return menuOption;
         }),
-        Maybe.just((callback: (update: Game.IUpdate) => void) : MenuOption => {
+        new Maybe((callback: (update: Game.IUpdate) => void) : MenuOption => {
             const menuOption: MenuOption = new MenuOption('Lights On?', 'theme', ['Yep', 'Nope']),
                   themes: string[] = Object.keys(App.Theme);
 
@@ -126,10 +126,7 @@ export namespace GameOverlay {
             this.menuOptions = [];
 
             for (let i: number = 0; i < menuOptionInitializers.length; ++i) {
-                this.menuOptions.push(menuOptionInitializers[i].caseOf({
-                    just: moi => Maybe.just(moi(callback, onNameChange)),
-                    nothing: () => Maybe.nothing() as Maybe<MenuOption>
-                }));
+                this.menuOptions.push(menuOptionInitializers[i].caseOf(moi => new Maybe(moi(callback, onNameChange)), () => new Maybe() as Maybe<MenuOption>));
             }
         };
     };

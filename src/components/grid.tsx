@@ -6,7 +6,7 @@ import '../styles/grid.scss';
 import { Tile } from './tile';
 
 export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.Grid.State> {
-    readonly state: Utilities.Grid.State = new Utilities.Grid.State(this.props.orientation);
+    readonly state: Utilities.Grid.State = new Utilities.Grid.State(this.props);
 
     private removeReducedTiles(reduction: Utilities.Grid.Reduction) : void {
          // TODO: Add Reduction Animations
@@ -23,7 +23,7 @@ export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.G
     };
 
     private setTiles = (tiles: Utilities.Tile.Container[], row: number = this.state.row, column: number = this.state.column) : void => {
-        const reduction: Utilities.Grid.Reduction = Utilities.Grid.reduceTiles(tiles);
+        const reduction: Utilities.Grid.Reduction = Utilities.Grid.reduceTiles(this.state);
 
         this.setState({
             processingInput: true,
@@ -34,43 +34,49 @@ export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.G
     };
 
     private rotateTiles() : void {
-        const rotatedTiles: Utilities.General.IDictionary<Utilities.Tile.Container> = Utilities.Grid.rotateTiles(this.state);
+        const rotatedTiles: Utilities.General.IDictionary<Utilities.Tile.Container> = Utilities.Grid.rotateTiles(this.props, this.state);
 
         // TODO: Add Rotation Animations
-        this.setTiles(this.state.tiles.map(t => Utilities.Maybe.maybe(rotatedTiles[t.index]).getOrDefault(t)));
+        this.setTiles(this.state.tiles.map(t => new Utilities.Maybe(rotatedTiles[t.index]).getOrDefault(t)));
+    };
+
+    private detonateTile() : void {
+
     };
 
     private readonly handleUpdates = (row: number, column: number) : void => {
         if (!this.state.processingInput) {
+            const tile: Utilities.Tile.Container = this.state.tiles[Utilities.Grid.getTileIndexFromCoordinates(Utilities.Grid.getGridDimension(this.props), row, column)];
+
             this.setState({
                 processingInput: true,
                 column: column,
                 row: row,
-            }, () => this.rotateTiles());
+            }, () => tile.detonationRange === Utilities.Tile.DetonationRange.none ? this.rotateTiles() : this.detonateTile());
         }
     };
 
     private readonly moveRight = () : void => {
         this.setState({
-            column: this.state.column < Utilities.Grid.numberOfTilesWide - 1 ? this.state.column + 1 : 0
+            column: Utilities.Grid.movementFunctions[Utilities.Tile.Link.right](this.props, this.state)
         });
     };
     
     private readonly moveLeft = () : void => {
         this.setState({
-            column: this.state.column > 0 ? this.state.column - 1 : Utilities.Grid.numberOfTilesWide - 1
+            column: Utilities.Grid.movementFunctions[Utilities.Tile.Link.left](this.props, this.state)
         });
     };
 
     private readonly moveUp = () : void => {
         this.setState({
-            row: this.state.row > 0 ? this.state.row - 1 : Utilities.Grid.numberOfTilesHigh - 1
+            row: Utilities.Grid.movementFunctions[Utilities.Tile.Link.top](this.props, this.state)
         });
     };
 
     private readonly moveDown = () : void => {
         this.setState({
-            row: this.state.row < Utilities.Grid.numberOfTilesHigh - 1 ? this.state.row + 1 : 0
+            row: Utilities.Grid.movementFunctions[Utilities.Tile.Link.bottom](this.props, this.state)
         });
     };
 
@@ -92,7 +98,7 @@ export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.G
 
     private readonly onKeyDown = (keyboardEvent: KeyboardEvent) : void => {
         if (this.props.mode === Utilities.Game.Mode.inGame) {
-            Utilities.Maybe.maybe(this.keyDownEventActionMap[keyboardEvent.key.toLocaleLowerCase()]).justDo(kdh => kdh());
+            new Utilities.Maybe(this.keyDownEventActionMap[keyboardEvent.key.toLocaleLowerCase()]).justDo(kdh => kdh());
         }
     };
 
@@ -110,7 +116,9 @@ export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.G
 
     componentDidUpdate(previousProps: Utilities.Grid.IProps, previousState: Utilities.Grid.State) : void {
         if (!Utilities.Game.isInProgress(previousProps.mode) && Utilities.Game.isInProgress(this.props.mode)) {
-            this.setTiles(Utilities.Grid.generateTiles(), Utilities.Grid.initialRow, Utilities.Grid.initialColumn);
+            const dimension: Utilities.Grid.IGridDimension = Utilities.Grid.getGridDimension(this.props);
+
+            this.setTiles(Utilities.Grid.generateTiles(dimension), dimension.initialRow, dimension.initialColumn);
         }
     };
 

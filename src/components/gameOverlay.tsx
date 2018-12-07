@@ -17,7 +17,7 @@ export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProp
     };
 
     private readonly onKeyDown = (keyboardEvent: KeyboardEvent) : void => {
-        Utilities.Maybe.maybe(this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()]).justDo(kdh => kdh());
+        new Utilities.Maybe(this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()]).justDo(kdh => kdh());
     };
 
     private readonly saveNameChanges = () : void => {
@@ -38,12 +38,12 @@ export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProp
             const overlayTile: JSX.Element = <div className={'game-overlay-tile ' + Utilities.App.Theme[this.props.theme]}>
                                              </div>;
 
-            return Utilities.Maybe.just(<div key={1}
-                                             className={'game-overlay-' + mo.className + '-text'}>
+            return new Utilities.Maybe(<div key={1}
+                                            className={'game-overlay-' + mo.className + '-text'}>
                                             {overlayTile}
                                             {mo.title}
                                             {overlayTile}
-                                        </div>);
+                                       </div>);
         });
     };
 
@@ -94,17 +94,17 @@ export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProp
     };
 
     private getGameOverlayExtras() : Utilities.Maybe<JSX.Element> {
-        let maybeJsx: Utilities.Maybe<JSX.Element> = Utilities.Maybe.nothing();
+        let maybeJsx: Utilities.Maybe<JSX.Element> = new Utilities.Maybe();
         
-        Utilities.Maybe.maybe(this.props.mode === Utilities.Game.Mode.highScores).justDo(t => {
-            maybeJsx = Utilities.Maybe.just(this.getHighScoresOverlayExtras());
-        }).otherwiseDo(Utilities.Maybe.just(this.props.mode === Utilities.Game.Mode.specifyName), t => {
-            maybeJsx = Utilities.Maybe.just(<div key={2}
-                                                 className='game-overlay-player-name-input-container'>
+        new Utilities.Maybe(this.props.mode === Utilities.Game.Mode.highScores).justDo(() => {
+            maybeJsx = new Utilities.Maybe(this.getHighScoresOverlayExtras());
+        }).otherwiseJustDo(new Utilities.Maybe(this.props.mode === Utilities.Game.Mode.specifyName), () => {
+            maybeJsx = new Utilities.Maybe(<div key={2}
+                                                className='game-overlay-player-name-input-container'>
                                                 <input value={this.state.playerName}
                                                        className={Utilities.App.Theme[this.props.theme]}
                                                        onChange={this.handleNameChanges}/>
-                                            </div>);
+                                           </div>);
         });
 
         return maybeJsx;
@@ -112,7 +112,7 @@ export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProp
 
     private getGameOverlayButtonPanel() : Utilities.Maybe<JSX.Element> {
         return this.state.menu.menuOptions[this.props.mode].bind(mo => {
-            const buttons: JSX.Element[] = Utilities.General.iterateIntoArray(mo.options.length, i => {
+            const buttons: JSX.Element[] = Utilities.General.fillArray(mo.options.length, i => {
                 return <button key={i}
                                className={'game-overlay-button' + (this.state.selectedOptionIndex === i ? ' game-overlay-selected-option': '')}
                                onClick={mo.actions[i]}>
@@ -120,10 +120,10 @@ export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProp
                        </button>;
             });
 
-            return Utilities.Maybe.just(<div key={3}
-                                             className='game-overlay-button-panel'>
+            return new Utilities.Maybe(<div key={3}
+                                            className='game-overlay-button-panel'>
                                             {buttons}
-                                        </div>);
+                                       </div>);
         });
     };
 
@@ -144,10 +144,8 @@ export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProp
             return this.props.theme === Utilities.App.Theme.light ? 0 : 1
         }
 
-        return this.state.menu.menuOptions[this.props.mode].caseOf({
-            just: mo => mo.defaultOptionsIndex.getOrDefault(Utilities.GameOverlay.defaultDefaultOptionsIndex),
-            nothing: () => Utilities.GameOverlay.defaultDefaultOptionsIndex
-        });
+        return this.state.menu.menuOptions[this.props.mode].caseOf(mo => mo.defaultOptionsIndex.getOrDefault(Utilities.GameOverlay.defaultDefaultOptionsIndex),
+                                                                   () => Utilities.GameOverlay.defaultDefaultOptionsIndex);
     };
 
     private incrementOrDecrementOptionsIndex(direction: number) : void {

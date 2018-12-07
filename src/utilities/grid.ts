@@ -2,15 +2,9 @@ import { App } from './app';
 import { Game } from './game';
 import { General } from './general';
 import { Tile } from './tile';
+import { Maybe } from './utilities';
 
 export namespace Grid {
-    export const numberOfTilesHigh: number = 13;
-    export const numberOfTilesWide: number = 9;
-    export const tileDimension: number = 60;
-    export const minimumTileChainLength = 4;
-    export const initialRow: number = 6;
-    export const initialColumn: number = 4;
-
     const tileRelations: General.IDictionary<number[]> = {
         self: [0, 0],
         topLeft: [-1, -1],
@@ -110,33 +104,64 @@ export namespace Grid {
         [Tile.Link.none]: centralRotationMap
     };
 
-    function initializeGraph(numberOfRows: number, numberOfColumns: number) : General.IDictionary<number>[] {
+    const minimumTileChainLength = 4;
+
+    export interface IGridDimension {
+        numberOfRows: number;
+        numberOfColumns: number;
+        initialRow: number;
+        initialColumn: number;
+    };
+
+    export const dimensions: General.IDictionary<IGridDimension> = {
+        [App.Orientation.landscape]: {
+            numberOfRows: 9,
+            numberOfColumns: 13,
+            initialRow: 4,
+            initialColumn: 6
+        },
+        [App.Orientation.portrait]: {
+            numberOfRows: 13,
+            numberOfColumns: 9,
+            initialRow: 6,
+            initialColumn: 4
+        }
+    };
+
+    function initializeGraph(dimension: IGridDimension) : General.IDictionary<number>[] {
         const graph: General.IDictionary<number>[] = [];
         let index: number;
 
-        for (let i: number = 0; i < numberOfRows; ++i) {
-            for (let j: number = 0; j < numberOfColumns; ++j) {
+        for (let i: number = 0; i < dimension.numberOfRows; ++i) {
+            for (let j: number = 0; j < dimension.numberOfColumns; ++j) {
                 graph.push({});
-                index = getTileIndexFromCoordinates(i, j);
+                index = getTileIndexFromCoordinates(dimension, i, j);
 
                 if (i > 0) {
-                    graph[index][Tile.Link.top] = getTileIndexFromCoordinates(i - 1, j);
+                    graph[index][Tile.Link.top] = getTileIndexFromCoordinates(dimension, i - 1, j);
                 }
     
-                if (j < numberOfColumns - 1) {
-                    graph[index][Tile.Link.right] = getTileIndexFromCoordinates(i, j+ 1);
+                if (j < dimension.numberOfColumns - 1) {
+                    graph[index][Tile.Link.right] = getTileIndexFromCoordinates(dimension, i, j+ 1);
                 }
     
-                if (i < numberOfRows - 1) {
-                    graph[index][Tile.Link.bottom] = getTileIndexFromCoordinates(i + 1, j);
+                if (i < dimension.numberOfRows - 1) {
+                    graph[index][Tile.Link.bottom] = getTileIndexFromCoordinates(dimension, i + 1, j);
                 }
                 if (j > 0) {
-                    graph[index][Tile.Link.left] = getTileIndexFromCoordinates(i, j - 1);
+                    graph[index][Tile.Link.left] = getTileIndexFromCoordinates(dimension, i, j - 1);
                 }
             }
         }
 
         return graph;
+    };
+
+    export interface IProps {
+        theme: App.Theme;
+        orientation: App.Orientation;
+        mode: Game.Mode;
+        readonly onUpdate: (updates: Game.IUpdate) => void;
     };
 
     export class State {
@@ -146,98 +171,103 @@ export namespace Grid {
         row: number;
         processingInput: boolean;
 
-        constructor(orientation: App.Orientation) {
+        constructor(props: IProps) {
+            const dimension: IGridDimension = getGridDimension(props);
+
             this.tiles = [];
-            this.graph = initializeGraph();
-            this.row = initialRow;
-            this.column = initialColumn;
+            this.graph = initializeGraph(dimension);
+            this.row = dimension.initialRow;
+            this.column = dimension.initialColumn;
             this.processingInput = true;
         };
     };
-    
-    export interface IProps {
-        theme: App.Theme;
-        orientation: App.Orientation;
-        mode: Game.Mode;
-        readonly onUpdate: (updates: Game.IUpdate) => void;
+
+    export function getGridDimension(props: IProps) : IGridDimension {
+        return getGridDimension(props);
     };
 
-    export function getTileIndexFromCoordinates(row: number, column: number) : number {
-        return row * numberOfTilesWide + column;
+    export function getTileIndexFromCoordinates(dimension: IGridDimension, row: number, column: number) : number {
+        return row * dimension.numberOfRows + column;
     };
 
-    function chainDetonation(stack: Tile.Container[]) : Tile.Container[] {
+    function chainDetonation(state: State, stack: Tile.Container[]) : Tile.Container[] {
         const detonatedTiles: Tile.Container[] = [],
               visited: General.IDictionary<boolean> = {};
 
         let tile: Tile.Container,
+            neighbors: General.IDictionary<number>,
             neighbor: Tile.Container;
 
         while (stack.length > 0) {
-            tile = stack.pop();
+            tile = stack.pop() as Tile.Container;
             detonatedTiles.push(tile);
             visited[tile.index] = true;
+            neighbors = state.graph[tile.index];
 
-            for (let j: number = 0; j < Tile.neighborIndices.length; ++j) {
-                neighbor = tile.neighbors[Tile.neighborIndices[j]];
-
-                if (neighbor.color == tile.color && !visited[neighbor.index]) {
-                    stack.push(neighbor);
-                }
+            for (let i: number = 0; i < Tile.neighborIndices.length; ++i) {
+                new Maybe(neighbors[Tile.neighborIndices[i]]).justDo(index => {
+                    neighbor = state.tiles[index];
+                    
+                    if (neighbor.color == tile.color && !visited[neighbor.index]) {
+                        stack.push(neighbor);
+                    }
+                });
             }
         }
 
-        return detonatedTiles.map(t => t.cloneWith(Tile.Color.none, Tile.Link.none, Tile.DetonationRange.none))
-                             .sort((a, b) => a.index - b.index);
+        return detonatedTiles.map(t => t.cloneWith(Tile.Color.none, Tile.Link.none, Tile.DetonationRange.none)).sort((a, b) => a.index - b.index);
     };
 
-    export function detonateTile(tiles: Tile.Container[], tile: Tile.Container) : Tile.Container[] {
-        const stack: Tile.Container[] = [tile];
+    export function detonateTile(props: IProps, state: State) : Tile.Container[] {
+        const dimension: IGridDimension = getGridDimension(props),
+              detonationCenter: Tile.Container = state.tiles[getTileIndexFromCoordinates(dimension, state.row, state.column)],
+              stack: Tile.Container[] = [detonationCenter];
     
         let index: number;
 
-        for (let i: number = 1; i <= tile.detonationRange; ++i) {
-            stack.push(tiles[getTileIndexFromCoordinates(tile.row + i % numberOfTilesHigh, tile.column)]);
-            stack.push(tiles[getTileIndexFromCoordinates(tile.row, tile.column + i % numberOfTilesWide)]);
+        for (let i: number = 1; i <= detonationCenter.detonationRange; ++i) {
+            stack.push(state.tiles[getTileIndexFromCoordinates(dimension, detonationCenter.row + i % dimension.numberOfRows, detonationCenter.column)]);
+            stack.push(state.tiles[getTileIndexFromCoordinates(dimension, detonationCenter.row, detonationCenter.column + i % dimension.numberOfColumns)]);
 
-            index = tile.row - i % numberOfTilesHigh;
-            index += index < 0 ? numberOfTilesHigh : 0;
-            stack.push(tiles[getTileIndexFromCoordinates(index, tile.column)]);
+            index = detonationCenter.row - i % dimension.numberOfRows;
+            index += index < 0 ? dimension.numberOfRows : 0;
+            stack.push(state.tiles[getTileIndexFromCoordinates(dimension, index, detonationCenter.column)]);
 
-            index = tile.column - i % numberOfTilesWide;
-            index += index < 0 ? numberOfTilesWide : 0;
-            stack.push(tiles[getTileIndexFromCoordinates(tile.row, index)]);
+            index = detonationCenter.column - i % dimension.numberOfColumns;
+            index += index < 0 ? dimension.numberOfColumns : 0;
+            stack.push(state.tiles[getTileIndexFromCoordinates(dimension, detonationCenter.row, index)]);
         }
 
-        return chainDetonation(stack);
+        return chainDetonation(state, stack);
     };
 
-    export function cascadeTiles(tiles: Tile.Container[]) : Tile.Container[][] {
+    export function cascadeTiles(props: IProps, state: State) : Tile.Container[][] {
         let j: number,
-            tileUpdates: Tile.Container[][] = General.fillArray([], numberOfTilesWide),
+            dimension: IGridDimension = getGridDimension(props),
+            tileUpdates: Tile.Container[][] = General.fillArray(dimension.numberOfColumns, () => []),
             reorderedTiles: Tile.Container[],
-            hasDetonationTile: boolean = tiles.filter(t => t.detonationRange !== Tile.DetonationRange.none).length > 0,
+            hasDetonationTile: boolean = state.tiles.filter(t => t.detonationRange !== Tile.DetonationRange.none).length > 0,
             detonationRange: Tile.DetonationRange,
             color: Tile.Color;
 
-        for (let i: number = 0; i < numberOfTilesWide; ++i) {
+        for (let i: number = 0; i < dimension.numberOfColumns; ++i) {
             reorderedTiles = [];
 
-            for (j = numberOfTilesHigh - 1; j >= 0; --j) {
-                reorderedTiles.push(tiles[getTileIndexFromCoordinates(j, i)]);
+            for (j = dimension.numberOfRows - 1; j >= 0; --j) {
+                reorderedTiles.push(state.tiles[getTileIndexFromCoordinates(dimension, j, i)]);
             }
             
             reorderedTiles = reorderedTiles.filter(t => t.color !== Tile.Color.none)
-                                           .map((t, j) => tiles[getTileIndexFromCoordinates(j, i)].cloneWith(t.color, t.link, t.detonationRange));
+                                           .map((t, index) => state.tiles[getTileIndexFromCoordinates(dimension, index, i)].cloneWith(t.color, t.link, t.detonationRange));
 
-            if (reorderedTiles.length < numberOfTilesHigh) {
-                j = numberOfTilesHigh - reorderedTiles.length;
+            if (reorderedTiles.length < dimension.numberOfRows) {
+                j = dimension.numberOfRows - reorderedTiles.length;
 
                 while (j > 0) {
                     detonationRange = Tile.generateRandomDetonationRange(!hasDetonationTile);
                     hasDetonationTile = detonationRange !== Tile.DetonationRange.none;
                     color = Tile.getRandomColor(hasDetonationTile);
-                    tileUpdates[i].push(tiles[getTileIndexFromCoordinates(j, i)].cloneWith(color, Tile.Link.none, detonationRange));
+                    tileUpdates[i].push(state.tiles[getTileIndexFromCoordinates(dimension, j, i)].cloneWith(color, Tile.Link.none, detonationRange));
                     --j;
                 }
             }
@@ -246,26 +276,30 @@ export namespace Grid {
         return tileUpdates;
     };
 
-    function reduceTile(visited: General.IDictionary<boolean>, stack: Tile.Container[]) : General.IDictionary<Tile.Container> {
+    function reduceTile(state: State, visited: General.IDictionary<boolean>, stack: Tile.Container[]) : General.IDictionary<Tile.Container> {
         const group: General.IDictionary<Tile.Container> = {};
 
         let tile: Tile.Container,
+            neighbors: General.IDictionary<number>,
             neighbor: Tile.Container;
 
         while (stack.length > 0) {
-            tile = stack.pop();
+            tile = stack.pop() as Tile.Container;
 
             if (!visited[tile.index]) {
                 visited[tile.index] = true;
                 group[tile.index] = tile.cloneWith(tile.color, Tile.Link.none, tile.detonationRange);
+                neighbors = state.graph[tile.index];
 
-                for (let j: number = 0; j < Tile.neighborIndices.length; ++j) {
-                    neighbor = tile.neighbors[Tile.neighborIndices[j]];
-    
-                    if (neighbor.color == tile.color && tile.color !== Tile.Color.none && !visited[tile.index]) {
-                        stack.push(neighbor);
-                        group[tile.index].link |= Tile.neighborIndices[j];
-                    }
+                for (let i: number = 0; i < Tile.neighborIndices.length; ++i) {
+                    new Maybe(neighbors[Tile.neighborIndices[i]]).justDo(index => {
+                        neighbor = state.tiles[index];
+
+                        if (neighbor.color == tile.color && tile.color !== Tile.Color.none && !visited[tile.index]) {
+                            stack.push(neighbor);
+                            group[tile.index].link |= Tile.neighborIndices[i];
+                        }
+                    });
                 }
             }
         }
@@ -286,12 +320,12 @@ export namespace Grid {
             meetsReductionCriteria: boolean,
             group: General.IDictionary<Tile.Container>,
             reduction: Reduction = {
-                collapsingTiles: General.fillArray(0, Tile.numberOfColors),
-                tiles: General.fillArray(undefined, tiles.length)
+                collapsingTiles: General.fillArray(Tile.numberOfColors, () => 0),
+                tiles: []
             };
 
-        for (let i: number = 0; i < tiles.length; ++i) {
-            group = reduceTile(visited, [tiles[i]]);
+        for (let i: number = 0; i < state.tiles.length; ++i) {
+            group = reduceTile(state, visited, [state.tiles[i]]);
             keys = Object.keys(group);
 
             if (keys.length > 0) {
@@ -304,7 +338,7 @@ export namespace Grid {
                 }
 
                 if (meetsReductionCriteria) {
-                    reduction.collapsingTiles[tiles[i].color] += keys.length;
+                    reduction.collapsingTiles[state.tiles[i].color] += keys.length;
                 }
             }
         }
@@ -312,7 +346,7 @@ export namespace Grid {
         return reduction;
     };
 
-    function rotateTilesFromRotationMap(state: State, centerTile: Tile.Container, rotationMap: number[][]) : General.IDictionary<Tile.Container> {
+    function rotateTilesFromRotationMap(dimension: IGridDimension, state: State, centerTile: Tile.Container, rotationMap: number[][]) : General.IDictionary<Tile.Container> {
         const rotatedTiles: General.IDictionary<Tile.Container> = {};
         
         let to: number[],
@@ -323,35 +357,44 @@ export namespace Grid {
         for (let i = 0; i < rotationMap.length; ++i) {
             from = i > 0 ? rotationMap[i - 1] : rotationMap[rotationMap.length - 1];
             to = rotationMap[i];
-            toTile = state.tiles[getTileIndexFromCoordinates(centerTile.row + to[0], centerTile.column + to[1])]
-            fromTile = state.tiles[getTileIndexFromCoordinates(centerTile.row + from[0], centerTile.column + from[1])];
+            toTile = state.tiles[getTileIndexFromCoordinates(dimension, centerTile.row + to[0], centerTile.column + to[1])]
+            fromTile = state.tiles[getTileIndexFromCoordinates(dimension, centerTile.row + from[0], centerTile.column + from[1])];
             rotatedTiles[toTile.index] = toTile.cloneWith(fromTile.color, fromTile.link, fromTile.detonationRange);
         }
 
         return rotatedTiles;
     };
 
-    export function rotateTiles(state: State) : General.IDictionary<Tile.Container> {
-        const centerTile: Tile.Container = state.tiles[getTileIndexFromCoordinates(state.row, state.column)];
+    export function rotateTiles(props: IProps, state: State) : General.IDictionary<Tile.Container> {
+        const dimension: IGridDimension = getGridDimension(props),
+              centerTile: Tile.Container = state.tiles[getTileIndexFromCoordinates(dimension, state.row, state.column)];
+
         let key: Tile.Link = Tile.Link.none;
 
         key |= centerTile.row === 0 ? Tile.Link.top : Tile.Link.none;
-        key |= centerTile.row === numberOfTilesHigh - 1 ? Tile.Link.bottom : Tile.Link.none;
+        key |= centerTile.row === dimension.numberOfRows - 1 ? Tile.Link.bottom : Tile.Link.none;
         key |= centerTile.column === 0 ? Tile.Link.left : Tile.Link.none;
-        key |= centerTile.column === numberOfTilesWide - 1 ? Tile.Link.right : Tile.Link.none;
+        key |= centerTile.column === dimension.numberOfColumns - 1 ? Tile.Link.right : Tile.Link.none;
 
-        return rotateTilesFromRotationMap(state, centerTile, rotationMaps[key]);
+        return rotateTilesFromRotationMap(dimension, state, centerTile, rotationMaps[key]);
     };
 
-    export function generateTiles() : Tile.Container[] {
+    export function generateTiles(dimension: IGridDimension) : Tile.Container[] {
         const tiles: Tile.Container[] = [];
 
-        for (let i: number = 0; i < numberOfTilesHigh; ++i) {
-            for (let j: number = 0; j < numberOfTilesWide; ++j) {
-                tiles.push(new Tile.Container(i, j, Tile.getRandomColor()));
+        for (let i: number = 0; i < dimension.numberOfRows; ++i) {
+            for (let j: number = 0; j < dimension.numberOfColumns; ++j) {
+                tiles.push(new Tile.Container(i, j, getTileIndexFromCoordinates(dimension, i, j), Tile.getRandomColor()));
             }
         }
 
         return tiles;
+    };
+
+    export const movementFunctions: General.IDictionary<(props: IProps, state: State) => number> = {
+        [Tile.Link.top]: (props, state) => state.row > 0 ? state.row - 1 : getGridDimension(props).numberOfRows - 1,
+        [Tile.Link.bottom]: (props, state) => state.row < getGridDimension(props).numberOfRows - 1 ? state.row + 1 : 0,
+        [Tile.Link.right]: (props, state) => state.column < getGridDimension(props).numberOfColumns - 1 ? state.column + 1 : 0,
+        [Tile.Link.left]: (props, state) => state.column > 0 ? state.column - 1 : getGridDimension(props).numberOfColumns - 1
     };
 };

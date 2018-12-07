@@ -20,10 +20,6 @@ export namespace PersistentStorage {
     };
 
     export function fetch(key: string) : Maybe<any> {
-        if (isLocalStorageSupported()) {
-            return Maybe.maybe(window.localStorage.getItem(key)).bind(s => JSON.parse(s));
-        }
-
-        return Maybe.nothing();
+        return isLocalStorageSupported() ? new Maybe(window.localStorage.getItem(key)).bind(s => JSON.parse(s)) : new Maybe();
     };
 };

@@ -81,21 +81,11 @@ export namespace General {
         return snakeCase;
     };
 
-    export function iterateIntoArray<T>(length: number, f: (index: number) => T) : T[] {
+    export function fillArray<T>(length: number, f: (index: number) => T) : T[] {
         const array: T[] = [];
 
         for (let i: number = 0; i < length; ++i) {
             array.push(f(i));
-        }
-
-        return array;
-    };
-
-    export function fillArray<T>(value: T, length: number) : T[] {
-        const array: T[] = [];
-
-        for (let i = 0; i < length; ++i) {
-            array.push(Array.isArray(value) && value.length === 0 ? <T><unknown>[]: value);
         }
 
         return array;

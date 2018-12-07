@@ -19,7 +19,7 @@ export class Game extends React.PureComponent<Utilities.Game.IProps, Utilities.G
     };
 
     private readonly handleUpdates = (update: Utilities.Game.IUpdate) : void => {
-        Utilities.Maybe.maybe(update.theme).justDo(this.toggleTheme).otherwiseDo(Utilities.Maybe.just(true), t => {
+        new Utilities.Maybe(update.theme).justDo(this.toggleTheme).otherwiseDo(() => {
             const nextState: Utilities.Game.State = Utilities.Game.getNextStateFromUpdate(update, this.state);
 
             this.setState(nextState);
@@ -48,7 +48,7 @@ export class Game extends React.PureComponent<Utilities.Game.IProps, Utilities.G
     };
 
     private readonly onKeyDown = (keyboardEvent: KeyboardEvent) : void => {
-        Utilities.Maybe.maybe(this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()]).justDo(kdh => kdh());
+        new Utilities.Maybe(this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()]).justDo(kdh => kdh());
     };
 
     private getGameOverlay() : JSX.Element | boolean {

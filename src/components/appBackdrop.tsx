@@ -3,7 +3,7 @@ import * as Utilities from '../utilities/utilities';
 
 import '../styles/appBackdrop.scss';
 
-const binderHoles: JSX.Element[] = Utilities.General.iterateIntoArray(Utilities.AppBackdrop.numberOfBinderHoles, i => {
+const binderHoles: JSX.Element[] = Utilities.General.fillArray(Utilities.AppBackdrop.numberOfBinderHoles, i => {
     return <div key={i}
         className='app-backdrop-binder-hole'>
     </div>;
@@ -17,7 +17,7 @@ export class AppBackdrop extends React.PureComponent<Utilities.AppBackdrop.IProp
     };
 
     render() : JSX.Element {
-        const lines: JSX.Element[] = Utilities.General.iterateIntoArray(this.state.numberOfLines, i => {
+        const lines: JSX.Element[] = Utilities.General.fillArray(this.state.numberOfLines, i => {
             return <div key={i}
                         className='app-backdrop-line'>
                    </div>;
