@@ -12,11 +12,11 @@ const binderHoles: JSX.Element[] = Utilities.General.fillArray(Utilities.AppBack
 export class AppBackdrop extends React.PureComponent<Utilities.AppBackdrop.IProps, Utilities.AppBackdrop.State> {
     readonly state: Utilities.AppBackdrop.State = new Utilities.AppBackdrop.State();
 
-    componentDidUpdate(previousProps: Utilities.AppBackdrop.IProps, previousState: Utilities.AppBackdrop.State) : void {
+    componentDidUpdate(previousProps: Utilities.AppBackdrop.IProps, previousState: Utilities.AppBackdrop.State): void {
         this.setState(new Utilities.AppBackdrop.State());
-    };
+    }
 
-    render() : JSX.Element {
+    render(): JSX.Element {
         const lines: JSX.Element[] = Utilities.General.fillArray(this.state.numberOfLines, i => {
             return <div key={i}
                         className='app-backdrop-line'>
@@ -35,5 +35,5 @@ export class AppBackdrop extends React.PureComponent<Utilities.AppBackdrop.IProp
                 {lines}
             </div>
         </div>;
-    };
-};
+    }
+}

@@ -26,7 +26,7 @@ export namespace Tile {
         topBottomLeft = bottom | left | top,
         topRightLeft = left | top | right,
         all = top | right | bottom | left
-    };
+    }
 
     export enum Color {
         none = 0,
@@ -37,17 +37,17 @@ export namespace Tile {
         yellow,
         orange,
         grey
-    };
+    }
 
     export const numberOfColors: number = Object.keys(Color).length - 1;
 
-    export function getRandomColor(hasDetonationRange: boolean = false) : number {
+    export function getRandomColor(hasDetonationRange: boolean = false): number {
         if (hasDetonationRange) {
             return Color.none;
         }
 
         return Math.floor(Math.random() * numberOfColors) + 1;
-    };
+    }
 
     export const neighborIndices: Link[] = [
         Link.top,
@@ -61,19 +61,19 @@ export namespace Tile {
         small,
         medium,
         large
-    };
+    }
 
-    export function generateRandomDetonationRange(canDetonate: boolean) : DetonationRange {
+    export function generateRandomDetonationRange(canDetonate: boolean): DetonationRange {
         if (!canDetonate) {
             return DetonationRange.none;
         }
 
-        let randomNumber: number = Math.floor(Math.random() * 100);
+        const randomNumber: number = Math.floor(Math.random() * 100);
 
         if (randomNumber === 99) {
             return DetonationRange.large;
         }
-        
+
         if (randomNumber > 95) {
             return DetonationRange.medium;
         }
@@ -83,9 +83,9 @@ export namespace Tile {
         }
 
         return DetonationRange.none;
-    };
+    }
 
-    export const linkClasses: string[] = Object.keys(Link).map(l => 'tile-link-' + General.camelCaseToKebabCase(Link[parseInt(l)]));
+    export const linkClasses: string[] = Object.keys(Link).map(l => 'tile-link-' + General.camelCaseToKebabCase(Link[parseInt(l, 10)]));
 
     export class Container {
         readonly row: number;
@@ -107,12 +107,12 @@ export namespace Tile {
             this.detonationRange = detonationRange;
             this.link = link;
             this.index = index;
-        };
+        }
 
-        cloneWith(color: Color, link: Link, detonationRange: DetonationRange) : Container {
+        cloneWith(color: Color, link: Link, detonationRange: DetonationRange): Container {
             return new Container(this.row, this.column, this.index, color, detonationRange, link);
-        };
-    };
+        }
+    }
 
     export interface IProps {
         color: Color;
@@ -122,7 +122,7 @@ export namespace Tile {
         selectedRow: number;
         detonationRange: DetonationRange;
         selectedColumn: number;
-        link: Link,
+        link: Link;
         onUpdate: (row: number, column: number) => void;
-    };
-};
+    }
+}

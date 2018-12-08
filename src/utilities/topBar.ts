@@ -13,5 +13,5 @@ export namespace TopBar {
         stage: number;
         playerName: string;
         readonly onUpdate: (updates: Game.IUpdate) => void;
-    };
-};
+    }
+}

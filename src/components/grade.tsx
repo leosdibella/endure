@@ -4,25 +4,9 @@ import * as Utilities from '../utilities/utilities';
 import '../styles/grade.scss';
 
 export class Grade extends React.PureComponent<Utilities.Grade.IProps, Utilities.Grade.State> {
-    private expandGradeFill(timeFraction: number) : void {
-        this.setState({
-            fillRadiusPercentage: ((1 - timeFraction) * 100).toFixed(2) + '%'
-        });
-    };
-
-    private onAnimationComplete() : void {
-        this.props.onUpdate({
-            letterGrade: this.props.letterGrade + 1
-        });
-    };
-
-    private getDuration() : number {
-        return Utilities.Grade.durations[this.props.difficulty] - (Utilities.Grade.durationModifiers[this.props.difficulty] * this.props.stage);
-    };
-
     readonly state: Utilities.Grade.State = new Utilities.Grade.State(this.expandGradeFill, this.getDuration(), this.onAnimationComplete);
 
-    componentDidUpdate(previousProps: Utilities.Grade.IProps, previousState: Utilities.Grade.State) : void {
+    componentDidUpdate(previousProps: Utilities.Grade.IProps, previousState: Utilities.Grade.State): void {
         if (this.props.mode === Utilities.Game.Mode.paused) {
             this.state.animator.togglePaused();
         } else if (this.props.mode === Utilities.Game.Mode.inGame) {
@@ -34,12 +18,12 @@ export class Grade extends React.PureComponent<Utilities.Grade.IProps, Utilities
         } else {
             this.state.animator.cancel();
         }
-    };
+    }
 
-    render() : JSX.Element {
+    render(): JSX.Element {
         const style: Utilities.General.ICssStyle = {
-            width: this.state.fillRadiusPercentage,
-            height: this.state.fillRadiusPercentage
+            height: this.state.fillRadiusPercentage,
+            width: this.state.fillRadiusPercentage
         };
 
         return <div className={'grade-container ' + Utilities.App.Theme[this.props.theme]}>
@@ -50,5 +34,21 @@ export class Grade extends React.PureComponent<Utilities.Grade.IProps, Utilities
                          style={style}>
                     </div>
                </div>;
-    };
-};
+    }
+
+    private expandGradeFill(timeFraction: number): void {
+        this.setState({
+            fillRadiusPercentage: ((1 - timeFraction) * 100).toFixed(2) + '%'
+        });
+    }
+
+    private onAnimationComplete(): void {
+        this.props.onUpdate({
+            letterGrade: this.props.letterGrade + 1
+        });
+    }
+
+    private getDuration(): number {
+        return Utilities.Grade.durations[this.props.difficulty] - (Utilities.Grade.durationModifiers[this.props.difficulty] * this.props.stage);
+    }
+}

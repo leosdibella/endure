@@ -89,35 +89,32 @@ export namespace Game {
         readonly onUpdate: (updates: App.IUpdate) => void;
     };
 
-    export function isValidPlayerName(playerName: string) : boolean {
+    export function isValidPlayerName(playerName: string): boolean {
         return playerName.trim() !== '';
     };
 
-    export function isInProgress(gameMdode: Mode) : boolean {
+    export function isInProgress(gameMdode: Mode): boolean {
         return gameMdode === Mode.inGame || gameMdode === Mode.paused;
     };
 
-    function getHighScores(highScores: any) : HighScore[] {
+    function getHighScores(highScores: any): HighScore[] {
         const highScoreArray: HighScore[] = [];
-        let highScore: any;
 
         if (Array.isArray(highScores)) {
-            for (let i: number = 0; i < highScores.length; ++i) {
-                highScore = highScores[i];
-
-                if (General.isObject(highScore)
-                        && General.isString(highScore.name)
-                        && General.isString(highScore.dateStamp)
-                        && General.isInteger(highScore.value)) {
-                    highScoreArray.push(new HighScore(highScore.name, highScore.dateStamp,highScore.value));
+            General.forEach(highScores, hs => {
+                if (General.isObject(hs)
+                        && General.isString(hs.name)
+                        && General.isString(hs.dateStamp)
+                        && General.isInteger(hs.value)) {
+                    highScoreArray.push(new HighScore(hs.name, hs.dateStamp, hs.value));
                 }
-            }
+            });
         }
 
         return highScoreArray;
     };
     
-    export function getPersistedState() : State {
+    export function getPersistedState(): State {
         const playerName: string = PersistentStorage.fetch(playerNameLocalStorageKey).getOrDefault(defaultPlayerName),
               highScores: HighScore[] = PersistentStorage.fetch(highScoresLocalStorageKey).caseOf(hs => getHighScores(hs), () => []),
               difficulty: Difficulty = PersistentStorage.fetch(difficultyLocalStorageKey).caseOf(d => new Maybe(Difficulty[d]).switchInto(d, defaultDifficulty),
@@ -129,18 +126,18 @@ export namespace Game {
                          playerName);
     };
     
-    export function persistState(state: State) : void {
+    export function persistState(state: State): void {
         PersistentStorage.persist(difficultyLocalStorageKey, state.difficulty);
         PersistentStorage.persist(highScoresLocalStorageKey, state.highScores);
         PersistentStorage.persist(playerNameLocalStorageKey, isValidPlayerName(state.playerName) ? state.playerName : defaultPlayerName);
     }
 
-    function getStage(score: number) : number {
+    function getStage(score: number): number {
         let stage: number = Math.log(score);
         return Math.floor(stage * stage);
     };
 
-    export function getNextStateFromUpdate(update: IUpdate, state: State) : State {
+    export function getNextStateFromUpdate(update: IUpdate, state: State): State {
         let stage: number = state.score,
             score: number = state.score,
             playerName: string = new Maybe(update.playerName).getOrDefault(state.playerName),

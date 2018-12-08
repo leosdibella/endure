@@ -9,35 +9,19 @@ import { Game } from './game';
 export class App extends React.PureComponent<object, Utilities.App.State> {
     readonly state: Utilities.App.State = Utilities.App.getPersistedState();
 
-    private readonly handleUpdate = (updates: Utilities.App.IUpdate) : void => {
-        const theme: Utilities.App.Theme = new Utilities.Maybe(updates.theme).getOrDefault(this.state.theme),
-              nextState: Utilities.App.State = new Utilities.App.State(theme, this.state.orientation);
-
-        this.setState(nextState);
-        Utilities.App.persistState(nextState);
-    };
-
-    private readonly setOrientation = (event: UIEvent) : void => {
-        setTimeout(() => {
-            this.setState({
-                orientation: Utilities.App.getOrientation()
-            });
-        }, 100);
-    };
-
-    componentDidMount() : void {
+    componentDidMount(): void {
         window.addEventListener(Utilities.General.DomEvent.resize, this.setOrientation);
         window.addEventListener(Utilities.General.DomEvent.orientationChange, this.setOrientation);
         window.addEventListener(Utilities.General.DomEvent.click, Utilities.App.removeElementFocus);
-    };
+    }
 
-    componentWillUnmount() : void {
+    componentWillUnmount(): void {
         window.removeEventListener(Utilities.General.DomEvent.resize, this.setOrientation);
         window.removeEventListener(Utilities.General.DomEvent.orientationChange, this.setOrientation);
         window.removeEventListener(Utilities.General.DomEvent.click, Utilities.App.removeElementFocus);
-    };
+    }
 
-    render() : JSX.Element {
+    render(): JSX.Element {
         return <div className={'app ' + this.state.theme}>
             <AppBackdrop theme={this.state.theme}
                          orientation={this.state.orientation}>
@@ -47,5 +31,21 @@ export class App extends React.PureComponent<object, Utilities.App.State> {
                   onUpdate={this.handleUpdate}>
             </Game>
         </div>;
-    };
-};
+    }
+
+    private readonly handleUpdate = (updates: Utilities.App.IUpdate): void => {
+        const theme: Utilities.App.Theme = new Utilities.Maybe(updates.theme).getOrDefault(this.state.theme),
+              nextState: Utilities.App.State = new Utilities.App.State(theme, this.state.orientation);
+
+        this.setState(nextState);
+        Utilities.App.persistState(nextState);
+    }
+
+    private readonly setOrientation = (event: UIEvent): void => {
+        setTimeout(() => {
+            this.setState({
+                orientation: Utilities.App.getOrientation()
+            });
+        }, 100);
+    }
+}

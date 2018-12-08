@@ -7,8 +7,8 @@ import { Combo } from './combo';
 import { Grade } from './grade';
 
 export class TopBar extends React.PureComponent<Utilities.TopBar.IProps, object> {
-    render() : JSX.Element {
-        return <div className={'top-bar ' + Utilities.App.Theme[this.props.theme] + (!Utilities.Game.isInProgress(this.props.mode) ? ' hide': '')}>
+    render(): JSX.Element {
+        return <div className={'top-bar ' + Utilities.App.Theme[this.props.theme] + (!Utilities.Game.isInProgress(this.props.mode) ? ' hide' : '')}>
             <div className='top-bar-left-hud'>
                 <Combo combo={this.props.combo}
                        stage={this.props.stage}
@@ -38,5 +38,5 @@ export class TopBar extends React.PureComponent<Utilities.TopBar.IProps, object>
                 </div>
             </div>
         </div>;
-    };
-};
+    }
+}

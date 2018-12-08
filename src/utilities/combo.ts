@@ -9,7 +9,7 @@ export namespace Combo {
         healthy = 0,
         warning,
         danger
-    };
+    }
 
     export const durationModifiers: General.IDictionary<number> = {
         [Game.Difficulty.beginnger]: 10,
@@ -26,7 +26,7 @@ export namespace Combo {
         [Game.Difficulty.hard]: 2400,
         [Game.Difficulty.expert]: 2200
     };
-    
+
     export const minimumViableCombo: number = 2;
 
     export class State {
@@ -38,20 +38,20 @@ export namespace Combo {
             this.animator = new Animation.Animator(draw, duration, Animation.Timing.linear, callback);
             this.overlayWidthPercentage = 0;
             this.overlayClass = '';
-        };
-    };
-    
+        }
+    }
+
     export interface IProps {
-        theme: App.Theme,
+        theme: App.Theme;
         combo: number;
         letterGrade: Grade.LetterGrade;
         stage: number;
         difficulty: Game.Difficulty;
         mode: Game.Mode;
         readonly onUpdate: (updates: Game.IUpdate) => void;
-    };
-    
-    export function getClassFromTimeFraction(timeFraction: number) : string {
+    }
+
+    export function getClassFromTimeFraction(timeFraction: number): string {
         let cssClass: string = 'combo-';
 
         if (timeFraction >= 0.67) {
@@ -63,5 +63,5 @@ export namespace Combo {
         }
 
         return cssClass;
-    };
-};
+    }
+}

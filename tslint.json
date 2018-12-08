@@ -1,0 +1,23 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": {},
+    "rules": {
+        "typedef": true,
+        "member-access": false,
+        "no-namespace": false,
+        "array-type": [true, "array"],
+        "arrow-parens": false,
+        "trailing-comma": false,
+        "eofline": false,
+        "one-variable-per-declaration": false,
+        "no-bitwise": false,
+        "semicolon": true,
+        "max-line-length": false,
+        "quotemark": [true, "single"],
+        "max-classes-per-file": false
+    },
+    "rulesDirectory": []
+}

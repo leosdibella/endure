@@ -1,7 +1,7 @@
 import { Animation } from './animation';
+import { App } from './app';
 import { Game } from './game';
 import { General } from './general';
-import { App } from './utilities';
 
 export namespace Grade {
     export const durationModifiers: General.IDictionary<number> = {
@@ -34,7 +34,7 @@ export namespace Grade {
         d,
         dMinus,
         f
-    };
+    }
 
     const modifiers: string[] = ['+', '', '-'];
 
@@ -49,9 +49,9 @@ export namespace Grade {
         constructor(draw: (timeFraction: number) => void, duration: number, onComplete: () => void) {
             this.animator = new Animation.Animator(draw, duration, Animation.Timing.linear, onComplete);
             this.fillRadiusPercentage = '0%';
-        };
-    };
-    
+        }
+    }
+
     export interface IProps {
         theme: App.Theme;
         letterGrade: number;
@@ -59,5 +59,5 @@ export namespace Grade {
         difficulty: Game.Difficulty;
         mode: Game.Mode;
         readonly onUpdate: (updates: Game.IUpdate) => void;
-    };
-};
+    }
+}
