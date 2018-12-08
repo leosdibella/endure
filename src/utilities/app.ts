@@ -38,9 +38,7 @@ export namespace App {
     }
 
     export function getPersistedState(): State {
-        const theme: Theme = PersistentStorage.fetch(themeLocalStorageKey).caseOf(t => new Maybe(Theme[t]).switchInto(t, defaultTheme), () => defaultTheme);
-
-        return new State(theme, getOrientation());
+        return new State(PersistentStorage.fetchEnumValue(themeLocalStorageKey, Theme, defaultTheme), getOrientation());
     }
 
     export function removeElementFocus(): void {
@@ -52,6 +50,6 @@ export namespace App {
     }
 
     export function persistState(state: State): void {
-        PersistentStorage.persist(themeLocalStorageKey, state.theme);
+        PersistentStorage.persistData(themeLocalStorageKey, state.theme);
     }
 }

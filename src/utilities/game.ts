@@ -15,7 +15,7 @@ export namespace Game {
         quitConfirmation,
         highScores,
         setTheme
-    };
+    }
 
     export enum Difficulty {
         beginnger = 0,
@@ -23,7 +23,7 @@ export namespace Game {
         medium,
         hard,
         expert
-    };
+    }
 
     export class HighScore {
         name: string;
@@ -34,8 +34,8 @@ export namespace Game {
             this.name = name;
             this.value = value;
             this.dateStamp = dateStamp;
-        };
-    };
+        }
+    }
 
     export interface IUpdate {
         points?: number;
@@ -45,7 +45,7 @@ export namespace Game {
         playerName?: string;
         dropCombo?: boolean;
         letterGrade?: number;
-    };
+    }
 
     const highScoresLocalStorageKey: string = 'ENDURE_HIGH_SCORES';
     const difficultyLocalStorageKey: string = 'ENDURE_DIFFICULTY';
@@ -80,22 +80,22 @@ export namespace Game {
             this.stage = stage;
             this.letterGrade = letterGrade;
             this.highScores = highScores;
-        };
-    };
-    
+        }
+    }
+
     export interface IProps {
         theme: App.Theme;
         orientation: App.Orientation;
         readonly onUpdate: (updates: App.IUpdate) => void;
-    };
+    }
 
     export function isValidPlayerName(playerName: string): boolean {
         return playerName.trim() !== '';
-    };
+    }
 
     export function isInProgress(gameMdode: Mode): boolean {
         return gameMdode === Mode.inGame || gameMdode === Mode.paused;
-    };
+    }
 
     function getHighScores(highScores: any): HighScore[] {
         const highScoreArray: HighScore[] = [];
@@ -112,35 +112,31 @@ export namespace Game {
         }
 
         return highScoreArray;
-    };
-    
-    export function getPersistedState(): State {
-        const playerName: string = PersistentStorage.fetch(playerNameLocalStorageKey).getOrDefault(defaultPlayerName),
-              highScores: HighScore[] = PersistentStorage.fetch(highScoresLocalStorageKey).caseOf(hs => getHighScores(hs), () => []),
-              difficulty: Difficulty = PersistentStorage.fetch(difficultyLocalStorageKey).caseOf(d => new Maybe(Difficulty[d]).switchInto(d, defaultDifficulty),
-                                                                                                 () => defaultDifficulty);
+    }
 
+    export function getPersistedState(): State {
         return new State(Mode.newGame,
-                         difficulty,
-                         highScores,
-                         playerName);
-    };
-    
+                         PersistentStorage.fetchEnumValue(difficultyLocalStorageKey, Difficulty, defaultDifficulty),
+                         PersistentStorage.fetchData(highScoresLocalStorageKey).caseOf(hs => getHighScores(hs), () => []),
+                         PersistentStorage.fetchData(playerNameLocalStorageKey).getOrDefault(defaultPlayerName));
+    }
+
     export function persistState(state: State): void {
-        PersistentStorage.persist(difficultyLocalStorageKey, state.difficulty);
-        PersistentStorage.persist(highScoresLocalStorageKey, state.highScores);
-        PersistentStorage.persist(playerNameLocalStorageKey, isValidPlayerName(state.playerName) ? state.playerName : defaultPlayerName);
+        PersistentStorage.persistData(difficultyLocalStorageKey, state.difficulty);
+        PersistentStorage.persistData(highScoresLocalStorageKey, state.highScores);
+        PersistentStorage.persistData(playerNameLocalStorageKey, isValidPlayerName(state.playerName) ? state.playerName : defaultPlayerName);
     }
 
     function getStage(score: number): number {
-        let stage: number = Math.log(score);
+        const stage: number = Math.log(score);
         return Math.floor(stage * stage);
-    };
+    }
 
     export function getNextStateFromUpdate(update: IUpdate, state: State): State {
+        const playerName: string = new Maybe(update.playerName).getOrDefault(state.playerName);
+
         let stage: number = state.score,
             score: number = state.score,
-            playerName: string = new Maybe(update.playerName).getOrDefault(state.playerName),
             mode: Game.Mode = new Maybe(update.mode).getOrDefault(state.mode),
             letterGrade: number = new Maybe(update.letterGrade).getOrDefault(state.letterGrade),
             highScores: HighScore[] = state.highScores,
@@ -161,9 +157,9 @@ export namespace Game {
                                    .sort((a, b) => b.value - a.value)
                                    .slice(0, numberOfHighScoresToPersist);
         } else if (isInProgress(state.mode) && isInProgress(mode) && state.mode !== mode) {
-            mode === Mode.paused ? Mode.inGame : Mode.paused;
+            mode = mode === Mode.paused ? Mode.inGame : Mode.paused;
         }
-        
+
         if (mode === Mode.gameOver || mode === Mode.newGame) {
             score = 0;
             combo = 0;
@@ -183,5 +179,5 @@ export namespace Game {
                          score,
                          stage,
                          letterGrade);
-    };
-};
+    }
+}

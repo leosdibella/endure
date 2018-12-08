@@ -18,7 +18,7 @@ export class Tile extends React.PureComponent<Utilities.Tile.IProps, object> {
 
         if (this.props.mode === Utilities.Game.Mode.inGame) {
             className += '-';
-            className += Utilities.General.isWellDefinedValue(this.props.color) ? Utilities.Tile.Color[this.props.color] : 'transparent';
+            className += Utilities.Tile.Color[this.props.color];
             className += ' ';
             className += additionalClass;
             className += ' ';

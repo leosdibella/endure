@@ -126,20 +126,18 @@ export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProp
     }
 
     private getGameOverlayExtras(): Utilities.Maybe<JSX.Element> {
-        let maybeJsx: Utilities.Maybe<JSX.Element> = new Utilities.Maybe();
+        if (this.props.mode === Utilities.Game.Mode.highScores) {
+            return new Utilities.Maybe(this.getHighScoresOverlayExtras());
+        } else if (this.props.mode === Utilities.Game.Mode.specifyName) {
+            return new Utilities.Maybe(<div key={2}
+                                            className='game-overlay-player-name-input-container'>
+                                            <input value={this.state.playerName}
+                                                   className={Utilities.App.Theme[this.props.theme]}
+                                                   onChange={this.handleNameChanges}/>
+                                        </div>);
+        }
 
-        new Utilities.Maybe(this.props.mode === Utilities.Game.Mode.highScores).justDo(() => {
-            maybeJsx = new Utilities.Maybe(this.getHighScoresOverlayExtras());
-        }).otherwiseJustDo(new Utilities.Maybe(this.props.mode === Utilities.Game.Mode.specifyName), () => {
-            maybeJsx = new Utilities.Maybe(<div key={2}
-                                                className='game-overlay-player-name-input-container'>
-                                                <input value={this.state.playerName}
-                                                       className={Utilities.App.Theme[this.props.theme]}
-                                                       onChange={this.handleNameChanges}/>
-                                           </div>);
-        });
-
-        return maybeJsx;
+        return new Utilities.Maybe() as Utilities.Maybe<JSX.Element>;
     }
 
     private getGameOverlayButtonPanel(): Utilities.Maybe<JSX.Element> {

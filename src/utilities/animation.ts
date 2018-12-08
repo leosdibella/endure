@@ -45,7 +45,7 @@ export namespace Animation {
             this.draw = draw;
             this.onComplete = onComplete;
             this.duration = duration;
-            this.timing = new Maybe(Timing[timing]).switchInto(timing, Timing.linear);
+            this.timing = Maybe.mapThrough(new Maybe(Timing[timing]), Timing.linear);
             this.id = new Maybe();
         }
 

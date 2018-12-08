@@ -1,6 +1,12 @@
+import { General } from './general';
+
 export class Maybe<T> {
     static filterCollection<T>(collection: Maybe<T>[]): T[] {
-        return collection.filter(t => t.value !== undefined).map(t => t.value as T);
+        return collection.filter(t => General.isDefined(t.value)).map(t => t.value as T);
+    }
+
+    static mapThrough<T>(maybe: Maybe<any>, defaultValue: T, t?: T): T {
+        return General.isDefined(maybe.value) ? maybe.value : General.isDefined(t) ? t as T : defaultValue;
     }
 
     private readonly value: T | undefined;
@@ -10,29 +16,25 @@ export class Maybe<T> {
     }
 
     bind<U>(f: (t: T) => Maybe<U>): Maybe<U> {
-        return this.value === undefined ? new Maybe() : f(this.value as T);
+        return General.isDefined(this.value) ? f(this.value as T) : new Maybe();
     }
 
     caseOf<U>(just: (t: T) => U, nothing: () => U): U {
-        return this.value === undefined ? nothing() : just(this.value as T);
-    }
-
-    switchInto<U>(justValue: U, nothingValue: U): U {
-        return this.value === undefined ? nothingValue : justValue;
+        return General.isDefined(this.value) ? just(this.value as T) : nothing();
     }
 
     justDo(f: (t: T) => void): Maybe<boolean> {
-        if (this.value !== undefined) {
+        if (General.isDefined(this.value)) {
             f(this.value as T);
 
-            return new Maybe(true);
+            return new Maybe();
         }
 
-        return new Maybe();
+        return new Maybe(true);
     }
 
     otherwiseJustDo<U>(maybeU: Maybe<U>, f: (u: U) => void): Maybe<boolean> {
-        if (this.value !== undefined) {
+        if (General.isDefined(this.value)) {
             return maybeU.justDo(f);
         }
 
@@ -40,12 +42,12 @@ export class Maybe<T> {
     }
 
     otherwiseDo(f: () => void): void {
-        if (this.value !== undefined) {
+        if (General.isDefined(this.value)) {
             f();
         }
     }
 
     getOrDefault<U extends T>(defaultValue: U): U | T {
-        return this.value === undefined ? defaultValue : this.value as T;
+        return General.isDefined(this.value) ? this.value as T : defaultValue;
     }
 }

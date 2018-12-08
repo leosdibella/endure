@@ -1,5 +1,3 @@
-import { Maybe } from './maybe';
-
 export namespace General {
     export enum DomEvent {
         resize = 'resize',
@@ -26,8 +24,8 @@ export namespace General {
         backgroundColor?: string;
     }
 
-    export function isWellDefinedValue(value: any): boolean {
-        return value !== null && value !== undefined;
+    export function isDefined(value: any): boolean {
+        return value !== undefined;
     }
 
     export function isFunction(value: any): boolean {
@@ -76,9 +74,9 @@ export namespace General {
         }
     }
 
-    export function fillArray<T>(length: number, f: (index: number) => T, reverseOrder?: boolean): T[] {
+    export function fillArray<T>(length: number, f: (index: number) => T, backwards?: boolean): T[] {
         const array: T[] = [],
-              inReverse: boolean = new Maybe(reverseOrder).switchInto(true, false);
+              inReverse: boolean = !!backwards;
 
         for (let i: number = 0; i < length; ++i) {
             array.push(f(inReverse ? length - 1 - i : i));
