@@ -12,6 +12,30 @@ export namespace App {
         landscape
     }
 
+    export enum Difficulty {
+        beginner = 0,
+        low,
+        medium,
+        hard,
+        expert
+    }
+
+    export enum LetterGrade {
+        aPlus = 0,
+        a,
+        aMinus,
+        bPlus,
+        b,
+        bMinus,
+        cPlus,
+        c,
+        cMinus,
+        dPlus,
+        d,
+        dMinus,
+        f
+    }
+
     const themeLocalStorageKey: string = 'ENDURE_THEME';
     const defaultTheme: Theme = Theme.light;
 

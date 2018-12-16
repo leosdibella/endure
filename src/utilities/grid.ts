@@ -229,19 +229,15 @@ export namespace Grid {
         iterateThroughStack(state,
                             stack,
                             {},
-                            (tile, neighbor) => tile.color === neighbor.color || tile.detonationRange !== Tile.DetonationRange.none,
+                            (tile, neighbor) => (tile.color === neighbor.color && tile.color !== Tile.Color.transparent) || neighbor.detonationRange === Tile.DetonationRange.none,
                             tile => {
                                 detonatedTiles.push(tile);
                             });
 
-        return detonatedTiles.map(t => t.cloneWith(Tile.Color.none, Tile.Link.none, Tile.DetonationRange.none)).sort((a, b) => a.index - b.index);
+        return detonatedTiles.map(t => t.cloneWith(Tile.Color.transparent, Tile.Link.none, Tile.DetonationRange.none)).sort((a, b) => a.index - b.index);
     }
 
-    export function detonateTile(props: IProps, state: State): Tile.Container[] {
-        const dimension: IGridDimension = getGridDimension(props),
-              detonationCenter: Tile.Container = state.tiles[getTileIndexFromCoordinates(dimension, state.row, state.column)],
-              stack: Tile.Container[] = [detonationCenter];
-
+    function addDetonationRangeToStack(state: State, dimension: IGridDimension, detonationCenter: Tile.Container, stack: Tile.Container[]): void {
         General.iterate(detonationCenter.detonationRange, i => {
             let index: number;
 
@@ -256,6 +252,14 @@ export namespace Grid {
             index += index < 0 ? dimension.numberOfColumns : 0;
             stack.push(state.tiles[getTileIndexFromCoordinates(dimension, detonationCenter.row, index)]);
         });
+    }
+
+    export function detonateTile(props: IProps, state: State): Tile.Container[] {
+        const dimension: IGridDimension = getGridDimension(props),
+              detonationCenter: Tile.Container = state.tiles[getTileIndexFromCoordinates(dimension, state.row, state.column)],
+              stack: Tile.Container[] = [detonationCenter];
+
+        addDetonationRangeToStack(state, dimension, detonationCenter, stack);
 
         return chainDetonation(state, stack);
     }
@@ -270,7 +274,7 @@ export namespace Grid {
 
         General.iterate(dimension.numberOfColumns, column => {
             const reorderedTiles: Tile.Container[] = General.fillArray(dimension.numberOfRows, row => state.tiles[getTileIndexFromCoordinates(dimension, row, column)], true)
-                                                            .filter(t => t.color !== Tile.Color.none)
+                                                            .filter(t => t.color !== Tile.Color.transparent)
                                                             .map((t, index) => state.tiles[getTileIndexFromCoordinates(dimension, index, column)].cloneWith(t.color, t.link, t.detonationRange));
 
             if (reorderedTiles.length < dimension.numberOfRows) {
@@ -295,7 +299,7 @@ export namespace Grid {
         iterateThroughStack(state,
                             stack,
                             visited,
-                            (tile, neighbor) => tile.color === neighbor.color && tile.color !== Tile.Color.none,
+                            (tile, neighbor) => tile.color === neighbor.color && tile.color !== Tile.Color.transparent,
                             tile => {
                                 group[tile.index] = tile.cloneWith(tile.color, Tile.Link.none, tile.detonationRange);
                             },
@@ -325,7 +329,7 @@ export namespace Grid {
             General.forEach(keys, key => {
                 new Maybe(parseInt(key, 10)).justDo(index => {
                     reduction.tiles[index] = group[index];
-                    reduction.tiles[index].color = Tile.Color.none;
+                    reduction.tiles[index].color = Tile.Color.transparent;
                 });
             });
 

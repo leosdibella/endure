@@ -29,7 +29,7 @@ export namespace Tile {
     }
 
     export enum Color {
-        none = 0,
+        transparent = 0,
         red,
         green,
         blue,
@@ -39,11 +39,11 @@ export namespace Tile {
         grey
     }
 
-    export const numberOfColors: number = Object.keys(Color).length - 1;
+    export const numberOfColors: number = General.getEnumKeys(Color).length - 1;
 
     export function getRandomColor(hasDetonationRange: boolean = false): number {
         if (hasDetonationRange) {
-            return Color.none;
+            return Color.transparent;
         }
 
         return Math.floor(Math.random() * numberOfColors) + 1;
@@ -85,7 +85,7 @@ export namespace Tile {
         return DetonationRange.none;
     }
 
-    export const linkClasses: string[] = Object.keys(Link).map(l => 'tile-link-' + General.camelCaseToKebabCase(Link[parseInt(l, 10)]));
+    export const linkClasses: string[] = General.getEnumKeys(Link).map(l => 'tile-link-' + General.camelCaseToKebabCase(Link[parseInt(l, 10)]));
 
     export class Container {
         readonly row: number;

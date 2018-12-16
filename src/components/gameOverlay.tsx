@@ -4,7 +4,7 @@ import * as Utilities from '../utilities/utilities';
 import '../styles/gameOverlay.scss';
 
 export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProps, Utilities.GameOverlay.State> {
-    readonly state: Utilities.GameOverlay.State = new Utilities.GameOverlay.State(this.props.playerName, this.getDefaultOptionIndex(), this.props.onUpdate, this.saveNameChanges);
+    readonly state: Utilities.GameOverlay.State = new Utilities.GameOverlay.State(this.props, this.saveNameChanges);
 
     private readonly keyDownEventActionMap: Utilities.General.IDictionary<() => void> = {
         arrowdown: () => {
@@ -21,7 +21,7 @@ export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProp
     componentDidUpdate(previousProps: Utilities.GameOverlay.IProps, previousState: Utilities.GameOverlay.State): void {
         if (previousProps.mode !== this.props.mode) {
             this.setState({
-                selectedOptionIndex: this.getDefaultOptionIndex()
+                selectedOptionIndex: Utilities.GameOverlay.getDefaultOptionIndex(this.props, this.state.menu)
             });
         }
 
@@ -163,19 +163,6 @@ export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProp
             this.getGameOverlayExtras(),
             this.getGameOverlayButtonPanel()
         ]);
-    }
-
-    private getDefaultOptionIndex(): number {
-        if (this.props.mode === Utilities.Game.Mode.selectDifficulty) {
-            return this.props.difficulty;
-        }
-
-        if (this.props.mode === Utilities.Game.Mode.setTheme) {
-            return this.props.theme === Utilities.App.Theme.light ? 0 : 1;
-        }
-
-        return this.state.menu.menuOptions[this.props.mode].caseOf(mo => mo.defaultOptionsIndex.getOrDefault(Utilities.GameOverlay.defaultDefaultOptionsIndex),
-                                                                   () => Utilities.GameOverlay.defaultDefaultOptionsIndex);
     }
 
     private incrementOrDecrementOptionsIndex(direction: number): void {

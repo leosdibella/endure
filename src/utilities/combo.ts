@@ -12,19 +12,19 @@ export namespace Combo {
     }
 
     export const durationModifiers: General.IDictionary<number> = {
-        [Game.Difficulty.beginnger]: 10,
-        [Game.Difficulty.low]: 15,
-        [Game.Difficulty.medium]: 20,
-        [Game.Difficulty.hard]: 25,
-        [Game.Difficulty.expert]: 30
+        [App.Difficulty.beginner]: 10,
+        [App.Difficulty.low]: 15,
+        [App.Difficulty.medium]: 20,
+        [App.Difficulty.hard]: 25,
+        [App.Difficulty.expert]: 30
     };
 
     export const durations: General.IDictionary<number> = {
-        [Game.Difficulty.beginnger]: 3000,
-        [Game.Difficulty.low]: 2800,
-        [Game.Difficulty.medium]: 2600,
-        [Game.Difficulty.hard]: 2400,
-        [Game.Difficulty.expert]: 2200
+        [App.Difficulty.beginner]: 3000,
+        [App.Difficulty.low]: 2800,
+        [App.Difficulty.medium]: 2600,
+        [App.Difficulty.hard]: 2400,
+        [App.Difficulty.expert]: 2200
     };
 
     export const minimumViableCombo: number = 2;
@@ -44,9 +44,9 @@ export namespace Combo {
     export interface IProps {
         theme: App.Theme;
         combo: number;
-        letterGrade: Grade.LetterGrade;
+        letterGrade: App.LetterGrade;
         stage: number;
-        difficulty: Game.Difficulty;
+        difficulty: App.Difficulty;
         mode: Game.Mode;
         readonly onUpdate: (updates: Game.IUpdate) => void;
     }

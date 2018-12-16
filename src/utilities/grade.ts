@@ -5,36 +5,20 @@ import { General } from './general';
 
 export namespace Grade {
     export const durationModifiers: General.IDictionary<number> = {
-        [Game.Difficulty.beginnger]: 10,
-        [Game.Difficulty.low]: 15,
-        [Game.Difficulty.medium]: 20,
-        [Game.Difficulty.hard]: 25,
-        [Game.Difficulty.expert]: 30
+        [App.Difficulty.beginner]: 10,
+        [App.Difficulty.low]: 15,
+        [App.Difficulty.medium]: 20,
+        [App.Difficulty.hard]: 25,
+        [App.Difficulty.expert]: 30
     };
 
     export const durations: General.IDictionary<number> = {
-        [Game.Difficulty.beginnger]: 5000,
-        [Game.Difficulty.low]: 4500,
-        [Game.Difficulty.medium]: 4000,
-        [Game.Difficulty.hard]: 3500,
-        [Game.Difficulty.expert]: 3000
+        [App.Difficulty.beginner]: 5000,
+        [App.Difficulty.low]: 4500,
+        [App.Difficulty.medium]: 4000,
+        [App.Difficulty.hard]: 3500,
+        [App.Difficulty.expert]: 3000
     };
-
-    export enum LetterGrade {
-        aPlus = 0,
-        a,
-        aMinus,
-        bPlus,
-        b,
-        bMinus,
-        cPlus,
-        c,
-        cMinus,
-        dPlus,
-        d,
-        dMinus,
-        f
-    }
 
     const modifiers: string[] = ['+', '', '-'];
 
@@ -56,7 +40,7 @@ export namespace Grade {
         theme: App.Theme;
         letterGrade: number;
         stage: number;
-        difficulty: Game.Difficulty;
+        difficulty: App.Difficulty;
         mode: Game.Mode;
         readonly onUpdate: (updates: Game.IUpdate) => void;
     }

@@ -1,6 +1,5 @@
 import { App } from './app';
 import { General } from './general';
-import { Grade } from './grade';
 import { Maybe } from './maybe';
 import { PersistentStorage } from './persistentStorage';
 
@@ -15,14 +14,6 @@ export namespace Game {
         quitConfirmation,
         highScores,
         setTheme
-    }
-
-    export enum Difficulty {
-        beginnger = 0,
-        low,
-        medium,
-        hard,
-        expert
     }
 
     export class HighScore {
@@ -40,7 +31,7 @@ export namespace Game {
     export interface IUpdate {
         points?: number;
         mode?: Mode;
-        difficulty?: Difficulty;
+        difficulty?: App.Difficulty;
         theme?: App.Theme;
         playerName?: string;
         dropCombo?: boolean;
@@ -51,7 +42,7 @@ export namespace Game {
     const difficultyLocalStorageKey: string = 'ENDURE_DIFFICULTY';
     const playerNameLocalStorageKey: string = 'ENDURE_PLAYER_NAME';
     const defaultPlayerName: string = 'Anonymous';
-    const defaultDifficulty: Difficulty = Difficulty.medium;
+    const defaultDifficulty: App.Difficulty = App.Difficulty.medium;
     const numberOfHighScoresToPersist: number = 10;
 
     export class State {
@@ -60,18 +51,18 @@ export namespace Game {
         score: number;
         stage: number;
         letterGrade: number;
-        difficulty: Difficulty;
+        difficulty: App.Difficulty;
         highScores: HighScore[];
         playerName: string;
 
         constructor(mode: Mode,
-                    difficulty: Difficulty,
+                    difficulty: App.Difficulty,
                     highScores: HighScore[],
                     playerName: string,
                     combo: number = 0,
                     score: number = 0,
                     stage: number = 0,
-                    letterGrade: Grade.LetterGrade = Grade.LetterGrade.aPlus) {
+                    letterGrade: App.LetterGrade = App.LetterGrade.aPlus) {
             this.mode = mode;
             this.difficulty = difficulty;
             this.playerName = isValidPlayerName(playerName) ? playerName : defaultPlayerName;
@@ -116,7 +107,7 @@ export namespace Game {
 
     export function getPersistedState(): State {
         return new State(Mode.newGame,
-                         PersistentStorage.fetchEnumValue(difficultyLocalStorageKey, Difficulty, defaultDifficulty),
+                         PersistentStorage.fetchEnumValue(difficultyLocalStorageKey, App.Difficulty, defaultDifficulty),
                          PersistentStorage.fetchData(highScoresLocalStorageKey).caseOf(hs => getHighScores(hs), () => []),
                          PersistentStorage.fetchData(playerNameLocalStorageKey).getOrDefault(defaultPlayerName));
     }
@@ -148,7 +139,7 @@ export namespace Game {
             stage = getStage(score);
         });
 
-        if (letterGrade === Grade.LetterGrade.f) {
+        if (letterGrade === App.LetterGrade.f) {
             mode = Mode.gameOver;
         }
 
@@ -164,7 +155,7 @@ export namespace Game {
             score = 0;
             combo = 0;
             stage = 0;
-            letterGrade = Grade.LetterGrade.aPlus;
+            letterGrade = App.LetterGrade.aPlus;
         }
 
         if (mode === Mode.newGame && state.mode === Mode.inGame) {

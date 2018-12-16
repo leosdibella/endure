@@ -39,8 +39,8 @@ export namespace GameOverlay {
             return new MenuOption( 'Grade Level',
                                    'select-difficulty',
                                    ['[ Pre-K ] I made poop.',  '[ K - 5 ] No I don\'t wanna!', '[ 6 - 8 ] Remove the training wheels!', '[ 9 - 12 ] Test me sensei!', '[ 12+ ] I know kung fu.'],
-                                   General.fillArray(Object.keys(Game.Difficulty).length, i => () => callback({
-                                        difficulty: i as Game.Difficulty,
+                                   General.fillArray(General.getEnumKeys(App.Difficulty).length, i => () => callback({
+                                        difficulty: i as App.Difficulty,
                                         mode: Game.Mode.newGame
                                    })));
         }),
@@ -72,7 +72,7 @@ export namespace GameOverlay {
             })], 0);
         }),
         new Maybe((callback: (update: Game.IUpdate) => void): MenuOption => {
-            return new MenuOption('Lights On?', 'theme', ['Yep', 'Nope'], General.fillArray(Object.keys(App.Theme).length, i => () => callback({
+            return new MenuOption('Lights On?', 'theme', ['Yep', 'Nope'], General.fillArray(General.getEnumKeys(App.Theme).length, i => () => callback({
                 mode: Game.Mode.newGame,
                 theme: i as App.Theme
             })));
@@ -89,24 +89,36 @@ export namespace GameOverlay {
         }
     }
 
-    export class State {
-        playerName: string;
-        selectedOptionIndex: number;
-        readonly menu: Menu;
-
-        constructor(playerName: string, selectedOptionIndex: number, menuCallback: (update: Game.IUpdate) => void, onNameChange: () => void) {
-            this.menu = new Menu(menuCallback, onNameChange);
-            this.playerName = playerName;
-            this.selectedOptionIndex = selectedOptionIndex;
-        }
-    }
-
     export interface IProps {
-        difficulty: Game.Difficulty;
+        difficulty: App.Difficulty;
         theme: App.Theme;
         mode: Game.Mode;
         highScores: Game.HighScore[];
         playerName: string;
         readonly onUpdate: (updates: Game.IUpdate) => void;
+    }
+
+    export function getDefaultOptionIndex(props: IProps, menu: Menu): number {
+        if (props.mode === Game.Mode.selectDifficulty) {
+            return props.difficulty;
+        }
+
+        if (props.mode === Game.Mode.setTheme) {
+            return props.theme === App.Theme.light ? 0 : 1;
+        }
+
+        return menu.menuOptions[props.mode].caseOf(mo => mo.defaultOptionsIndex.getOrDefault(defaultDefaultOptionsIndex), () => defaultDefaultOptionsIndex);
+    }
+
+    export class State {
+        playerName: string;
+        selectedOptionIndex: number;
+        readonly menu: Menu;
+
+        constructor(props: IProps, onNameChange: () => void) {
+            this.menu = new Menu(props.onUpdate, onNameChange);
+            this.playerName = props.playerName;
+            this.selectedOptionIndex = getDefaultOptionIndex(props, this.menu);
+        }
     }
 }

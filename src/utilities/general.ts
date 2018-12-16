@@ -90,4 +90,9 @@ export namespace General {
             f(array[i], i, array);
         }
     }
+
+    // Note the reverse lookup generates properties for "0", "1" etc at runtime which while helpful also breaks the purity of the enum.
+    export function getEnumKeys(collection: any) {
+        return Object.keys(collection).filter(k => isInteger(k));
+    }
 }

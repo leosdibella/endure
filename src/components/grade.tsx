@@ -12,7 +12,7 @@ export class Grade extends React.PureComponent<Utilities.Grade.IProps, Utilities
         } else if (this.props.mode === Utilities.Game.Mode.inGame) {
             if (previousProps.mode === Utilities.Game.Mode.paused) {
                 this.state.animator.togglePaused();
-            } else if (this.props.letterGrade !== previousProps.letterGrade && this.props.letterGrade !== Utilities.Grade.LetterGrade.f) {
+            } else if (this.props.letterGrade !== previousProps.letterGrade && this.props.letterGrade !== Utilities.App.LetterGrade.f) {
                 this.state.animator.animate(this.getDuration());
             }
         } else {
