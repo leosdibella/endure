@@ -18,13 +18,15 @@ export namespace Game {
 
     export class HighScore {
         name: string;
+        difficulty: App.Difficulty;
         value: number;
         dateStamp: string;
 
-        constructor(name: string, value: number, dateStamp: string) {
+        constructor(name: string, value: number, dateStamp: string, difficulty: App.Difficulty) {
             this.name = name;
             this.value = value;
             this.dateStamp = dateStamp;
+            this.difficulty = difficulty;
         }
     }
 
@@ -96,8 +98,11 @@ export namespace Game {
                 if (General.isObject(hs)
                         && General.isString(hs.name)
                         && General.isString(hs.dateStamp)
-                        && General.isInteger(hs.value)) {
-                    highScoreArray.push(new HighScore(hs.name, hs.dateStamp, hs.value));
+                        && General.isInteger(hs.value)
+                        && General.isInteger(hs.difficulty)) {
+                    new Maybe(App.Difficulty[hs.difficulty]).justDo(() => {
+                        highScoreArray.push(new HighScore(hs.name, hs.dateStamp, hs.value, hs.difficulty));
+                    });
                 }
             });
         }
@@ -124,7 +129,8 @@ export namespace Game {
     }
 
     export function getNextStateFromUpdate(update: IUpdate, state: State): State {
-        const playerName: string = new Maybe(update.playerName).getOrDefault(state.playerName);
+        const playerName: string = new Maybe(update.playerName).getOrDefault(state.playerName),
+        difficulty: App.Difficulty = new Maybe(update.difficulty).getOrDefault(state.difficulty);
 
         let stage: number = state.score,
             score: number = state.score,
@@ -144,7 +150,7 @@ export namespace Game {
         }
 
         if (mode === Mode.gameOver) {
-            highScores = highScores.concat(new HighScore(state.playerName, score, General.getDateStamp(new Date())))
+            highScores = highScores.concat(new HighScore(state.playerName, score, General.getDateStamp(new Date()), difficulty))
                                    .sort((a, b) => b.value - a.value)
                                    .slice(0, numberOfHighScoresToPersist);
         } else if (isInProgress(state.mode) && isInProgress(mode) && state.mode !== mode) {
@@ -163,7 +169,7 @@ export namespace Game {
         }
 
         return new State(mode,
-                         state.difficulty,
+                         difficulty,
                          highScores,
                          playerName,
                          combo,

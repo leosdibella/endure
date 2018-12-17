@@ -39,7 +39,7 @@ export namespace Tile {
         grey
     }
 
-    export const numberOfColors: number = General.getEnumKeys(Color).length - 1;
+    export const numberOfColors: number = General.getNumericEnumKeys(Color).length - 1;
 
     export function getRandomColor(hasDetonationRange: boolean = false): number {
         if (hasDetonationRange) {
@@ -85,7 +85,7 @@ export namespace Tile {
         return DetonationRange.none;
     }
 
-    export const linkClasses: string[] = General.getEnumKeys(Link).map(l => 'tile-link-' + General.camelCaseToKebabCase(Link[parseInt(l, 10)]));
+    export const linkClasses: string[] = General.getNumericEnumKeys(Link).map(l => 'tile-link-' + General.camelCaseToKebabCase(Link[parseInt(l, 10)]));
 
     export class Container {
         readonly row: number;
@@ -94,6 +94,10 @@ export namespace Tile {
         color: Tile.Color;
         link: Link;
         detonationRange: DetonationRange;
+
+        cloneWith(color: Color, link: Link, detonationRange: DetonationRange): Container {
+            return new Container(this.row, this.column, this.index, color, detonationRange, link);
+        }
 
         constructor(row: number,
                     column: number,
@@ -107,10 +111,6 @@ export namespace Tile {
             this.detonationRange = detonationRange;
             this.link = link;
             this.index = index;
-        }
-
-        cloneWith(color: Color, link: Link, detonationRange: DetonationRange): Container {
-            return new Container(this.row, this.column, this.index, color, detonationRange, link);
         }
     }
 

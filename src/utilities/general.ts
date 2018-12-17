@@ -33,7 +33,7 @@ export namespace General {
     }
 
     export function isObject(value: any): boolean {
-        return typeof(value) === 'object' && value !== null;
+        return typeof(value) === 'object' && value !== null && !Array.isArray(value);
     }
 
     export function isString(value: any): boolean {
@@ -92,7 +92,7 @@ export namespace General {
     }
 
     // Note the reverse lookup generates properties for "0", "1" etc at runtime which while helpful also breaks the purity of the enum.
-    export function getEnumKeys(collection: any) {
-        return Object.keys(collection).filter(k => isInteger(k));
+    export function getNumericEnumKeys(collection: any): string[] {
+        return isObject(collection) ? Object.keys(collection).filter(k => isInteger(parseInt(k, 10))) : [];
     }
 }

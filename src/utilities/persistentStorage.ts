@@ -20,7 +20,7 @@ export namespace PersistentStorage {
     }
 
     export function fetchData(key: string): Maybe<any> {
-        return isLocalStorageSupported() ? new Maybe(window.localStorage.getItem(key)).bind(s => JSON.parse(s)) : new Maybe();
+        return isLocalStorageSupported() ? new Maybe(window.localStorage.getItem(key)).bind(s => new Maybe(JSON.parse(s))) : new Maybe();
     }
 
     export function fetchEnumValue<T>(key: string, collection: any, defaultValue: T): T {

@@ -11,10 +11,6 @@ export class Maybe<T> {
 
     private readonly value: T | undefined;
 
-    constructor(value?: T | undefined | null) {
-        this.value = value === null ? undefined : value;
-    }
-
     bind<U>(f: (t: T) => Maybe<U>): Maybe<U> {
         return General.isDefined(this.value) ? f(this.value as T) : new Maybe();
     }
@@ -49,5 +45,9 @@ export class Maybe<T> {
 
     getOrDefault<U extends T>(defaultValue: U): U | T {
         return General.isDefined(this.value) ? this.value as T : defaultValue;
+    }
+
+    constructor(value?: T | undefined | null) {
+        this.value = value === null ? undefined : value;
     }
 }

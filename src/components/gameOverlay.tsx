@@ -4,62 +4,39 @@ import * as Utilities from '../utilities/utilities';
 import '../styles/gameOverlay.scss';
 
 export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProps, Utilities.GameOverlay.State> {
-    readonly state: Utilities.GameOverlay.State = new Utilities.GameOverlay.State(this.props, this.saveNameChanges);
+    private readonly onKeyDown: (keyboardEvent: KeyboardEvent) => void = this.handleKeyDown.bind(this);
+    private readonly onNameChange: (event: React.ChangeEvent<HTMLInputElement>) => void = this.handleNameChange.bind(this);
 
     private readonly keyDownEventActionMap: Utilities.General.IDictionary<() => void> = {
-        arrowdown: () => {
-            this.incrementOrDecrementOptionsIndex(1);
-        },
-        arrowup: () => {
-            this.incrementOrDecrementOptionsIndex(-1);
-        },
-        enter: () => {
-            this.state.menu.menuOptions[this.props.mode].justDo(mo => mo.actions[this.state.selectedOptionIndex]());
-        }
+        arrowdown: this.onArrowDown.bind(this),
+        arrowup: this.onArrowUp.bind(this),
+        enter: this.onEnter.bind(this)
     };
 
-    componentDidUpdate(previousProps: Utilities.GameOverlay.IProps, previousState: Utilities.GameOverlay.State): void {
-        if (previousProps.mode !== this.props.mode) {
-            this.setState({
-                selectedOptionIndex: Utilities.GameOverlay.getDefaultOptionIndex(this.props, this.state.menu)
-            });
-        }
-
-        if (this.props.mode !== Utilities.Game.Mode.specifyName) {
-            this.setState({
-                playerName: this.props.playerName
-            });
-        }
+    private onArrowDown(): void {
+        this.incrementOrDecrementOptionsIndex(1);
     }
 
-    componentDidMount(): void {
-        document.addEventListener(Utilities.General.DomEvent.keyDown, this.onKeyDown);
+    private onArrowUp(): void {
+        this.incrementOrDecrementOptionsIndex(-1);
     }
 
-    componentWillUnmount(): void {
-        document.removeEventListener(Utilities.General.DomEvent.keyDown, this.onKeyDown);
+    private onEnter(): void {
+        this.state.menu.menuOptions[this.props.mode].justDo(mo => mo.actions[this.state.selectedOptionIndex]());
     }
 
-    render(): JSX.Element {
-        return <div className={'game-overlay-container ' + Utilities.App.Theme[this.props.theme]}>
-                   <div className='game-overlay'>
-                        {this.getGameOverlayBody()}
-                   </div>
-               </div>;
-    }
-
-    private readonly onKeyDown = (keyboardEvent: KeyboardEvent): void => {
+    private handleKeyDown(keyboardEvent: KeyboardEvent): void {
         new Utilities.Maybe(this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()]).justDo(kdh => kdh());
     }
 
-    private saveNameChanges() {
+    private saveNameChange(): void {
         this.props.onUpdate({
             mode: Utilities.Game.Mode.newGame,
             playerName: this.state.playerName
         });
     }
 
-    private readonly handleNameChanges = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    private handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void {
         this.setState({
             playerName: event.target.value
         });
@@ -133,7 +110,7 @@ export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProp
                                             className='game-overlay-player-name-input-container'>
                                             <input value={this.state.playerName}
                                                    className={Utilities.App.Theme[this.props.theme]}
-                                                   onChange={this.handleNameChanges}/>
+                                                   onChange={this.onNameChange}/>
                                         </div>);
         }
 
@@ -173,5 +150,37 @@ export class GameOverlay extends React.PureComponent<Utilities.GameOverlay.IProp
                 selectedOptionIndex: optionIndex >= 0 ? (optionIndex % mo.options.length) : (mo.options.length - 1)
             });
         });
+    }
+
+    readonly state: Utilities.GameOverlay.State = new Utilities.GameOverlay.State(this.props, this.saveNameChange.bind(this));
+
+    componentDidUpdate(previousProps: Utilities.GameOverlay.IProps, previousState: Utilities.GameOverlay.State): void {
+        if (previousProps.mode !== this.props.mode) {
+            this.setState({
+                selectedOptionIndex: this.state.menu.getDefaultOptionIndex(this.props)
+            });
+        }
+
+        if (this.props.mode !== Utilities.Game.Mode.specifyName) {
+            this.setState({
+                playerName: this.props.playerName
+            });
+        }
+    }
+
+    componentDidMount(): void {
+        document.addEventListener(Utilities.General.DomEvent.keyDown, this.onKeyDown);
+    }
+
+    componentWillUnmount(): void {
+        document.removeEventListener(Utilities.General.DomEvent.keyDown, this.onKeyDown);
+    }
+
+    render(): JSX.Element {
+        return <div className={'game-overlay-container ' + Utilities.App.Theme[this.props.theme]}>
+                   <div className='game-overlay'>
+                        {this.getGameOverlayBody()}
+                   </div>
+               </div>;
     }
 }

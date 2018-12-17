@@ -4,7 +4,23 @@ import * as Utilities from '../utilities/utilities';
 import '../styles/grade.scss';
 
 export class Grade extends React.PureComponent<Utilities.Grade.IProps, Utilities.Grade.State> {
-    readonly state: Utilities.Grade.State = new Utilities.Grade.State(this.expandGradeFill, this.getDuration(), this.onAnimationComplete);
+    private expandGradeFill(timeFraction: number): void {
+        this.setState({
+            fillRadiusPercentage: ((1 - timeFraction) * 100).toFixed(2) + '%'
+        });
+    }
+
+    private onAnimationComplete(): void {
+        this.props.onUpdate({
+            letterGrade: this.props.letterGrade + 1
+        });
+    }
+
+    private getDuration(): number {
+        return Utilities.Grade.durations[this.props.difficulty] - (Utilities.Grade.durationModifiers[this.props.difficulty] * this.props.stage);
+    }
+
+    readonly state: Utilities.Grade.State = new Utilities.Grade.State(this.expandGradeFill.bind(this), this.getDuration(), this.onAnimationComplete.bind(this));
 
     componentDidUpdate(previousProps: Utilities.Grade.IProps, previousState: Utilities.Grade.State): void {
         if (this.props.mode === Utilities.Game.Mode.paused) {
@@ -34,21 +50,5 @@ export class Grade extends React.PureComponent<Utilities.Grade.IProps, Utilities
                          style={style}>
                     </div>
                </div>;
-    }
-
-    private expandGradeFill(timeFraction: number): void {
-        this.setState({
-            fillRadiusPercentage: ((1 - timeFraction) * 100).toFixed(2) + '%'
-        });
-    }
-
-    private onAnimationComplete(): void {
-        this.props.onUpdate({
-            letterGrade: this.props.letterGrade + 1
-        });
-    }
-
-    private getDuration(): number {
-        return Utilities.Grade.durations[this.props.difficulty] - (Utilities.Grade.durationModifiers[this.props.difficulty] * this.props.stage);
     }
 }

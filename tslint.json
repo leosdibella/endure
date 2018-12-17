@@ -6,7 +6,7 @@
     "jsRules": {},
     "rules": {
         "typedef": true,
-        "member-access": false,
+        "member-access": [true, "no-public"],
         "no-namespace": false,
         "array-type": [true, "array"],
         "arrow-parens": false,
@@ -14,10 +14,31 @@
         "eofline": false,
         "one-variable-per-declaration": false,
         "no-bitwise": false,
-        "semicolon": true,
         "max-line-length": false,
         "quotemark": [true, "single"],
-        "max-classes-per-file": false
+        "max-classes-per-file": false,
+        "no-irregular-whitespace": true,
+        "whitespace": true,
+        "semicolon": [true, "always"],
+        "member-ordering": [true, {
+            "order": [
+                "private-static-field",
+                "private-static-method",
+                "protected-static-field",
+                "protected-static-method",
+                "public-static-field",
+                "public-static-method",
+                "private-instance-field",
+                "private-instance-method",
+                "private-constructor",
+                "protected-instance-field",
+                "protected-instance-method",
+                "protected-constructor",
+                "public-instance-field",
+                "public-instance-method",
+                "public-constructor"
+            ]
+        }]
     },
     "rulesDirectory": []
 }

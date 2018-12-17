@@ -4,14 +4,7 @@ import * as Utilities from '../utilities/utilities';
 import '../styles/tile.scss';
 
 export class Tile extends React.PureComponent<Utilities.Tile.IProps, object> {
-    render(): JSX.Element {
-        const additionalClass: string = this.getAdditionalClass();
-
-        return <div className={this.getClassName(additionalClass)}
-                    style={this.getStyle(additionalClass)}
-                    onClick={this.onClick}>
-               </div>;
-    }
+    private readonly onClick: (event: React.MouseEvent<HTMLDivElement>) => void = this.handleClick.bind(this);
 
     private getClassName(additionalClass: string): string {
         let className: string = 'tile';
@@ -46,7 +39,17 @@ export class Tile extends React.PureComponent<Utilities.Tile.IProps, object> {
         return additionalClass;
     }
 
-    private readonly onClick = (event: React.MouseEvent<HTMLDivElement>): void => {
+    private handleClick(event: React.MouseEvent<HTMLDivElement>): void {
         this.props.onUpdate(this.props.row, this.props.column);
+    }
+
+    render(): JSX.Element {
+        const additionalClass: string = this.getAdditionalClass();
+
+        return <div className={this.getClassName(additionalClass)}
+                    style={this.getStyle(additionalClass)}
+                    onClick={this.onClick}>
+                    {this.props.detonationRange !== Utilities.Tile.DetonationRange.none ? this.props.detonationRange : ''}
+               </div>;
     }
 }
