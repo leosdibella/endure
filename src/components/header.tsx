@@ -1,15 +1,18 @@
 import * as React from 'react';
-import * as Utilities from '../utilities/utilities';
 
-import '../styles/topBar.scss';
+import * as AppUtilities from '../utilities/app';
+import * as GameUtilities from '../utilities/game';
+import * as HeaderUtilities from '../utilities/header';
+
+import '../styles/header.scss';
 
 import { Combo } from './combo';
 import { Grade } from './grade';
 
-export class TopBar extends React.PureComponent<Utilities.TopBar.IProps, object> {
-    render(): JSX.Element {
-        return <div className={'top-bar ' + Utilities.App.Theme[this.props.theme] + (!Utilities.Game.isInProgress(this.props.mode) ? ' hide' : '')}>
-            <div className='top-bar-left-hud'>
+class Header extends React.PureComponent<HeaderUtilities.IProps, object> {
+    public render(): JSX.Element {
+        return <div className={'header ' + AppUtilities.Theme[this.props.theme] + (!GameUtilities.isInProgress(this.props.mode) ? ' hide' : '')}>
+            <div className='header-left-hud'>
                 <Combo combo={this.props.combo}
                        stage={this.props.stage}
                        theme={this.props.theme}
@@ -18,7 +21,7 @@ export class TopBar extends React.PureComponent<Utilities.TopBar.IProps, object>
                        letterGrade={this.props.letterGrade}
                        mode={this.props.mode}>
                 </Combo>
-                <div className='top-bar-name'>
+                <div className='header-name'>
                     {this.props.playerName}
                 </div>
             </div>
@@ -29,14 +32,18 @@ export class TopBar extends React.PureComponent<Utilities.TopBar.IProps, object>
                    mode={this.props.mode}
                    onUpdate={this.props.onUpdate}>
             </Grade>
-            <div className='top-bar-right-hud'>
-                <div className='top-bar-score'>
+            <div className='header-right-hud'>
+                <div className='header-score'>
                     Score: {this.props.score}
                 </div>
-                <div className='top-bar-stage'>
+                <div className='header-stage'>
                     Stage: {this.props.stage}
                 </div>
             </div>
         </div>;
     }
 }
+
+export {
+    Header
+};

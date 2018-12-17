@@ -1,90 +1,94 @@
 import * as React from 'react';
-import * as Utilities from '../utilities/utilities';
+
+import * as AppUtilities from '../utilities/app';
+import * as GameUtilities from '../utilities/game';
+import * as GeneralUtilities from '../utilities/general';
+import { Maybe } from '../utilities/maybe';
 
 import '../styles/game.scss';
 
-import { GameOverlay } from './gameOverlay';
 import { Grid } from './grid';
-import { TopBar } from './topBar';
+import { Header } from './header';
+import { Overlay } from './overlay';
 
-export class Game extends React.PureComponent<Utilities.Game.IProps, Utilities.Game.State> {
+class Game extends React.PureComponent<GameUtilities.IProps, GameUtilities.State> {
     private readonly onKeyDown: (keyboardEvent: KeyboardEvent) => void = this.handleKeyDown.bind(this);
-    private readonly onUpdate: (update: Utilities.Game.IUpdate) => void = this.handleUpdate.bind(this);
+    private readonly onUpdate: (update: GameUtilities.IUpdate) => void = this.handleUpdate.bind(this);
     private readonly onThemeChange: () => void = this.toggleTheme.bind(this);
     private readonly onQuit: () => void = this.quit.bind(this);
 
-    private readonly keyDownEventActionMap: Utilities.General.IDictionary<() => void> = {
+    private readonly keyDownEventActionMap: GeneralUtilities.IDictionary<() => void> = {
         p: this.togglePaused.bind(this),
         q: this.onQuit,
         v: this.onThemeChange
     };
 
     private toggleTheme(): void {
-        if (this.state.mode !== Utilities.Game.Mode.specifyName) {
+        if (this.state.mode !== GameUtilities.Mode.specifyName) {
             this.props.onUpdate({
-                theme: this.props.theme === Utilities.App.Theme.dark ? Utilities.App.Theme.light : Utilities.App.Theme.dark
+                theme: this.props.theme === AppUtilities.Theme.dark ? AppUtilities.Theme.light : AppUtilities.Theme.dark
             });
         }
     }
 
     private quit(): void {
         this.handleUpdate({
-            mode: Utilities.Game.Mode.newGame
+            mode: GameUtilities.Mode.newGame
         });
     }
 
     private togglePaused(): void {
-        if (Utilities.Game.isInProgress(this.state.mode)) {
+        if (GameUtilities.isInProgress(this.state.mode)) {
             this.setState({
-                mode: this.state.mode === Utilities.Game.Mode.paused ? Utilities.Game.Mode.inGame : Utilities.Game.Mode.paused
+                mode: this.state.mode === GameUtilities.Mode.paused ? GameUtilities.Mode.inGame : GameUtilities.Mode.paused
             });
         }
     }
 
-    private handleUpdate(update: Utilities.Game.IUpdate): void {
-        new Utilities.Maybe(update.theme).justDo(() => {
+    private handleUpdate(update: GameUtilities.IUpdate): void {
+        new Maybe(update.theme).justDo(() => {
             this.onThemeChange();
             this.onQuit();
         }).otherwiseDo(() => {
-            const nextState: Utilities.Game.State = Utilities.Game.getNextStateFromUpdate(update, this.state);
+            const nextState: GameUtilities.State = GameUtilities.getNextStateFromUpdate(update, this.state);
 
             this.setState(nextState);
-            Utilities.Game.persistState(nextState);
+            GameUtilities.persistState(nextState);
         });
     }
 
     private handleKeyDown(keyboardEvent: KeyboardEvent): void {
-        new Utilities.Maybe(this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()]).justDo(kdh => kdh());
+        new Maybe(this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()]).justDo(kdh => kdh());
     }
 
     private getGameOverlay(): JSX.Element | boolean {
-        if (this.state.mode !== Utilities.Game.Mode.inGame) {
-            return <GameOverlay theme={this.props.theme}
-                                mode={this.state.mode}
-                                playerName={this.state.playerName}
-                                difficulty={this.state.difficulty}
-                                highScores={this.state.highScores}
-                                onUpdate={this.onUpdate}>
-                   </GameOverlay>;
+        if (this.state.mode !== GameUtilities.Mode.inGame) {
+            return <Overlay theme={this.props.theme}
+                            mode={this.state.mode}
+                            playerName={this.state.playerName}
+                            difficulty={this.state.difficulty}
+                            highScores={this.state.highScores}
+                            onUpdate={this.onUpdate}>
+                   </Overlay>;
         }
 
         return false;
     }
 
-    readonly state: Utilities.Game.State = Utilities.Game.getPersistedState();
+    public readonly state: GameUtilities.State = GameUtilities.getPersistedState();
 
-    componentDidMount(): void {
-        document.addEventListener(Utilities.General.DomEvent.keyDown, this.onKeyDown);
+    public componentDidMount(): void {
+        document.addEventListener(GeneralUtilities.DomEvent.keyDown, this.onKeyDown);
     }
 
-    componentWillUnmount(): void {
-        document.removeEventListener(Utilities.General.DomEvent.keyDown, this.onKeyDown);
+    public componentWillUnmount(): void {
+        document.removeEventListener(GeneralUtilities.DomEvent.keyDown, this.onKeyDown);
     }
 
-    render(): JSX.Element {
-        return <div className={'game ' + Utilities.App.Theme[this.props.theme]}>
+    public render(): JSX.Element {
+        return <div className={'game ' + AppUtilities.Theme[this.props.theme]}>
             {this.getGameOverlay()}
-            <TopBar theme={this.props.theme}
+            <Header theme={this.props.theme}
                     mode={this.state.mode}
                     combo={this.state.combo}
                     difficulty={this.state.difficulty}
@@ -93,7 +97,7 @@ export class Game extends React.PureComponent<Utilities.Game.IProps, Utilities.G
                     playerName={this.state.playerName}
                     stage={this.state.stage}
                     onUpdate={this.onUpdate}>
-            </TopBar>
+            </Header>
             <Grid theme={this.props.theme}
                   mode={this.state.mode}
                   orientation={this.props.orientation}
@@ -102,3 +106,7 @@ export class Game extends React.PureComponent<Utilities.Game.IProps, Utilities.G
         </div>;
     }
 }
+
+export {
+    Game
+};

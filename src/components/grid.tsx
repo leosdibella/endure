@@ -1,15 +1,21 @@
 import * as React from 'react';
-import * as Utilities from '../utilities/utilities';
+
+import * as AppUtilities from '../utilities/app';
+import * as GameUtilities from '../utilities/game';
+import * as GeneralUtilities from '../utilities/general';
+import * as GridUtilities from '../utilities/grid';
+import { Maybe } from '../utilities/maybe';
+import * as TileUtilities from '../utilities/tile';
 
 import '../styles/grid.scss';
 
 import { Tile } from './tile';
 
-export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.Grid.State> {
+export class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State> {
     private readonly onKeyDown: (keyboardEvent: KeyboardEvent) => void = this.handleKeyDown.bind(this);
     private readonly onUpdate: (row: number, column: number) => void = this.handleUpdate.bind(this);
 
-    private readonly keyDownEventActionMap: Utilities.General.IDictionary<() => void> = {
+    private readonly keyDownEventActionMap: GeneralUtilities.IDictionary<() => void> = {
         ' ': this.rotateTile.bind(this),
         'a': this.moveLeft.bind(this),
         'arrowdown': this.moveDown.bind(this),
@@ -21,7 +27,7 @@ export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.G
         'w': this.moveUp.bind(this)
     };
 
-    private removeReducedTiles(reduction: Utilities.Grid.IReduction): void {
+    private removeReducedTiles(reduction: GridUtilities.IReduction): void {
          // TODO: Add Reduction Animations
 
          // TODO ---- BELOW
@@ -35,8 +41,8 @@ export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.G
         // TODO ---- ABOVE
     }
 
-    private setTiles = (tiles: Utilities.Tile.Container[], row: number = this.state.row, column: number = this.state.column): void => {
-        const reduction: Utilities.Grid.IReduction = Utilities.Grid.reduceTiles(this.state);
+    private setTiles = (tiles: TileUtilities.Container[], row: number = this.state.row, column: number = this.state.column): void => {
+        const reduction: GridUtilities.IReduction = GridUtilities.reduceTiles(this.state);
 
         this.setState({
             column,
@@ -47,10 +53,10 @@ export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.G
     }
 
     private rotateTiles(): void {
-        const rotatedTiles: Utilities.General.IDictionary<Utilities.Tile.Container> = Utilities.Grid.rotateTiles(this.props, this.state);
+        const rotatedTiles: GeneralUtilities.IDictionary<TileUtilities.Container> = GridUtilities.rotateTiles(this.props, this.state);
 
         // TODO: Add Rotation Animations
-        this.setTiles(this.state.tiles.map(t => new Utilities.Maybe(rotatedTiles[t.index]).getOrDefault(t)));
+        this.setTiles(this.state.tiles.map(t => new Maybe(rotatedTiles[t.index]).getOrDefault(t)));
     }
 
     private detonateTile(): void {
@@ -59,37 +65,37 @@ export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.G
 
     private handleUpdate(row: number, column: number): void {
         if (!this.state.processingInput) {
-            const tile: Utilities.Tile.Container = this.state.tiles[Utilities.Grid.getTileIndexFromCoordinates(Utilities.Grid.getGridDimension(this.props), row, column)];
+            const tile: TileUtilities.Container = this.state.tiles[GridUtilities.getTileIndexFromCoordinates(GridUtilities.getGridDimension(this.props), row, column)];
 
             this.setState({
                 column,
                 processingInput: true,
                 row
-            }, () => tile.detonationRange === Utilities.Tile.DetonationRange.none ? this.rotateTiles() : this.detonateTile());
+            }, () => tile.detonationRange === TileUtilities.DetonationRange.none ? this.rotateTiles() : this.detonateTile());
         }
     }
 
     private moveRight(): void {
         this.setState({
-            column: Utilities.Grid.movementFunctions[Utilities.Tile.Link.right](this.props, this.state)
+            column: GridUtilities.movementFunctions[TileUtilities.Link.right](this.props, this.state)
         });
     }
 
     private moveLeft(): void {
         this.setState({
-            column: Utilities.Grid.movementFunctions[Utilities.Tile.Link.left](this.props, this.state)
+            column: GridUtilities.movementFunctions[TileUtilities.Link.left](this.props, this.state)
         });
     }
 
     private moveUp(): void {
         this.setState({
-            row: Utilities.Grid.movementFunctions[Utilities.Tile.Link.top](this.props, this.state)
+            row: GridUtilities.movementFunctions[TileUtilities.Link.top](this.props, this.state)
         });
     }
 
     private moveDown(): void {
         this.setState({
-            row: Utilities.Grid.movementFunctions[Utilities.Tile.Link.bottom](this.props, this.state)
+            row: GridUtilities.movementFunctions[TileUtilities.Link.bottom](this.props, this.state)
         });
     }
 
@@ -98,34 +104,34 @@ export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.G
     }
 
     private handleKeyDown(keyboardEvent: KeyboardEvent): void {
-        if (this.props.mode === Utilities.Game.Mode.inGame) {
-           new Utilities.Maybe(this.keyDownEventActionMap[keyboardEvent.key.toLocaleLowerCase()]).justDo(kdh => kdh.call(this));
+        if (this.props.mode === GameUtilities.Mode.inGame) {
+           new Maybe(this.keyDownEventActionMap[keyboardEvent.key.toLocaleLowerCase()]).justDo(kdh => kdh.call(this));
         }
     }
 
-    readonly state: Utilities.Grid.State = new Utilities.Grid.State(this.props);
+    public readonly state: GridUtilities.State = new GridUtilities.State(this.props);
 
-    componentDidMount(): void {
-        document.addEventListener(Utilities.General.DomEvent.keyDown, this.onKeyDown);
+    public componentDidMount(): void {
+        document.addEventListener(GeneralUtilities.DomEvent.keyDown, this.onKeyDown);
 
         this.setState({
             processingInput: false
         });
     }
 
-    componentWillUnmount(): void {
-        document.removeEventListener(Utilities.General.DomEvent.keyDown, this.onKeyDown);
+    public componentWillUnmount(): void {
+        document.removeEventListener(GeneralUtilities.DomEvent.keyDown, this.onKeyDown);
     }
 
-    componentDidUpdate(previousProps: Utilities.Grid.IProps, previousState: Utilities.Grid.State): void {
-        if (!Utilities.Game.isInProgress(previousProps.mode) && Utilities.Game.isInProgress(this.props.mode)) {
-            const dimension: Utilities.Grid.IGridDimension = Utilities.Grid.getGridDimension(this.props);
+    public componentDidUpdate(previousProps: GridUtilities.IProps, previousState: GridUtilities.State): void {
+        if (!GameUtilities.isInProgress(previousProps.mode) && GameUtilities.isInProgress(this.props.mode)) {
+            const dimension: GridUtilities.IGridDimension = GridUtilities.getGridDimension(this.props);
 
-            this.setTiles(Utilities.Grid.generateTiles(dimension), dimension.initialRow, dimension.initialColumn);
+            this.setTiles(GridUtilities.generateTiles(dimension), dimension.initialRow, dimension.initialColumn);
         }
     }
 
-    render(): JSX.Element {
+    public render(): JSX.Element {
         const tiles: JSX.Element[] = this.state.tiles.map(tile => <Tile key={tile.index}
                                                                         mode={this.props.mode}
                                                                         color={tile.color}
@@ -137,7 +143,7 @@ export class Grid extends React.PureComponent<Utilities.Grid.IProps, Utilities.G
                                                                         link={tile.link}
                                                                         onUpdate={this.onUpdate}/>);
 
-        return <div className={'grid ' + (Utilities.Game.isInProgress(this.props.mode) ? '' : 'hide ') + Utilities.App.Theme[this.props.theme]}>
+        return <div className={'grid ' + (GameUtilities.isInProgress(this.props.mode) ? '' : 'hide ') + AppUtilities.Theme[this.props.theme]}>
                     {tiles}
                </div>;
     }

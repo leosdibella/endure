@@ -1,6 +1,6 @@
-$top-bar-side-margin-width: $global-side-bar-width + 10;
+$header-side-margin-width: $global-side-bar-width + 10;
 
-.top-bar {
+.header {
     @extend %global-flex-row;
     width: 100%;
     top: 0px;
@@ -9,14 +9,14 @@ $top-bar-side-margin-width: $global-side-bar-width + 10;
     padding: 10px 0px 10px 0px;
     justify-content: space-between;
     flex: 1;
-    margin-left: $top-bar-side-margin-width;
-    margin-right: $top-bar-side-margin-width;
+    margin-left: $header-side-margin-width;
+    margin-right: $header-side-margin-width;
     flex-wrap: nowrap;
     max-height: 100px;
 }
 
-.top-bar.dark {
-    .top-bar-combo-container {
+.header.dark {
+    .header-combo-container {
         .healthy-combo {
             color: map-get($dark-colors, green);
         }
@@ -30,13 +30,13 @@ $top-bar-side-margin-width: $global-side-bar-width + 10;
         }
     }
 
-    .top-bar-score, .top-bar-combo {
+    .header-score, .header-combo {
         color: map-get($dark-colors, foreground);
     }
 }
 
-.top-bar.light {
-    .top-bar-combo-container {
+.header.light {
+    .header-combo-container {
         .healthy-combo {
             color: map-get($light-colors, green);
         }
@@ -50,20 +50,20 @@ $top-bar-side-margin-width: $global-side-bar-width + 10;
         }
     }
 
-    .top-bar-score, .top-bar-combo {
+    .header-score, .header-combo {
         color: map-get($light-colors, foreground);
     }
 }
 
-.top-bar-combo-container {
+.header-combo-container {
     margin-top: 45px;
 }
 
-.top-bar-count-down {
+.header-count-down {
     margin-left: 5px;
 }
 
-.top-bar-count-down {
+.header-count-down {
     span:last-child, span:first-child {
         font-size: 30px;
     }
@@ -77,7 +77,7 @@ $top-bar-side-margin-width: $global-side-bar-width + 10;
     }
 }
 
-.top-bar-score {
+.header-score {
     margin-top: 50px;
-    margin-right: $top-bar-side-margin-width + 90;
+    margin-right: $header-side-margin-width + 90;
 }

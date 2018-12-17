@@ -1,34 +1,37 @@
 import * as React from 'react';
-import * as Utilities from '../utilities/utilities';
+
+import * as GameUtilities from '../utilities/game';
+import * as GeneralUtilities from '../utilities/general';
+import * as TileUtilities from '../utilities/tile';
 
 import '../styles/tile.scss';
 
-export class Tile extends React.PureComponent<Utilities.Tile.IProps, object> {
+class Tile extends React.PureComponent<TileUtilities.IProps, object> {
     private readonly onClick: (event: React.MouseEvent<HTMLDivElement>) => void = this.handleClick.bind(this);
 
     private getClassName(additionalClass: string): string {
         let className: string = 'tile';
 
-        if (this.props.mode === Utilities.Game.Mode.inGame) {
+        if (this.props.mode === GameUtilities.Mode.inGame) {
             className += '-';
-            className += Utilities.Tile.Color[this.props.color];
+            className += TileUtilities.Color[this.props.color];
             className += ' ';
             className += additionalClass;
             className += ' ';
-            className += Utilities.Tile.linkClasses[this.props.link];
+            className += TileUtilities.linkClasses[this.props.link];
         }
 
         return className;
     }
 
-    private getStyle(additionalClass: string): Utilities.General.ICssStyle {
-        const placementModifier: number = additionalClass && this.props.mode === Utilities.Game.Mode.inGame ? -Utilities.Tile.selectedPlacementModifier : 0,
-              dimension: string = Utilities.Tile.dimension + (additionalClass && this.props.mode === Utilities.Game.Mode.inGame ? Utilities.Tile.selectedDimensionModifier : 0) + 'px';
+    private getStyle(additionalClass: string): GeneralUtilities.ICssStyle {
+        const placementModifier: number = additionalClass && this.props.mode === GameUtilities.Mode.inGame ? -TileUtilities.selectedPlacementModifier : 0,
+              dimension: string = TileUtilities.dimension + (additionalClass && this.props.mode === GameUtilities.Mode.inGame ? TileUtilities.selectedDimensionModifier : 0) + 'px';
 
         return {
             height: dimension,
-            left: (this.props.column * (Utilities.Tile.dimensionWithMargin)) + placementModifier + 'px',
-            top: (this.props.row * (Utilities.Tile.dimensionWithMargin)) + placementModifier + 'px',
+            left: (this.props.column * (TileUtilities.dimensionWithMargin)) + placementModifier + 'px',
+            top: (this.props.row * (TileUtilities.dimensionWithMargin)) + placementModifier + 'px',
             width: dimension
         };
     }
@@ -43,13 +46,17 @@ export class Tile extends React.PureComponent<Utilities.Tile.IProps, object> {
         this.props.onUpdate(this.props.row, this.props.column);
     }
 
-    render(): JSX.Element {
+    public render(): JSX.Element {
         const additionalClass: string = this.getAdditionalClass();
 
         return <div className={this.getClassName(additionalClass)}
                     style={this.getStyle(additionalClass)}
                     onClick={this.onClick}>
-                    {this.props.detonationRange !== Utilities.Tile.DetonationRange.none ? this.props.detonationRange : ''}
+                    {this.props.detonationRange !== TileUtilities.DetonationRange.none ? this.props.detonationRange : ''}
                </div>;
     }
 }
+
+export {
+    Tile
+};

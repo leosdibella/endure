@@ -1,25 +1,25 @@
-import { General } from './general';
+import * as General from './general';
 
-export class Maybe<T> {
-    static filterCollection<T>(collection: Maybe<T>[]): T[] {
+class Maybe<T> {
+    public static filterCollection<T>(collection: Maybe<T>[]): T[] {
         return collection.filter(t => General.isDefined(t.value)).map(t => t.value as T);
     }
 
-    static mapThrough<T>(maybe: Maybe<any>, defaultValue: T, t?: T): T {
+    public static mapThrough<T>(maybe: Maybe<any>, defaultValue: T, t?: T): T {
         return General.isDefined(maybe.value) ? maybe.value : General.isDefined(t) ? t as T : defaultValue;
     }
 
     private readonly value: T | undefined;
 
-    bind<U>(f: (t: T) => Maybe<U>): Maybe<U> {
+    public bind<U>(f: (t: T) => Maybe<U>): Maybe<U> {
         return General.isDefined(this.value) ? f(this.value as T) : new Maybe();
     }
 
-    caseOf<U>(just: (t: T) => U, nothing: () => U): U {
+    public caseOf<U>(just: (t: T) => U, nothing: () => U): U {
         return General.isDefined(this.value) ? just(this.value as T) : nothing();
     }
 
-    justDo(f: (t: T) => void): Maybe<boolean> {
+    public justDo(f: (t: T) => void): Maybe<boolean> {
         if (General.isDefined(this.value)) {
             f(this.value as T);
 
@@ -29,7 +29,7 @@ export class Maybe<T> {
         return new Maybe(true);
     }
 
-    otherwiseJustDo<U>(maybeU: Maybe<U>, f: (u: U) => void): Maybe<boolean> {
+    public otherwiseJustDo<U>(maybeU: Maybe<U>, f: (u: U) => void): Maybe<boolean> {
         if (General.isDefined(this.value)) {
             return maybeU.justDo(f);
         }
@@ -37,17 +37,21 @@ export class Maybe<T> {
         return new Maybe();
     }
 
-    otherwiseDo(f: () => void): void {
+    public otherwiseDo(f: () => void): void {
         if (General.isDefined(this.value)) {
             f();
         }
     }
 
-    getOrDefault<U extends T>(defaultValue: U): U | T {
+    public getOrDefault<U extends T>(defaultValue: U): U | T {
         return General.isDefined(this.value) ? this.value as T : defaultValue;
     }
 
-    constructor(value?: T | undefined | null) {
+    public constructor(value?: T | undefined | null) {
         this.value = value === null ? undefined : value;
     }
 }
+
+export {
+    Maybe
+};

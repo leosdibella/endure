@@ -1,50 +1,53 @@
 import * as React from 'react';
-import * as Utilities from '../utilities/utilities';
+
+import * as AppUtilities from '../utilities/app';
+import * as GeneralUtilities from '../utilities/general';
+import { Maybe } from '../utilities/maybe';
 
 import '../styles/app.scss';
 
-import { AppBackdrop } from './appBackdrop';
+import { Backdrop } from './backdrop';
 import { Game } from './game';
 
-export class App extends React.PureComponent<object, Utilities.App.State> {
+class App extends React.PureComponent<object, AppUtilities.State> {
     private readonly onUpdate: () => void = this.handleUpdate.bind(this);
     private readonly onOrientationChange: () => void = this.setOrientation.bind(this);
 
-    private handleUpdate(updates: Utilities.App.IUpdate): void {
-        const theme: Utilities.App.Theme = new Utilities.Maybe(updates.theme).getOrDefault(this.state.theme),
-              nextState: Utilities.App.State = new Utilities.App.State(theme, this.state.orientation);
+    private handleUpdate(updates: AppUtilities.IUpdate): void {
+        const theme: AppUtilities.Theme = new Maybe(updates.theme).getOrDefault(this.state.theme),
+              nextState: AppUtilities.State = new AppUtilities.State(theme, this.state.orientation);
 
         this.setState(nextState);
-        Utilities.App.persistState(nextState);
+        AppUtilities.persistState(nextState);
     }
 
     private setOrientation(event: UIEvent): void {
         setTimeout(() => {
             this.setState({
-                orientation: Utilities.App.getOrientation()
+                orientation: AppUtilities.getOrientation()
             });
         }, 100);
     }
 
-    readonly state: Utilities.App.State = Utilities.App.getPersistedState();
+    public readonly state: AppUtilities.State = AppUtilities.getPersistedState();
 
-    componentDidMount(): void {
-        window.addEventListener(Utilities.General.DomEvent.resize, this.onOrientationChange);
-        window.addEventListener(Utilities.General.DomEvent.orientationChange, this.onOrientationChange);
-        window.addEventListener(Utilities.General.DomEvent.click, Utilities.App.removeElementFocus);
+    public componentDidMount(): void {
+        window.addEventListener(GeneralUtilities.DomEvent.resize, this.onOrientationChange);
+        window.addEventListener(GeneralUtilities.DomEvent.orientationChange, this.onOrientationChange);
+        window.addEventListener(GeneralUtilities.DomEvent.click, AppUtilities.removeElementFocus);
     }
 
-    componentWillUnmount(): void {
-        window.removeEventListener(Utilities.General.DomEvent.resize, this.onOrientationChange);
-        window.removeEventListener(Utilities.General.DomEvent.orientationChange, this.onOrientationChange);
-        window.removeEventListener(Utilities.General.DomEvent.click, Utilities.App.removeElementFocus);
+    public componentWillUnmount(): void {
+        window.removeEventListener(GeneralUtilities.DomEvent.resize, this.onOrientationChange);
+        window.removeEventListener(GeneralUtilities.DomEvent.orientationChange, this.onOrientationChange);
+        window.removeEventListener(GeneralUtilities.DomEvent.click, AppUtilities.removeElementFocus);
     }
 
-    render(): JSX.Element {
+    public render(): JSX.Element {
         return <div className={'app ' + this.state.theme}>
-            <AppBackdrop theme={this.state.theme}
-                         orientation={this.state.orientation}>
-            </AppBackdrop>
+            <Backdrop theme={this.state.theme}
+                      orientation={this.state.orientation}>
+            </Backdrop>
             <Game theme={this.state.theme}
                   orientation={this.state.orientation}
                   onUpdate={this.onUpdate}>
@@ -52,3 +55,7 @@ export class App extends React.PureComponent<object, Utilities.App.State> {
         </div>;
     }
 }
+
+export {
+    App
+};

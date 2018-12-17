@@ -7,7 +7,7 @@
     select-difficulty,
     high-scores,
     theme {
-        .game-overlay-#{$mode}-text {
+        .overlay-#{$mode}-text {
             @extend %global-flex-row;
             width: 100%;
             letter-spacing: 0.1em;
@@ -15,35 +15,35 @@
             margin-bottom: 20px;
         }
 
-        .game-overlay-container.dark .game-overlay {
-            .game-overlay-#{$mode}-text {
+        .overlay-container.dark .overlay {
+            .overlay-#{$mode}-text {
                 color: map-get($dark-colors, foreground);
             }
         }
 
-        .game-overlay-container.light .game-overlay {
-            .game-overlay-#{$mode}-text {
+        .overlay-container.light .overlay {
+            .overlay-#{$mode}-text {
                 color: map-get($light-colors, foreground);
             }
         }
 }
 
-%game-overlay-flex {
+%overlay-flex {
     @extend %global-flex-column;
     @extend %global-centering;
 }
 
-.game-overlay-container {
+.overlay-container {
     @extend %global-full-view-container;
     position: absolute;
 }
 
-.game-overlay-button-panel {
-    @extend %game-overlay-flex;
+.overlay-button-panel {
+    @extend %overlay-flex;
     margin-bottom: 10px;
 }
 
-.game-overlay-button {
+.overlay-button {
     font-size: 30px;
     outline: none;
     cursor: pointer;
@@ -54,46 +54,46 @@
     border-width: 1px;
 }
 
-.game-overlay-button:active,
-.game-overlay-button:hover,
-.game-overlay-button:focus {
+.overlay-button:active,
+.overlay-button:hover,
+.overlay-button:focus {
     outline: none;
 }
 
-.dark.game-overlay-container {
-    .game-overlay {
+.dark.overlay-container {
+    .overlay {
         background-color: rgba(0, 0, 0, .5);
     }
 
-    .game-overlay .game-overlay-button-panel {
+    .overlay .overlay-button-panel {
         button {
             color: map-get($dark-colors, foreground);
         }
 
-        .game-overlay-selected-option {
+        .overlay-selected-option {
             border-color: map-get($dark-colors, red);
         }
     }
 }
 
-.light.game-overlay-container {
-    .game-overlay {
+.light.overlay-container {
+    .overlay {
         background-color: rgba(150, 150, 150, .5);
     }
 
-    .game-overlay .game-overlay-button-panel {  
+    .overlay .overlay-button-panel {  
         button {
             color: map-get($light-colors, foreground);
         }
 
-        .game-overlay-selected-option {
+        .overlay-selected-option {
             border-color: map-get($light-colors, red);
         }
     }
 }
 
-.game-overlay {
-    @extend %game-overlay-flex;
+.overlay {
+    @extend %overlay-flex;
     @extend %global-full-view-container;
     font-size: 120px;
     flex: 1;
@@ -101,14 +101,14 @@
     z-index: 3;
 }
 
-.game-overlay-selected-option {
+.overlay-selected-option {
     font-size: 32px;
     border-radius: 50%;
     border: 1px solid;
     padding: 20px 50px;
 }
 
-.game-overlay-high-score {
+.overlay-high-score {
     @extend %global-flex-column;
     font-size: 20px;
     flex: 1;
@@ -116,7 +116,7 @@
     align-items: center;
 }
 
-.game-overlay-high-scores-listings {
+.overlay-high-scores-listings {
     @extend %global-flex-row;
     flex: 1;
     width: 100%;
@@ -124,24 +124,24 @@
     justify-content: space-between;
     align-items: start;
 
-    .game-overlay-high-scores-listing:first-child {
+    .overlay-high-scores-listing:first-child {
         padding: 0px 20px 0px $global-side-bar-width + 5;
     }
 
-    .game-overlay-high-scores-listing:last-child {
+    .overlay-high-scores-listing:last-child {
         padding: 0px $global-side-bar-width + 5 0px 20px;
     }
 
-    .game-overlay-high-scores-listing {
+    .overlay-high-scores-listing {
         flex-basis: 50%;
 
-        .game-overlay-no-high-scores {
+        .overlay-no-high-scores {
             text-align: center;
             font-size: 35px;
             padding: 10px 0px;
         }
 
-        .game-overlay-high-scores-listing-title {
+        .overlay-high-scores-listing-title {
             text-align: center;
             border-bottom: 2px solid;
             margin-bottom: 10px;
@@ -150,13 +150,13 @@
             padding-bottom: 8px;
         }
 
-        .game-overlay-high-score {
+        .overlay-high-score {
             border-bottom: 1px dashed;
             margin-bottom: 5px;
             font-size: 30px;
         }
 
-        .game-overlay-high-score div {
+        .overlay-high-score div {
             @extend %global-flex-row;
             flex: 1;
             width: 100%;
@@ -165,33 +165,33 @@
         }
     }
 
-    .dark.game-overlay-high-scores-listing {
-        .game-overlay-high-scores-listing-title, .game-overlay-high-score, .game-overlay-no-high-scores {
+    .dark.overlay-high-scores-listing {
+        .overlay-high-scores-listing-title, .overlay-high-score, .overlay-no-high-scores {
             color: map-get($dark-colors, foreground);
         }        
     }
 
-    .light.game-overlay-high-scores-listing {
-        .game-overlay-high-scores-listing-title, .game-overlay-high-score, .game-overlay-no-high-scores {
+    .light.overlay-high-scores-listing {
+        .overlay-high-scores-listing-title, .overlay-high-score, .overlay-no-high-scores {
             color: map-get($light-colors, foreground);
         }
     }
 
-    .game-overlay-high-scores-listing-separator {
+    .overlay-high-scores-listing-separator {
         flex-basis: 2px;
         height: 100%;
     }
 
-    .dark.game-overlay-high-scores-listing-separator {
+    .dark.overlay-high-scores-listing-separator {
         background-color: map-get($dark-colors, foreground);
     }
 
-    .light.game-overlay-high-scores-listing-separator {
+    .light.overlay-high-scores-listing-separator {
         background-color: map-get($light-colors, foreground);
     }
 }
 
-$game-overlay-color-maps: (
+$overlay-color-maps: (
     dark: (
         0: map-get($dark-colors, red),
         1: map-get($dark-colors, orange),
@@ -210,7 +210,7 @@ $game-overlay-color-maps: (
     )
 );
 
-@each $theme, $color-map in $game-overlay-color-maps {
+@each $theme, $color-map in $overlay-color-maps {
     @keyframes #{$theme}GameOverlayTile {
         @for $i from 0 to 5 {
             #{$i * 16% + 4} {
@@ -232,7 +232,7 @@ $game-overlay-color-maps: (
     }   
 }
 
-.game-overlay-tile {
+.overlay-tile {
     @extend %global-tile;
     width: 0px;
     height: 0px;
@@ -240,25 +240,25 @@ $game-overlay-color-maps: (
     position: relative;
 }
 
-.dark.game-overlay-tile {
+.dark.overlay-tile {
     @include tileBorder(map-get($dark-colors, foreground), map-get($dark-colors, foreground), map-get($dark-colors, foreground), map-get($dark-colors, foreground));
     animation: darkGameOverlayTile ease 8s infinite;
 }
 
-.light.game-overlay-tile {
+.light.overlay-tile {
     @include tileBorder(map-get($light-colors, foreground), map-get($light-colors, foreground), map-get($light-colors, foreground), map-get($light-colors, foreground));
     animation: lightGameOverlayTile ease 8s infinite;
 }
 
-.game-overlay-tile:first-child {
+.overlay-tile:first-child {
     left: -20px;
 }
 
-.game-overlay-tile:last-child {
+.overlay-tile:last-child {
     left: 15px;
 }
 
-.game-overlay-player-name-input-container {
+.overlay-player-name-input-container {
     font-size: 80px;
     margin-bottom: 50px;
 

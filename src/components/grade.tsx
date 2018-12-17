@@ -1,9 +1,13 @@
 import * as React from 'react';
-import * as Utilities from '../utilities/utilities';
+
+import * as AppUtilities from '../utilities/app';
+import * as GameUtilities from '../utilities/game';
+import * as GeneralUtilities from '../utilities/general';
+import * as GradeUtilities from '../utilities/grade';
 
 import '../styles/grade.scss';
 
-export class Grade extends React.PureComponent<Utilities.Grade.IProps, Utilities.Grade.State> {
+class Grade extends React.PureComponent<GradeUtilities.IProps, GradeUtilities.State> {
     private expandGradeFill(timeFraction: number): void {
         this.setState({
             fillRadiusPercentage: ((1 - timeFraction) * 100).toFixed(2) + '%'
@@ -17,18 +21,18 @@ export class Grade extends React.PureComponent<Utilities.Grade.IProps, Utilities
     }
 
     private getDuration(): number {
-        return Utilities.Grade.durations[this.props.difficulty] - (Utilities.Grade.durationModifiers[this.props.difficulty] * this.props.stage);
+        return GradeUtilities.durations[this.props.difficulty] - (GradeUtilities.durationModifiers[this.props.difficulty] * this.props.stage);
     }
 
-    readonly state: Utilities.Grade.State = new Utilities.Grade.State(this.expandGradeFill.bind(this), this.getDuration(), this.onAnimationComplete.bind(this));
+    public readonly state: GradeUtilities.State = new GradeUtilities.State(this.expandGradeFill.bind(this), this.getDuration(), this.onAnimationComplete.bind(this));
 
-    componentDidUpdate(previousProps: Utilities.Grade.IProps, previousState: Utilities.Grade.State): void {
-        if (this.props.mode === Utilities.Game.Mode.paused) {
+    public componentDidUpdate(previousProps: GradeUtilities.IProps, previousState: GradeUtilities.State): void {
+        if (this.props.mode === GameUtilities.Mode.paused) {
             this.state.animator.togglePaused();
-        } else if (this.props.mode === Utilities.Game.Mode.inGame) {
-            if (previousProps.mode === Utilities.Game.Mode.paused) {
+        } else if (this.props.mode === GameUtilities.Mode.inGame) {
+            if (previousProps.mode === GameUtilities.Mode.paused) {
                 this.state.animator.togglePaused();
-            } else if (this.props.letterGrade !== previousProps.letterGrade && this.props.letterGrade !== Utilities.App.LetterGrade.f) {
+            } else if (this.props.letterGrade !== previousProps.letterGrade && this.props.letterGrade !== AppUtilities.LetterGrade.f) {
                 this.state.animator.animate(this.getDuration());
             }
         } else {
@@ -36,15 +40,15 @@ export class Grade extends React.PureComponent<Utilities.Grade.IProps, Utilities
         }
     }
 
-    render(): JSX.Element {
-        const style: Utilities.General.ICssStyle = {
+    public render(): JSX.Element {
+        const style: GeneralUtilities.ICssStyle = {
             height: this.state.fillRadiusPercentage,
             width: this.state.fillRadiusPercentage
         };
 
-        return <div className={'grade-container ' + Utilities.App.Theme[this.props.theme]}>
+        return <div className={'grade-container ' + AppUtilities.Theme[this.props.theme]}>
                     <div className='grade-letter-grade'>
-                        {Utilities.Grade.letterGrades[this.props.letterGrade]}
+                        {GradeUtilities.letterGrades[this.props.letterGrade]}
                     </div>
                     <div className='grade-fill'
                          style={style}>
@@ -52,3 +56,7 @@ export class Grade extends React.PureComponent<Utilities.Grade.IProps, Utilities
                </div>;
     }
 }
+
+export {
+    Grade
+};
