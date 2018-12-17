@@ -1,7 +1,7 @@
 import * as App from './app';
 import * as General from './general';
 import { Maybe } from './maybe';
-import * as PersistentStorage from './persistentStorage';
+import * as Persistence from './persistence';
 
 enum Mode {
     newGame = 0,
@@ -111,15 +111,15 @@ function getHighScores(highScores: any): HighScore[] {
 
 function getPersistedState(): State {
     return new State(Mode.newGame,
-                     PersistentStorage.fetchEnumValue(difficultyLocalStorageKey, App.Difficulty, defaultDifficulty),
-                     PersistentStorage.fetchData(highScoresLocalStorageKey).caseOf(hs => getHighScores(hs), () => []),
-                     PersistentStorage.fetchData(playerNameLocalStorageKey).getOrDefault(defaultPlayerName));
+                     Persistence.fetchEnumValue(difficultyLocalStorageKey, App.Difficulty, defaultDifficulty),
+                     Persistence.fetchData(highScoresLocalStorageKey).caseOf(hs => getHighScores(hs), () => []),
+                     Persistence.fetchData(playerNameLocalStorageKey).getOrDefault(defaultPlayerName));
 }
 
 function persistState(state: State): void {
-    PersistentStorage.persistData(difficultyLocalStorageKey, state.difficulty);
-    PersistentStorage.persistData(highScoresLocalStorageKey, state.highScores);
-    PersistentStorage.persistData(playerNameLocalStorageKey, isValidPlayerName(state.playerName) ? state.playerName : defaultPlayerName);
+    Persistence.persistData(difficultyLocalStorageKey, state.difficulty);
+    Persistence.persistData(highScoresLocalStorageKey, state.highScores);
+    Persistence.persistData(playerNameLocalStorageKey, isValidPlayerName(state.playerName) ? state.playerName : defaultPlayerName);
 }
 
 function getStage(score: number): number {

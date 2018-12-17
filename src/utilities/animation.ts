@@ -60,10 +60,14 @@ class Animator {
         }
     }
 
-    public animate(duration?: number): void {
+    public animate(duration?: number, draw?: (progress: number) => void, onComplete?: () => void, timing?: Timing): void {
         this.startTime.justDo(t => {
             this.resetAnimationParameters();
+
             this.duration = new Maybe(duration).getOrDefault(this.duration);
+            this.draw = new Maybe(draw).getOrDefault(this.draw);
+            this.onComplete = new Maybe(onComplete).getOrDefault(this.onComplete);
+            this.timing = new Maybe(timing).getOrDefault(this.timing);
         });
 
         this.startTime = new Maybe(performance.now());

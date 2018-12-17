@@ -1,5 +1,5 @@
 import { Maybe } from './maybe';
-import * as PersistentStorage from './persistentStorage';
+import * as Persistence from './persistence';
 
 enum Theme {
     dark = 0,
@@ -61,7 +61,7 @@ function getOrientation(): Orientation {
 }
 
 function getPersistedState(): State {
-    return new State(PersistentStorage.fetchEnumValue(themeLocalStorageKey, Theme, defaultTheme), getOrientation());
+    return new State(Persistence.fetchEnumValue(themeLocalStorageKey, Theme, defaultTheme), getOrientation());
 }
 
 function removeElementFocus(): void {
@@ -73,7 +73,7 @@ function removeElementFocus(): void {
 }
 
 function persistState(state: State): void {
-    PersistentStorage.persistData(themeLocalStorageKey, state.theme);
+    Persistence.persistData(themeLocalStorageKey, state.theme);
 }
 
 export {
