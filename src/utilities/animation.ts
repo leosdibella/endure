@@ -96,6 +96,8 @@ class Animator {
         this.duration = duration;
         this.timing = Maybe.mapThrough(new Maybe(Timing[timing]), Timing.linear);
         this.id = new Maybe();
+        this.pausedTime = new Maybe();
+        this.startTime = new Maybe();
     }
 }
 

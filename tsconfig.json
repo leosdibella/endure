@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "strictNullChecks": true,
+        "strict": true,
         "allowSyntheticDefaultImports": true,
         "moduleResolution": "node",
         "esModuleInterop": true,
@@ -9,7 +9,8 @@
         "noImplicitAny": true,
         "module": "commonjs",
         "target": "es5",
-        "jsx": "react"
+        "jsx": "react",
+        "jsxFactory": "React.createElement"
     },
     "include": [
         "./src/**/*"

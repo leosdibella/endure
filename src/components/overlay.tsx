@@ -159,7 +159,7 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
 
     public readonly state: OverlayUtilities.State = new OverlayUtilities.State(this.props, this.saveNameChange.bind(this));
 
-    public componentDidUpdate(previousProps: OverlayUtilities.IProps, previousState: OverlayUtilities.State): void {
+    public componentDidUpdate(previousProps: OverlayUtilities.IProps): void {
         if (previousProps.mode !== this.props.mode) {
             this.setState({
                 selectedOptionIndex: this.state.menu.getDefaultOptionIndex(this.props)

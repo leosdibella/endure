@@ -14,17 +14,21 @@ import { Tile } from './tile';
 export class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State> {
     private readonly onKeyDown: (keyboardEvent: KeyboardEvent) => void = this.handleKeyDown.bind(this);
     private readonly onUpdate: (row: number, column: number) => void = this.handleUpdate.bind(this);
+    private readonly onMoveLeft: () => void = this.moveLeft.bind(this);
+    private readonly onMoveRight: () => void = this.moveRight.bind(this);
+    private readonly onMoveUp: () => void = this.moveUp.bind(this);
+    private readonly onMoveDown: () => void = this.moveDown.bind(this);
 
     private readonly keyDownEventActionMap: GeneralUtilities.IDictionary<() => void> = {
         ' ': this.rotateTile.bind(this),
-        'a': this.moveLeft.bind(this),
-        'arrowdown': this.moveDown.bind(this),
-        'arrowleft': this.moveLeft.bind(this),
-        'arrowright': this.moveRight.bind(this),
-        'arrowup': this.moveUp.bind(this),
-        'd': this.moveRight.bind(this),
-        's': this.moveDown.bind(this),
-        'w': this.moveUp.bind(this)
+        'a': this.onMoveLeft,
+        'arrowdown': this.onMoveDown,
+        'arrowleft': this.onMoveLeft,
+        'arrowright': this.onMoveRight,
+        'arrowup': this.onMoveUp,
+        'd': this.onMoveRight,
+        's': this.onMoveDown,
+        'w': this.onMoveUp
     };
 
     private removeReducedTiles(reduction: GridUtilities.IReduction): void {
@@ -123,7 +127,7 @@ export class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilitie
         document.removeEventListener(GeneralUtilities.DomEvent.keyDown, this.onKeyDown);
     }
 
-    public componentDidUpdate(previousProps: GridUtilities.IProps, previousState: GridUtilities.State): void {
+    public componentDidUpdate(previousProps: GridUtilities.IProps): void {
         if (!GameUtilities.isInProgress(previousProps.mode) && GameUtilities.isInProgress(this.props.mode)) {
             const dimension: GridUtilities.IGridDimension = GridUtilities.getGridDimension(this.props);
 

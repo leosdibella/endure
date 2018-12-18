@@ -15,7 +15,7 @@ const binderHoles: JSX.Element[] = GeneralUtilities.fillArray(BackdropUtilities.
 class Backdrop extends React.PureComponent<BackdropUtilities.IProps, BackdropUtilities.State> {
     public readonly state: BackdropUtilities.State = new BackdropUtilities.State();
 
-    public componentDidUpdate(previousProps: BackdropUtilities.IProps, previousState: BackdropUtilities.State): void {
+    public componentDidUpdate(): void {
         this.setState(new BackdropUtilities.State());
     }
 

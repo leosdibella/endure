@@ -10,7 +10,7 @@ import { Backdrop } from './backdrop';
 import { Game } from './game';
 
 class App extends React.PureComponent<object, AppUtilities.State> {
-    private readonly onUpdate: () => void = this.handleUpdate.bind(this);
+    private readonly onUpdate: (updates: AppUtilities.IUpdate) => void = this.handleUpdate.bind(this);
     private readonly onOrientationChange: () => void = this.setOrientation.bind(this);
 
     private handleUpdate(updates: AppUtilities.IUpdate): void {
@@ -21,7 +21,7 @@ class App extends React.PureComponent<object, AppUtilities.State> {
         AppUtilities.persistState(nextState);
     }
 
-    private setOrientation(event: UIEvent): void {
+    private setOrientation(): void {
         setTimeout(() => {
             this.setState({
                 orientation: AppUtilities.getOrientation()

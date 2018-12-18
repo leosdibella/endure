@@ -7,7 +7,7 @@ import * as TileUtilities from '../utilities/tile';
 import '../styles/tile.scss';
 
 class Tile extends React.PureComponent<TileUtilities.IProps, object> {
-    private readonly onClick: (event: React.MouseEvent<HTMLDivElement>) => void = this.handleClick.bind(this);
+    private readonly onClick: () => void = this.handleClick.bind(this);
 
     private getClassName(additionalClass: string): string {
         let className: string = 'tile';
@@ -42,7 +42,7 @@ class Tile extends React.PureComponent<TileUtilities.IProps, object> {
         return additionalClass;
     }
 
-    private handleClick(event: React.MouseEvent<HTMLDivElement>): void {
+    private handleClick(): void {
         this.props.onUpdate(this.props.row, this.props.column);
     }
 

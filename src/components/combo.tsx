@@ -32,7 +32,7 @@ class Combo extends React.PureComponent<ComboUtilities.IProps, ComboUtilities.St
 
     public readonly state: ComboUtilities.State = new ComboUtilities.State(this.adjustOverlay.bind(this), this.getDuration(), this.onAnimationComplete.bind(this));
 
-    public componentDidUpdate(previousProps: ComboUtilities.IProps, previousState: ComboUtilities.State): void {
+    public componentDidUpdate(previousProps: ComboUtilities.IProps): void {
         if (this.props.mode === GameUtilities.Mode.paused) {
             this.state.animator.togglePaused();
         } else if (this.props.mode === GameUtilities.Mode.inGame) {
