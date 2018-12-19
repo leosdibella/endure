@@ -11,7 +11,7 @@ import '../styles/grid.scss';
 
 import { Tile } from './tile';
 
-export class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State> {
+class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State> {
     private readonly onKeyDown: (keyboardEvent: KeyboardEvent) => void = this.handleKeyDown.bind(this);
     private readonly onUpdate: (row: number, column: number) => void = this.handleUpdate.bind(this);
     private readonly onMoveLeft: () => void = this.moveLeft.bind(this);
@@ -35,8 +35,11 @@ export class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilitie
          // TODO: Add Reduction Animations
 
          // TODO ---- BELOW
-        if (reduction.collapsingTiles) {
-            this.setTiles(reduction.tiles);
+        if (reduction.collapsingTiles.reduce((accumulator, currentValue) => accumulator + currentValue) > 0) {
+            // TODO --- CASCADE TILES
+            this.setState({
+                processingInput: false
+            });
         } else {
             this.setState({
                 processingInput: false
@@ -45,14 +48,14 @@ export class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilitie
         // TODO ---- ABOVE
     }
 
-    private setTiles = (tiles: TileUtilities.Container[], row: number = this.state.row, column: number = this.state.column): void => {
+    private setTiles = (row: number = this.state.row, column: number = this.state.column): void => {
         const reduction: GridUtilities.IReduction = GridUtilities.reduceTiles(this.state);
 
         this.setState({
             column,
             processingInput: true,
             row,
-            tiles
+            tiles: reduction.tiles
         }, () => this.removeReducedTiles(reduction));
     }
 
@@ -60,7 +63,9 @@ export class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilitie
         const rotatedTiles: GeneralUtilities.IDictionary<TileUtilities.Container> = GridUtilities.rotateTiles(this.props, this.state);
 
         // TODO: Add Rotation Animations
-        this.setTiles(this.state.tiles.map(t => new Maybe(rotatedTiles[t.index]).getOrDefault(t)));
+        this.setState({
+            tiles: this.state.tiles.map(t => new Maybe(rotatedTiles[t.index]).getOrDefault(t))
+        }, this.setTiles);
     }
 
     private detonateTile(): void {
@@ -131,7 +136,9 @@ export class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilitie
         if (!GameUtilities.isInProgress(previousProps.mode) && GameUtilities.isInProgress(this.props.mode)) {
             const dimension: GridUtilities.IGridDimension = GridUtilities.getGridDimension(this.props);
 
-            this.setTiles(GridUtilities.generateTiles(dimension), dimension.initialRow, dimension.initialColumn);
+            this.setState({
+                tiles: GridUtilities.generateTiles(dimension)
+            }, () => this.setTiles(dimension.initialRow, dimension.initialColumn));
         }
     }
 
@@ -152,3 +159,7 @@ export class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilitie
                </div>;
     }
 }
+
+export {
+    Grid
+};

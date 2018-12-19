@@ -23,7 +23,7 @@ class MenuOption {
 
 const menuOptionInitializers: Maybe<((callback: (update: Game.IUpdate) => void, onNameChange: () => void) => MenuOption)>[] = [
     new Maybe((callback: (update: Game.IUpdate) => void): MenuOption => {
-        const gameModes: Game.Mode[] = [Game.Mode.newGame, Game.Mode.specifyName, Game.Mode.selectDifficulty, Game.Mode.highScores, Game.Mode.setTheme];
+        const gameModes: Game.Mode[] = [Game.Mode.inGame, Game.Mode.specifyName, Game.Mode.selectDifficulty, Game.Mode.highScores, Game.Mode.setTheme];
 
         return new MenuOption('Endure', 'new-game', ['New Game', 'Set Name', 'Difficulty', 'High Scores', 'Settings'], General.fillArray(gameModes.length, i => () => callback({
             mode: gameModes[i]

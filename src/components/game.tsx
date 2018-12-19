@@ -61,7 +61,7 @@ class Game extends React.PureComponent<GameUtilities.IProps, GameUtilities.State
         new Maybe(this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()]).justDo(kdh => kdh());
     }
 
-    private getGameOverlay(): JSX.Element | boolean {
+    private getOverlay(): JSX.Element | boolean {
         if (this.state.mode !== GameUtilities.Mode.inGame) {
             return <Overlay theme={this.props.theme}
                             mode={this.state.mode}
@@ -87,7 +87,7 @@ class Game extends React.PureComponent<GameUtilities.IProps, GameUtilities.State
 
     public render(): JSX.Element {
         return <div className={'game ' + AppUtilities.Theme[this.props.theme]}>
-            {this.getGameOverlay()}
+            {this.getOverlay()}
             <Header theme={this.props.theme}
                     mode={this.state.mode}
                     combo={this.state.combo}

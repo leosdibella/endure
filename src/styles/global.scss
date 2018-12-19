@@ -73,16 +73,3 @@ html, body, #endure {
 .hide {
     display: none;
 }
-
-%global-tile {
-    padding: 10px;
-    border: 10px solid;
-    transform: rotate(45deg);
-}
-
-@mixin tileBorder($left-color, $top-color, $right-color, $bottom-color) {
-    border-left-color: $left-color;
-    border-top-color: $top-color;
-    border-right-color: $right-color;
-    border-bottom-color: $bottom-color;
-}

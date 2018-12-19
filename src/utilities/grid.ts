@@ -132,13 +132,13 @@ function getGridDimension(props: IProps): IGridDimension {
 }
 
 function getTileIndexFromCoordinates(dimension: IGridDimension, row: number, column: number): number {
-    return row * dimension.numberOfRows + column;
+    return row * dimension.numberOfColumns + column;
 }
 
 function getTileCoordinatesFromIndex(dimension: IGridDimension, index: number): number[] {
-    const column = index % dimension.numberOfRows;
+    const column = index % dimension.numberOfColumns;
 
-    return [index - column, column];
+    return [(index - column) / dimension.numberOfColumns, column];
 }
 
 function initializeGraph(dimension: IGridDimension): General.IDictionary<number>[] {
@@ -194,9 +194,8 @@ class State {
 function iterateThroughStack(state: State,
                              stack: Tile.Container[],
                              visited: General.IDictionary<boolean>,
-                             extensionCondition: (tile: Tile.Container, neighbor: Tile.Container) => boolean,
-                             beforeExtending?: (tile: Tile.Container) => void,
-                             afterExtending?: (tile: Tile.Container, linkIndex: number) => void): void {
+                             beforeExtending: (tile: Tile.Container) => void,
+                             extend: (tile: Tile.Container, neighbor: Tile.Container, linkIndex: Tile.Link) => boolean): void {
     let tile: Tile.Container,
         neighbors: General.IDictionary<number>;
 
@@ -206,15 +205,14 @@ function iterateThroughStack(state: State,
         if (!visited[tile.index]) {
             visited[tile.index] = true;
             neighbors = state.graph[tile.index];
-            new Maybe(beforeExtending).justDo(be => be(tile));
+            beforeExtending(tile);
 
-            General.forEach(Tile.neighborIndices, i => {
-                new Maybe(neighbors[i]).justDo(index => {
-                    const neighbor: Tile.Container = state.tiles[index];
+            General.forEach(Tile.neighborIndices, linkIndex => {
+                new Maybe(neighbors[linkIndex]).justDo(neighborIndex => {
+                    const neighbor: Tile.Container = state.tiles[neighborIndex];
 
-                    if (!visited[neighbor.index] && extensionCondition(tile, neighbor)) {
+                    if (extend(tile, neighbor, linkIndex)) {
                         stack.push(neighbor);
-                        new Maybe(afterExtending).justDo(ae => ae(tile, i));
                     }
                 });
             });
@@ -228,28 +226,37 @@ function chainDetonation(state: State, stack: Tile.Container[]): Tile.Container[
     iterateThroughStack(state,
                         stack,
                         {},
-                        (tile, neighbor) => (tile.color === neighbor.color && tile.color !== Tile.Color.transparent) || neighbor.detonationRange === Tile.DetonationRange.none,
-                        tile => {
-                            detonatedTiles.push(tile);
-                        });
+                        tile => detonatedTiles.push(tile),
+                        (tile, neighbor) => tile.color === neighbor.color || tile.detonationRange !== Tile.DetonationRange.none);
 
-    return detonatedTiles.map(t => t.cloneWith(Tile.Color.transparent, Tile.Link.none, Tile.DetonationRange.none)).sort((a, b) => a.index - b.index);
+    return detonatedTiles.map(t => t.cloneWith(Tile.Color.transparent, Tile.DetonationRange.none)).sort((a, b) => a.index - b.index);
 }
 
 function addDetonationRangeToStack(state: State, dimension: IGridDimension, detonationCenter: Tile.Container, stack: Tile.Container[]): void {
     General.iterate(detonationCenter.detonationRange, i => {
-        let index: number;
+        let index: number = detonationCenter.row + i;
 
-        stack.push(state.tiles[getTileIndexFromCoordinates(dimension, detonationCenter.row + i % dimension.numberOfRows, detonationCenter.column)]);
-        stack.push(state.tiles[getTileIndexFromCoordinates(dimension, detonationCenter.row, detonationCenter.column + i % dimension.numberOfColumns)]);
+        if (index < dimension.numberOfRows) {
+            stack.push(state.tiles[getTileIndexFromCoordinates(dimension, index, detonationCenter.column)]);
+        }
 
-        index = detonationCenter.row - i % dimension.numberOfRows;
-        index += index < 0 ? dimension.numberOfRows : 0;
-        stack.push(state.tiles[getTileIndexFromCoordinates(dimension, index, detonationCenter.column)]);
+        index = detonationCenter.row - i;
 
-        index = detonationCenter.column - i % dimension.numberOfColumns;
-        index += index < 0 ? dimension.numberOfColumns : 0;
-        stack.push(state.tiles[getTileIndexFromCoordinates(dimension, detonationCenter.row, index)]);
+        if (index >= 0) {
+            stack.push(state.tiles[getTileIndexFromCoordinates(dimension, index, detonationCenter.column)]);
+        }
+
+        index = detonationCenter.column + i;
+
+        if (index < dimension.numberOfColumns) {
+            stack.push(state.tiles[getTileIndexFromCoordinates(dimension, detonationCenter.row, index)]);
+        }
+
+        index = detonationCenter.column - i;
+
+        if (index >= 0) {
+            stack.push(state.tiles[getTileIndexFromCoordinates(dimension, detonationCenter.row, index)]);
+        }
     });
 }
 
@@ -274,16 +281,16 @@ function cascadeTiles(props: IProps, state: State): Tile.Container[][] {
     General.iterate(dimension.numberOfColumns, column => {
         const reorderedTiles: Tile.Container[] = General.fillArray(dimension.numberOfRows, row => state.tiles[getTileIndexFromCoordinates(dimension, row, column)], true)
                                                         .filter(t => t.color !== Tile.Color.transparent)
-                                                        .map((t, index) => state.tiles[getTileIndexFromCoordinates(dimension, index, column)].cloneWith(t.color, t.link, t.detonationRange));
+                                                        .map((t, index) => state.tiles[getTileIndexFromCoordinates(dimension, index, column)].clone());
 
         if (reorderedTiles.length < dimension.numberOfRows) {
             let row = dimension.numberOfRows - reorderedTiles.length;
 
             while (row > 0) {
                 detonationRange = Tile.generateRandomDetonationRange(!hasDetonationTile);
-                hasDetonationTile = detonationRange !== Tile.DetonationRange.none;
+                hasDetonationTile = hasDetonationTile || (detonationRange !== Tile.DetonationRange.none);
                 color = Tile.getRandomColor(hasDetonationTile);
-                tileUpdates[column].push(state.tiles[getTileIndexFromCoordinates(dimension, row, column)].cloneWith(color, Tile.Link.none, detonationRange));
+                tileUpdates[column].push(state.tiles[getTileIndexFromCoordinates(dimension, row, column)].cloneWith(color, detonationRange));
                 --row;
             }
         }
@@ -292,18 +299,23 @@ function cascadeTiles(props: IProps, state: State): Tile.Container[][] {
     return tileUpdates;
 }
 
-function reduceTile(state: State, visited: General.IDictionary<boolean>, stack: Tile.Container[]): General.IDictionary<Tile.Container> {
-    const group: General.IDictionary<Tile.Container> = {};
+function reduceTile(state: State, visited: General.IDictionary<boolean>, stack: Tile.Container[]): General.IDictionary<Tile.Link> {
+    const group: General.IDictionary<Tile.Link> = {};
 
     iterateThroughStack(state,
                         stack,
                         visited,
-                        (tile, neighbor) => tile.color === neighbor.color && tile.color !== Tile.Color.transparent,
-                        tile => {
-                            group[tile.index] = tile.cloneWith(tile.color, Tile.Link.none, tile.detonationRange);
-                        },
-                        (tile, linkIndex) => {
-                            group[tile.index].link |= linkIndex;
+                        tile => group[tile.index] = new Maybe(group[tile.index]).getOrDefault(Tile.Link.none),
+                        (tile, neighbor, linkIndex) => {
+                            if (tile.color === neighbor.color) {
+                                group[tile.index] |= linkIndex;
+                                group[neighbor.index] = new Maybe(group[neighbor.index]).getOrDefault(Tile.Link.none);
+                                group[neighbor.index] |= Tile.reverseLinkDirection(linkIndex);
+
+                                return true;
+                            }
+
+                            return false;
                         });
 
     return group;
@@ -322,14 +334,13 @@ function reduceTiles(state: State): IReduction {
           };
 
     General.forEach(state.tiles, tile => {
-        const group: General.IDictionary<Tile.Container> = reduceTile(state, visited, [tile]),
+        const group: General.IDictionary<Tile.Link> = reduceTile(state, visited, [tile]),
               keys = Object.keys(group);
 
         General.forEach(keys, key => {
-            new Maybe(parseInt(key, 10)).justDo(index => {
-                reduction.tiles[index] = group[index];
-                reduction.tiles[index].color = Tile.Color.transparent;
-            });
+            const index: number = parseInt(key, 10);
+
+            reduction.tiles[index] = state.tiles[index].cloneWith(tile.color, tile.detonationRange, group[key]);
         });
 
         if (keys.length > minimumTileChainLength) {
@@ -353,7 +364,7 @@ function rotateTilesFromRotationMap(dimension: IGridDimension, state: State, cen
         to = map;
         toTile = state.tiles[getTileIndexFromCoordinates(dimension, centerTile.row + to[0], centerTile.column + to[1])];
         fromTile = state.tiles[getTileIndexFromCoordinates(dimension, centerTile.row + from[0], centerTile.column + from[1])];
-        rotatedTiles[toTile.index] = toTile.cloneWith(fromTile.color, fromTile.link, fromTile.detonationRange);
+        rotatedTiles[toTile.index] = toTile.cloneWith(fromTile.color, fromTile.detonationRange);
     });
 
     return rotatedTiles;

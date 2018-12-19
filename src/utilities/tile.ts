@@ -1,5 +1,6 @@
 import * as Game from './game';
 import * as General from './general';
+import { Maybe } from './maybe';
 
 const dimension: number = 50;
 const margin: number = 5;
@@ -39,6 +40,21 @@ enum Color {
 }
 
 const numberOfColors: number = General.getNumericEnumKeys(Color).length - 1;
+
+const reverseLinkRelations: General.IDictionary<Link> = {
+    [Link.top]: Link.bottom,
+    [Link.bottom]: Link.top,
+    [Link.right]: Link.left,
+    [Link.left]: Link.right
+};
+
+function reverseLinkDirection(linkIndex: Link): Link {
+    let reverseLinkIndex: Link = Link.none;
+
+    new Maybe(reverseLinkRelations[linkIndex]).justDo(reverseLink => reverseLinkIndex = reverseLink);
+
+    return reverseLinkIndex;
+}
 
 function getRandomColor(hasDetonationRange: boolean = false): number {
     if (hasDetonationRange) {
@@ -90,12 +106,16 @@ class Container {
     public readonly row: number;
     public readonly column: number;
     public readonly index: number;
-    public color: Color;
-    public link: Link;
-    public detonationRange: DetonationRange;
+    public readonly color: Color;
+    public readonly link: Link;
+    public readonly detonationRange: DetonationRange;
 
-    public cloneWith(color: Color, link: Link, detonationRange: DetonationRange): Container {
-        return new Container(this.row, this.column, this.index, color, detonationRange, link);
+    public cloneWith(color: Color, detonationRange: DetonationRange, link?: Link,): Container {
+        return new Container(this.row, this.column, this.index, color, detonationRange, new Maybe(link).getOrDefault(Link.none));
+    }
+
+    public clone(): Container {
+        return new Container(this.row, this.column, this.index, this.color, this.detonationRange, this.link);
     }
 
     public constructor(row: number,
@@ -135,6 +155,7 @@ export {
     Link,
     Color,
     numberOfColors,
+    reverseLinkDirection,
     getRandomColor,
     neighborIndices,
     DetonationRange,

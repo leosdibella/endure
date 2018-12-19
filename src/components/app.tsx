@@ -44,7 +44,7 @@ class App extends React.PureComponent<object, AppUtilities.State> {
     }
 
     public render(): JSX.Element {
-        return <div className={'app ' + this.state.theme}>
+        return <div className={'app ' + AppUtilities.Theme[this.state.theme]}>
             <Backdrop theme={this.state.theme}
                       orientation={this.state.orientation}>
             </Backdrop>

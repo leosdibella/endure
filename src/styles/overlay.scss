@@ -211,43 +211,37 @@ $overlay-color-maps: (
 );
 
 @each $theme, $color-map in $overlay-color-maps {
-    @keyframes #{$theme}GameOverlayTile {
-        @for $i from 0 to 5 {
-            #{$i * 16% + 4} {
-                @include tileBorder(map-get($color-map, $i), map-get($color-map, $i + 1), map-get($color-map, $i + 1), map-get($color-map, $i));
+    @keyframes #{$theme}OverlayTile {
+        @for $i from 0 to 6 {
+            #{$i * 14%} {
+                border-radius: 0%;
+                transform: rotate(0deg);
             }
 
-            #{$i * 16% + 8} {
-                @include tileBorder(map-get($color-map, $i), map-get($color-map, $i), map-get($color-map, $i + 1), map-get($color-map, $i + 1));
-            }
-
-            #{$i * 16% + 12} {
-                @include tileBorder(map-get($color-map, $i + 1), map-get($color-map, $i), map-get($color-map, $i), map-get($color-map, $i + 1));
-            }
-            
-            #{$i * 16% + 16} {
-                @include tileBorder(map-get($color-map, $i + 1), map-get($color-map, $i + 1), map-get($color-map, $i), map-get($color-map, $i));
+            #{$i * 14% + 7} {
+                background-color: map-get($color-map, $i);
+                border-radius: 50%;
+                transform: rotate(90deg);
             }
         }
-    }   
+    }
 }
 
 .overlay-tile {
-    @extend %global-tile;
-    width: 0px;
-    height: 0px;
+    width: 50px;
+    height: 50px;
     top: 65px;
     position: relative;
 }
 
 .dark.overlay-tile {
-    @include tileBorder(map-get($dark-colors, foreground), map-get($dark-colors, foreground), map-get($dark-colors, foreground), map-get($dark-colors, foreground));
-    animation: darkGameOverlayTile ease 8s infinite;
+    background-color: map-get($dark-colors, foreground);
+    animation: darkOverlayTile ease 8s infinite;
 }
 
 .light.overlay-tile {
-    @include tileBorder(map-get($light-colors, foreground), map-get($light-colors, foreground), map-get($light-colors, foreground), map-get($light-colors, foreground));
-    animation: lightGameOverlayTile ease 8s infinite;
+    background-color: map-get($light-colors, foreground);
+    animation: lightOverlayTile ease 8s infinite;
 }
 
 .overlay-tile:first-child {
@@ -258,29 +252,33 @@ $overlay-color-maps: (
     left: 15px;
 }
 
+%overlay-input {
+    outline: none;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid;
+    font-size: 40px;
+    text-align: center;
+}
+
 .overlay-player-name-input-container {
     font-size: 80px;
     margin-bottom: 50px;
 
-    input {
-        background: transparent;
-        border: none;
-        border-bottom: 2px solid;
-        font-size: 40px;
-        text-align: center;
-    }
-
     input.dark {
+        @extend %overlay-input;
         border-bottom-color: map-get($dark-colors, foreground);
         color: map-get($dark-colors, foreground);
     }
 
     input.light {
+        @extend %overlay-input;
         border-bottom-color: map-get($light-colors, foreground);
         color: map-get($light-colors, foreground);
     }
 
-    input, input:focus, input:active, input:hover {
+    input:focus, input:active {
         outline: none;
+        border-bottom-style: dashed;
     }
 }

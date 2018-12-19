@@ -47,7 +47,7 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
         });
     }
 
-    private getGameOverlayTitle(): Maybe<JSX.Element> {
+    private getOverlayTitle(): Maybe<JSX.Element> {
         return this.state.menu.menuOptions[this.props.mode].bind(mo => {
             const overlayTile: JSX.Element = <div className={'overlay-tile ' + AppUtilities.Theme[this.props.theme]}>
                                              </div>;
@@ -107,7 +107,7 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
                 </div>;
     }
 
-    private getGameOverlayExtras(): Maybe<JSX.Element> {
+    private getOverlayExtras(): Maybe<JSX.Element> {
         if (this.props.mode === GameUtilities.Mode.highScores) {
             return new Maybe(this.getHighScoresOverlayExtras());
         } else if (this.props.mode === GameUtilities.Mode.specifyName) {
@@ -122,7 +122,7 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
         return new Maybe() as Maybe<JSX.Element>;
     }
 
-    private getGameOverlayButtonPanel(): Maybe<JSX.Element> {
+    private getOverlayButtonPanel(): Maybe<JSX.Element> {
         return this.state.menu.menuOptions[this.props.mode].bind(mo => {
             const buttons: JSX.Element[] = GeneralUtilities.fillArray(mo.options.length, i => {
                 return <button key={i}
@@ -139,11 +139,11 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
         });
     }
 
-    private getGameOverlayBody(): JSX.Element[] {
+    private getOverlayBody(): JSX.Element[] {
         return Maybe.filterCollection([
-            this.getGameOverlayTitle(),
-            this.getGameOverlayExtras(),
-            this.getGameOverlayButtonPanel()
+            this.getOverlayTitle(),
+            this.getOverlayExtras(),
+            this.getOverlayButtonPanel()
         ]);
     }
 
@@ -184,7 +184,7 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
     public render(): JSX.Element {
         return <div className={'overlay-container ' + AppUtilities.Theme[this.props.theme]}>
                    <div className='overlay'>
-                        {this.getGameOverlayBody()}
+                        {this.getOverlayBody()}
                    </div>
                </div>;
     }
