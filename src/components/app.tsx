@@ -18,33 +18,33 @@ class App extends React.PureComponent<object, AppUtilities.State> {
               nextState: AppUtilities.State = new AppUtilities.State(theme, this.state.orientation);
 
         this.setState(nextState);
-        AppUtilities.persistState(nextState);
+        AppUtilities.State.persistState(nextState);
     }
 
     private setOrientation(): void {
         setTimeout(() => {
             this.setState({
-                orientation: AppUtilities.getOrientation()
+                orientation: AppUtilities.State.getOrientation()
             });
         }, 100);
     }
 
-    public readonly state: AppUtilities.State = AppUtilities.getPersistedState();
+    public readonly state: AppUtilities.State = AppUtilities.State.getPersistedState();
 
     public componentDidMount(): void {
         window.addEventListener(GeneralUtilities.DomEvent.resize, this.onOrientationChange);
         window.addEventListener(GeneralUtilities.DomEvent.orientationChange, this.onOrientationChange);
-        window.addEventListener(GeneralUtilities.DomEvent.click, AppUtilities.removeElementFocus);
+        window.addEventListener(GeneralUtilities.DomEvent.click, AppUtilities.State.removeElementFocus);
     }
 
     public componentWillUnmount(): void {
         window.removeEventListener(GeneralUtilities.DomEvent.resize, this.onOrientationChange);
         window.removeEventListener(GeneralUtilities.DomEvent.orientationChange, this.onOrientationChange);
-        window.removeEventListener(GeneralUtilities.DomEvent.click, AppUtilities.removeElementFocus);
+        window.removeEventListener(GeneralUtilities.DomEvent.click, AppUtilities.State.removeElementFocus);
     }
 
     public render(): JSX.Element {
-        return <div className={'app ' + AppUtilities.Theme[this.state.theme]}>
+        return <div className={`app ${AppUtilities.Theme[this.state.theme]}`}>
             <Backdrop theme={this.state.theme}
                       orientation={this.state.orientation}>
             </Backdrop>

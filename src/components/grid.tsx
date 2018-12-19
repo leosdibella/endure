@@ -48,7 +48,7 @@ class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State
         // TODO ---- ABOVE
     }
 
-    private setTiles = (): void => {
+    private reduceTiles = (): void => {
         const reduction: GridUtilities.IReduction = GridUtilities.State.reduceTiles(this.state);
 
         this.setState({
@@ -63,7 +63,7 @@ class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State
         // TODO: Add Detonation Animations
         this.setState({
             tiles
-        });
+        }, this.reduceTiles);
     }
 
     private rotateTile(): void {
@@ -72,7 +72,7 @@ class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State
         // TODO: Add Rotation Animations
         this.setState({
             tiles: this.state.tiles.map(t => new Maybe(rotatedTiles[t.index]).getOrDefault(t))
-        }, this.setTiles);
+        }, this.reduceTiles);
     }
 
     private takeAction() {
@@ -138,16 +138,20 @@ class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State
     public componentDidUpdate(previousProps: GridUtilities.IProps): void {
         let nextState: GridUtilities.State = this.state;
 
-        if (!GameUtilities.isInProgress(previousProps.mode) && GameUtilities.isInProgress(this.props.mode)) {
+        if (!GameUtilities.State.isInProgress(previousProps.mode) && GameUtilities.State.isInProgress(this.props.mode)) {
             nextState = new GridUtilities.State(this.props);
             nextState.tiles = this.state.dimension.generateTiles();
         }
 
-        if (previousProps.orientation !== this.props.orientation && GameUtilities.isInProgress(this.props.mode)) {
+        if (previousProps.orientation !== this.props.orientation && GameUtilities.State.isInProgress(this.props.mode)) {
             nextState = GridUtilities.State.transpose(this.props, nextState);
         }
 
-        this.setState(nextState, this.setTiles);
+        // TODO: Animate reduction
+        const reduction: GridUtilities.IReduction = GridUtilities.State.reduceTiles(nextState);
+        nextState.tiles = reduction.tiles;
+
+        this.setState(nextState, () => this.removeReducedTiles(reduction));
     }
 
     public render(): JSX.Element {
@@ -162,7 +166,7 @@ class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State
                                                                         link={tile.link}
                                                                         onUpdate={this.onUpdate}/>);
 
-        return <div className={'grid ' + (GameUtilities.isInProgress(this.props.mode) ? '' : 'hide ') + AppUtilities.Theme[this.props.theme]}>
+        return <div className={`grid ${GameUtilities.State.isInProgress(this.props.mode) ? '' : 'hide '} ${AppUtilities.Theme[this.props.theme]}`}>
                     {tiles}
                </div>;
     }

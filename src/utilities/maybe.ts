@@ -48,7 +48,7 @@ class Maybe<T> {
     }
 
     public constructor(value?: T | undefined | null) {
-        this.value = value === null ? undefined : value;
+        this.value = General.isNotNull(value) ? value as T : undefined;
     }
 }
 

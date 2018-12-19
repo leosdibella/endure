@@ -3,29 +3,27 @@ import * as App from './app';
 import * as Game from './game';
 import * as General from './general';
 
-const durationModifiers: General.IDictionary<number> = {
-    [App.Difficulty.beginner]: 10,
-    [App.Difficulty.low]: 15,
-    [App.Difficulty.medium]: 20,
-    [App.Difficulty.hard]: 25,
-    [App.Difficulty.expert]: 30
-};
-
-const durations: General.IDictionary<number> = {
-    [App.Difficulty.beginner]: 5000,
-    [App.Difficulty.low]: 4500,
-    [App.Difficulty.medium]: 4000,
-    [App.Difficulty.hard]: 3500,
-    [App.Difficulty.expert]: 3000
-};
-
-const modifiers: string[] = ['+', '', '-'];
-
-const letterGrades: string[] = ['A', 'B', 'C', 'D'].map(g => modifiers.map(m => g + m))
-                                                   .reduce((a, b) => a.concat(b))
-                                                   .concat('F');
-
 class State {
+    public static readonly letterGrades: string[] = ['A', 'B', 'C', 'D'].map(g => ['+', '', '-'].map(m => `${g}${m}`))
+                                                                        .reduce((a, b) => a.concat(b))
+                                                                        .concat('F');
+
+    public static readonly durations: General.IDictionary<number> = {
+        [App.Difficulty.beginner]: 5000,
+        [App.Difficulty.low]: 4500,
+        [App.Difficulty.medium]: 4000,
+        [App.Difficulty.hard]: 3500,
+        [App.Difficulty.expert]: 3000
+    };
+
+    public static readonly durationModifiers: General.IDictionary<number> = {
+        [App.Difficulty.beginner]: 10,
+        [App.Difficulty.low]: 15,
+        [App.Difficulty.medium]: 20,
+        [App.Difficulty.hard]: 25,
+        [App.Difficulty.expert]: 30
+    };
+
     public readonly animator: Animation.Animator;
     public fillRadiusPercentage: string;
 
@@ -45,9 +43,6 @@ interface IProps {
 }
 
 export {
-    durationModifiers,
-    durations,
-    letterGrades,
     State,
     IProps
 };

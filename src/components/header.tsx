@@ -11,7 +11,7 @@ import { Grade } from './grade';
 
 class Header extends React.PureComponent<HeaderUtilities.IProps, object> {
     public render(): JSX.Element {
-        return <div className={'header ' + AppUtilities.Theme[this.props.theme] + (!GameUtilities.isInProgress(this.props.mode) ? ' hide' : '')}>
+        return <div className={`header ${AppUtilities.Theme[this.props.theme]} ${!GameUtilities.State.isInProgress(this.props.mode) ? ' hide' : ''}`}>
             <div className='header-left-hud'>
                 <Combo combo={this.props.combo}
                        stage={this.props.stage}

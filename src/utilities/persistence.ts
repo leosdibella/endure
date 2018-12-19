@@ -2,7 +2,7 @@ import * as General from './general';
 import { Maybe } from './maybe';
 
 function isLocalStorageSupported(): boolean {
-    return typeof(Storage) !== 'undefined' && General.isDefined(window.localStorage);
+    return typeof(Storage) !== 'undefined' && General.isDefined(window.localStorage) && General.isNotNull(window.localStorage);
 }
 
 function persistData(key: string, value: any): boolean {

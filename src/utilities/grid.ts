@@ -27,7 +27,7 @@ class Dimension {
         return General.fillArray(this.numberOfRows * this.numberOfColumns, index => {
             const coordinates: number[] = this.getTileCoordinatesFromIndex(index);
 
-            return new Tile.Container(coordinates[0], coordinates[1], index, Tile.getRandomColor());
+            return new Tile.Container(coordinates[0], coordinates[1], index, Tile.Container.getRandomColor());
         });
     }
 
@@ -77,7 +77,7 @@ class State {
                 neighbors = state.graph[tile.index];
                 beforeExtending(tile);
 
-                General.forEach(Tile.neighborIndices, linkIndex => {
+                Tile.Container.neighborIndices.forEach(linkIndex => {
                     new Maybe(neighbors[linkIndex]).justDo(neighborIndex => {
                         const neighbor: Tile.Container = state.tiles[neighborIndex];
 
@@ -98,7 +98,7 @@ class State {
             toTile: Tile.Container,
             fromTile: Tile.Container;
 
-        General.forEach(rotationMap, (map, index, array) => {
+        rotationMap.forEach((map, index, array) => {
             from = index > 0 ? array[index - 1] : array[rotationMap.length - 1];
             to = map;
             toTile = state.tiles[state.dimension.getTileIndexFromCoordinates(centerTile.row + to[0], centerTile.column + to[1])];
@@ -119,7 +119,7 @@ class State {
                                   (tile, neighbor, linkIndex) => {
                                     if (tile.color === neighbor.color) {
                                         group[tile.index] |= linkIndex;
-                                        group[neighbor.index] = new Maybe(group[neighbor.index]).getOrDefault(Tile.Link.none) | Tile.reverseLinkDirection(linkIndex);
+                                        group[neighbor.index] = new Maybe(group[neighbor.index]).getOrDefault(Tile.Link.none) | Tile.Container.reverseLinkDirection(linkIndex);
 
                                         return true;
                                     }
@@ -193,15 +193,15 @@ class State {
     public static reduceTiles(state: State): IReduction {
         const visited: General.IDictionary<boolean> = {},
               reduction: IReduction = {
-                    collapsingTiles: General.fillArray(Tile.numberOfColors, () => 0),
+                    collapsingTiles: General.fillArray(Tile.Container.numberOfColors, () => 0),
                     tiles: []
               };
 
-        General.forEach(state.tiles, tile => {
+        state.tiles.forEach(tile => {
             const group: General.IDictionary<Tile.Link> = State.reduceTile(state, visited, [tile]),
                   keys = Object.keys(group);
 
-            General.forEach(keys, key => {
+            keys.forEach(key => {
                 const index: number = parseInt(key, 10);
 
                 reduction.tiles[index] = state.tiles[index].cloneWith(tile.color, tile.detonationRange, group[key]);
@@ -231,9 +231,9 @@ class State {
                 let row = state.dimension.numberOfRows - reorderedTiles.length;
 
                 while (row > 0) {
-                    detonationRange = Tile.generateRandomDetonationRange(!hasDetonationTile);
+                    detonationRange = Tile.Container.generateRandomDetonationRange(!hasDetonationTile);
                     hasDetonationTile = hasDetonationTile || (detonationRange !== Tile.DetonationRange.none);
-                    color = Tile.getRandomColor(hasDetonationTile);
+                    color = Tile.Container.getRandomColor(hasDetonationTile);
                     tileUpdates[column].push(state.tiles[state.dimension.getTileIndexFromCoordinates(row, column)].cloneWith(color, detonationRange));
                     --row;
                 }
@@ -258,7 +258,7 @@ class State {
         transposedState.row = state.column;
         transposedState.column = state.row;
 
-        General.forEach(state.tiles, tile => {
+        state.tiles.forEach(tile => {
             transposedState.tiles.push(state.tiles[state.dimension.getTileIndexFromCoordinates(tile.column, tile.row)]);
         });
 

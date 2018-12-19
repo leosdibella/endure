@@ -13,25 +13,20 @@ class Tile extends React.PureComponent<TileUtilities.IProps, object> {
         let className: string = 'tile';
 
         if (this.props.mode === GameUtilities.Mode.inGame) {
-            className += '-';
-            className += TileUtilities.Color[this.props.color];
-            className += ' ';
-            className += additionalClass;
-            className += ' ';
-            className += TileUtilities.linkClasses[this.props.link];
+            className += `-${TileUtilities.Color[this.props.color]} ${additionalClass} ${TileUtilities.Container.linkClasses[this.props.link]}`;
         }
 
         return className;
     }
 
     private getStyle(additionalClass: string): GeneralUtilities.ICssStyle {
-        const placementModifier: number = additionalClass && this.props.mode === GameUtilities.Mode.inGame ? -TileUtilities.selectedPlacementModifier : 0,
-              dimension: string = TileUtilities.dimension + (additionalClass && this.props.mode === GameUtilities.Mode.inGame ? TileUtilities.selectedDimensionModifier : 0) + 'px';
+        const placementModifier: number = additionalClass && this.props.mode === GameUtilities.Mode.inGame ? -TileUtilities.Container.selectedPlacementModifier : 0,
+              dimension: string = `${TileUtilities.Container.dimension + (additionalClass && this.props.mode === GameUtilities.Mode.inGame ? TileUtilities.Container.selectedDimensionModifier : 0)}px`;
 
         return {
             height: dimension,
-            left: (this.props.column * (TileUtilities.dimensionWithMargin)) + placementModifier + 'px',
-            top: (this.props.row * (TileUtilities.dimensionWithMargin)) + placementModifier + 'px',
+            left: `${(this.props.column * (TileUtilities.Container.dimensionWithMargin)) + placementModifier}px`,
+            top: `${(this.props.row * (TileUtilities.Container.dimensionWithMargin)) + placementModifier}px`,
             width: dimension
         };
     }

@@ -49,11 +49,11 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
 
     private getOverlayTitle(): Maybe<JSX.Element> {
         return this.state.menu.menuOptions[this.props.mode].bind(mo => {
-            const overlayTile: JSX.Element = <div className={'overlay-tile ' + AppUtilities.Theme[this.props.theme]}>
+            const overlayTile: JSX.Element = <div className={`overlay-tile ${AppUtilities.Theme[this.props.theme]}`}>
                                              </div>;
 
             return new Maybe(<div key={1}
-                                  className={'overlay-' + mo.className + '-text'}>
+                                  className={`overlay-${mo.className}-text`}>
                                   {overlayTile}
                                   {mo.title}
                                   {overlayTile}
@@ -74,6 +74,7 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
                                                                                             </div>
                                                                                             <div>
                                                                                                 <span>
+                                                                                                    {GeneralUtilities.formatCamelCaseString(AppUtilities.Difficulty[s.difficulty], ' ', true)}
                                                                                                 </span>
                                                                                                 <span>
                                                                                                     {s.value}
@@ -84,23 +85,23 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
 
         return <div key={2}
                     className='overlay-high-scores-listings'>
-                    <div className={'overlay-high-scores-local overlay-high-scores-listing ' + AppUtilities.Theme[this.props.theme]}>
+                    <div className={`overlay-high-scores-local overlay-high-scores-listing ${AppUtilities.Theme[this.props.theme]}`}>
                         <div className='overlay-high-scores-listing-title'>
                             You
                         </div>
                         {localHighScores}
-                        <div className={'overlay-no-high-scores' + (localHighScores.length > 0 ? ' hide' : '')}>
+                        <div className={`overlay-no-high-scores ${localHighScores.length > 0 ? ' hide' : ''}`}>
                             Nothing yet ...
                         </div>
                     </div>
-                    <div className={'overlay-high-scores-listing-separator ' + AppUtilities.Theme[this.props.theme]}>
+                    <div className={`overlay-high-scores-listing-separator ${AppUtilities.Theme[this.props.theme]}`}>
                     </div>
-                    <div className={'overlay-high-scores-global overlay-high-scores-listing ' + AppUtilities.Theme[this.props.theme]}>
+                    <div className={`overlay-high-scores-global overlay-high-scores-listing ${AppUtilities.Theme[this.props.theme]}`}>
                         <div className='overlay-high-scores-listing-title'>
                             The Entire Class
                         </div>
                         {globalHighScores}
-                        <div className={'overlay-no-high-scores' + (globalHighScores.length > 0 ? ' hide' : '')}>
+                        <div className={`overlay-no-high-scores ${globalHighScores.length > 0 ? ' hide' : ''}`}>
                             Nothing yet ...
                         </div>
                     </div>
@@ -126,7 +127,7 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
         return this.state.menu.menuOptions[this.props.mode].bind(mo => {
             const buttons: JSX.Element[] = GeneralUtilities.fillArray(mo.options.length, i => {
                 return <button key={i}
-                               className={'overlay-button' + (this.state.selectedOptionIndex === i ? ' overlay-selected-option' : '')}
+                               className={`overlay-button ${this.state.selectedOptionIndex === i ? 'overlay-selected-option' : ''}`}
                                onClick={mo.actions[i]}>
                             {mo.options[i]}
                        </button>;
@@ -182,7 +183,7 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
     }
 
     public render(): JSX.Element {
-        return <div className={'overlay-container ' + AppUtilities.Theme[this.props.theme]}>
+        return <div className={`overlay-container ${AppUtilities.Theme[this.props.theme]}`}>
                    <div className='overlay'>
                         {this.getOverlayBody()}
                    </div>

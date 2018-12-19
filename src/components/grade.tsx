@@ -10,7 +10,7 @@ import '../styles/grade.scss';
 class Grade extends React.PureComponent<GradeUtilities.IProps, GradeUtilities.State> {
     private expandGradeFill(timeFraction: number): void {
         this.setState({
-            fillRadiusPercentage: ((1 - timeFraction) * 100).toFixed(2) + '%'
+            fillRadiusPercentage: `${((1 - timeFraction) * 100).toFixed(2)}%`
         });
     }
 
@@ -21,7 +21,7 @@ class Grade extends React.PureComponent<GradeUtilities.IProps, GradeUtilities.St
     }
 
     private getDuration(): number {
-        return GradeUtilities.durations[this.props.difficulty] - (GradeUtilities.durationModifiers[this.props.difficulty] * this.props.stage);
+        return GradeUtilities.State.durations[this.props.difficulty] - (GradeUtilities.State.durationModifiers[this.props.difficulty] * this.props.stage);
     }
 
     public readonly state: GradeUtilities.State = new GradeUtilities.State(this.expandGradeFill.bind(this), this.getDuration(), this.onAnimationComplete.bind(this));
@@ -46,9 +46,9 @@ class Grade extends React.PureComponent<GradeUtilities.IProps, GradeUtilities.St
             width: this.state.fillRadiusPercentage
         };
 
-        return <div className={'grade-container ' + AppUtilities.Theme[this.props.theme]}>
+        return <div className={`grade-container ${AppUtilities.Theme[this.props.theme]}`}>
                     <div className='grade-letter-grade'>
-                        {GradeUtilities.letterGrades[this.props.letterGrade]}
+                        {GradeUtilities.State.letterGrades[this.props.letterGrade]}
                     </div>
                     <div className='grade-fill'
                          style={style}>

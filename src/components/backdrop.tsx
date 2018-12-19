@@ -6,7 +6,7 @@ import * as GeneralUtilities from '../utilities/general';
 
 import '../styles/backdrop.scss';
 
-const binderHoles: JSX.Element[] = GeneralUtilities.fillArray(BackdropUtilities.numberOfBinderHoles, i => {
+const binderHoles: JSX.Element[] = GeneralUtilities.fillArray(BackdropUtilities.State.numberOfBinderHoles, i => {
     return <div key={i}
         className='backdrop-binder-hole'>
     </div>;
@@ -26,7 +26,7 @@ class Backdrop extends React.PureComponent<BackdropUtilities.IProps, BackdropUti
                    </div>;
         });
 
-        return <div className={'backdrop ' + AppUtilities.Theme[this.props.theme]}>
+        return <div className={`backdrop ${AppUtilities.Theme[this.props.theme]}`}>
             <div className='backdrop-left-margin'>
                 <div className='backdrop-binder-holes'>
                     {binderHoles}

@@ -39,14 +39,110 @@ interface IUpdate {
     letterGrade?: number;
 }
 
-const highScoresLocalStorageKey: string = 'ENDURE_HIGH_SCORES';
-const difficultyLocalStorageKey: string = 'ENDURE_DIFFICULTY';
-const playerNameLocalStorageKey: string = 'ENDURE_PLAYER_NAME';
-const defaultPlayerName: string = 'Anonymous';
-const defaultDifficulty: App.Difficulty = App.Difficulty.medium;
-const numberOfHighScoresToPersist: number = 10;
-
 class State {
+    private static readonly highScoresLocalStorageKey: string = 'ENDURE_HIGH_SCORES';
+    private static readonly difficultyLocalStorageKey: string = 'ENDURE_DIFFICULTY';
+    private static readonly playerNameLocalStorageKey: string = 'ENDURE_PLAYER_NAME';
+    private static readonly defaultPlayerName: string = 'Anonymous';
+    private static readonly defaultDifficulty: App.Difficulty = App.Difficulty.medium;
+    private static readonly numberOfHighScoresToPersist: number = 10;
+
+    private static getStage(score: number): number {
+        const stage: number = Math.log(score);
+        return Math.floor(stage * stage);
+    }
+
+    private static getHighScores(highScores: any): HighScore[] {
+        const highScoreArray: HighScore[] = [];
+
+        if (Array.isArray(highScores)) {
+            highScores.forEach(hs => {
+                if (General.isObject(hs)
+                        && General.isString(hs.name)
+                        && General.isString(hs.dateStamp)
+                        && General.isInteger(hs.value)
+                        && General.isInteger(hs.difficulty)) {
+                    new Maybe(App.Difficulty[hs.difficulty]).justDo(() => {
+                        highScoreArray.push(new HighScore(hs.name, hs.dateStamp, hs.value, hs.difficulty));
+                    });
+                }
+            });
+        }
+
+        return highScoreArray;
+    }
+
+    private static isValidPlayerName(playerName: string): boolean {
+        return playerName.trim() !== '';
+    }
+
+    public static isInProgress(gameMdode: Mode): boolean {
+        return gameMdode === Mode.inGame || gameMdode === Mode.paused;
+    }
+
+    public static getPersistedState(): State {
+        return new State(Mode.newGame,
+                         Persistence.fetchEnumValue(State.difficultyLocalStorageKey, App.Difficulty, State.defaultDifficulty),
+                         Persistence.fetchData(State.highScoresLocalStorageKey).caseOf(hs => State.getHighScores(hs), () => []),
+                         Persistence.fetchData(State.playerNameLocalStorageKey).getOrDefault(State.defaultPlayerName));
+    }
+
+    public static persistState(state: State): void {
+        Persistence.persistData(State.difficultyLocalStorageKey, state.difficulty);
+        Persistence.persistData(State.highScoresLocalStorageKey, state.highScores);
+        Persistence.persistData(State.playerNameLocalStorageKey, State.isValidPlayerName(state.playerName) ? state.playerName : State.defaultPlayerName);
+    }
+
+    public static getNextStateFromUpdate(update: IUpdate, state: State): State {
+        const playerName: string = new Maybe(update.playerName).getOrDefault(state.playerName),
+        difficulty: App.Difficulty = new Maybe(update.difficulty).getOrDefault(state.difficulty);
+
+        let stage: number = state.score,
+            score: number = state.score,
+            mode: Mode = new Maybe(update.mode).getOrDefault(state.mode),
+            letterGrade: number = new Maybe(update.letterGrade).getOrDefault(state.letterGrade),
+            highScores: HighScore[] = state.highScores,
+            combo: number = new Maybe(update.dropCombo).caseOf(p => 0, () => state.combo);
+
+        new Maybe(update.points).justDo(p => {
+            score += (p * Math.max(combo, 1));
+            ++combo;
+            stage = State.getStage(score);
+        });
+
+        if (letterGrade === App.LetterGrade.f) {
+            mode = Mode.gameOver;
+        }
+
+        if (mode === Mode.gameOver) {
+            highScores = highScores.concat(new HighScore(state.playerName, score, General.getDateStamp(new Date()), difficulty))
+                                   .sort((a, b) => b.value - a.value)
+                                   .slice(0, State.numberOfHighScoresToPersist);
+        } else if (State.isInProgress(state.mode) && State.isInProgress(mode) && state.mode !== mode) {
+            mode = mode === Mode.paused ? Mode.inGame : Mode.paused;
+        }
+
+        if (mode === Mode.gameOver || mode === Mode.newGame) {
+            score = 0;
+            combo = 0;
+            stage = 0;
+            letterGrade = App.LetterGrade.aPlus;
+        }
+
+        if (mode === Mode.newGame && state.mode === Mode.inGame) {
+            mode = Mode.quitConfirmation;
+        }
+
+        return new State(mode,
+                         difficulty,
+                         highScores,
+                         playerName,
+                         combo,
+                         score,
+                         stage,
+                         letterGrade);
+    }
+
     public mode: Mode;
     public combo: number;
     public score: number;
@@ -66,7 +162,7 @@ class State {
                        letterGrade: App.LetterGrade = App.LetterGrade.aPlus) {
         this.mode = mode;
         this.difficulty = difficulty;
-        this.playerName = isValidPlayerName(playerName) ? playerName : defaultPlayerName;
+        this.playerName = State.isValidPlayerName(playerName) ? playerName : State.defaultPlayerName;
         this.combo = combo;
         this.score = score;
         this.stage = stage;
@@ -81,111 +177,10 @@ interface IProps {
     readonly onUpdate: (updates: App.IUpdate) => void;
 }
 
-function isValidPlayerName(playerName: string): boolean {
-    return playerName.trim() !== '';
-}
-
-function isInProgress(gameMdode: Mode): boolean {
-    return gameMdode === Mode.inGame || gameMdode === Mode.paused;
-}
-
-function getHighScores(highScores: any): HighScore[] {
-    const highScoreArray: HighScore[] = [];
-
-    if (Array.isArray(highScores)) {
-        General.forEach(highScores, hs => {
-            if (General.isObject(hs)
-                    && General.isString(hs.name)
-                    && General.isString(hs.dateStamp)
-                    && General.isInteger(hs.value)
-                    && General.isInteger(hs.difficulty)) {
-                new Maybe(App.Difficulty[hs.difficulty]).justDo(() => {
-                    highScoreArray.push(new HighScore(hs.name, hs.dateStamp, hs.value, hs.difficulty));
-                });
-            }
-        });
-    }
-
-    return highScoreArray;
-}
-
-function getPersistedState(): State {
-    return new State(Mode.newGame,
-                     Persistence.fetchEnumValue(difficultyLocalStorageKey, App.Difficulty, defaultDifficulty),
-                     Persistence.fetchData(highScoresLocalStorageKey).caseOf(hs => getHighScores(hs), () => []),
-                     Persistence.fetchData(playerNameLocalStorageKey).getOrDefault(defaultPlayerName));
-}
-
-function persistState(state: State): void {
-    Persistence.persistData(difficultyLocalStorageKey, state.difficulty);
-    Persistence.persistData(highScoresLocalStorageKey, state.highScores);
-    Persistence.persistData(playerNameLocalStorageKey, isValidPlayerName(state.playerName) ? state.playerName : defaultPlayerName);
-}
-
-function getStage(score: number): number {
-    const stage: number = Math.log(score);
-    return Math.floor(stage * stage);
-}
-
-function getNextStateFromUpdate(update: IUpdate, state: State): State {
-    const playerName: string = new Maybe(update.playerName).getOrDefault(state.playerName),
-    difficulty: App.Difficulty = new Maybe(update.difficulty).getOrDefault(state.difficulty);
-
-    let stage: number = state.score,
-        score: number = state.score,
-        mode: Mode = new Maybe(update.mode).getOrDefault(state.mode),
-        letterGrade: number = new Maybe(update.letterGrade).getOrDefault(state.letterGrade),
-        highScores: HighScore[] = state.highScores,
-        combo: number = new Maybe(update.dropCombo).caseOf(p => 0, () => state.combo);
-
-    new Maybe(update.points).justDo(p => {
-        score += (p * Math.max(combo, 1));
-        ++combo;
-        stage = getStage(score);
-    });
-
-    if (letterGrade === App.LetterGrade.f) {
-        mode = Mode.gameOver;
-    }
-
-    if (mode === Mode.gameOver) {
-        highScores = highScores.concat(new HighScore(state.playerName, score, General.getDateStamp(new Date()), difficulty))
-                               .sort((a, b) => b.value - a.value)
-                               .slice(0, numberOfHighScoresToPersist);
-    } else if (isInProgress(state.mode) && isInProgress(mode) && state.mode !== mode) {
-        mode = mode === Mode.paused ? Mode.inGame : Mode.paused;
-    }
-
-    if (mode === Mode.gameOver || mode === Mode.newGame) {
-        score = 0;
-        combo = 0;
-        stage = 0;
-        letterGrade = App.LetterGrade.aPlus;
-    }
-
-    if (mode === Mode.newGame && state.mode === Mode.inGame) {
-        mode = Mode.quitConfirmation;
-    }
-
-    return new State(mode,
-                     difficulty,
-                     highScores,
-                     playerName,
-                     combo,
-                     score,
-                     stage,
-                     letterGrade);
-}
-
 export {
     Mode,
     HighScore,
     IUpdate,
     State,
-    IProps,
-    isValidPlayerName,
-    isInProgress,
-    getNextStateFromUpdate,
-    persistState,
-    getPersistedState
+    IProps
 };

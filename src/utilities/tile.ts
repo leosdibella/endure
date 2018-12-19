@@ -2,13 +2,6 @@ import * as Game from './game';
 import * as General from './general';
 import { Maybe } from './maybe';
 
-const dimension: number = 50;
-const margin: number = 5;
-const dimensionWithMargin: number = dimension + margin;
-const selectedPadding: number = 7;
-const selectedPlacementModifier: number = margin + selectedPadding;
-const selectedDimensionModifier: number = 2 * (margin + selectedPadding);
-
 enum Link {
     none = 0,
     top = 1,
@@ -39,38 +32,6 @@ enum Color {
     grey
 }
 
-const numberOfColors: number = General.getNumericEnumKeys(Color).length - 1;
-
-const reverseLinkRelations: General.IDictionary<Link> = {
-    [Link.top]: Link.bottom,
-    [Link.bottom]: Link.top,
-    [Link.right]: Link.left,
-    [Link.left]: Link.right
-};
-
-function reverseLinkDirection(linkIndex: Link): Link {
-    let reverseLinkIndex: Link = Link.none;
-
-    new Maybe(reverseLinkRelations[linkIndex]).justDo(reverseLink => reverseLinkIndex = reverseLink);
-
-    return reverseLinkIndex;
-}
-
-function getRandomColor(hasDetonationRange: boolean = false): number {
-    if (hasDetonationRange) {
-        return Color.transparent;
-    }
-
-    return Math.floor(Math.random() * numberOfColors) + 1;
-}
-
-const neighborIndices: Link[] = [
-    Link.top,
-    Link.right,
-    Link.bottom,
-    Link.left
-];
-
 enum DetonationRange {
     none = 0,
     small,
@@ -78,31 +39,60 @@ enum DetonationRange {
     large
 }
 
-function generateRandomDetonationRange(canDetonate: boolean): DetonationRange {
-    if (!canDetonate) {
+class Container {
+    private static readonly reverseLinkRelations: General.IDictionary<Link> = {
+        [Link.top]: Link.bottom,
+        [Link.bottom]: Link.top,
+        [Link.right]: Link.left,
+        [Link.left]: Link.right
+    };
+
+    public static readonly neighborIndices: Link[] = [
+        Link.top,
+        Link.right,
+        Link.bottom,
+        Link.left
+    ];
+
+    public static readonly dimension: number = 50;
+    public static readonly margin: number = 5;
+    public static readonly dimensionWithMargin: number = Container.dimension + Container.margin;
+    public static readonly selectedPadding: number = 7;
+    public static readonly selectedPlacementModifier: number = Container.margin + Container.selectedPadding;
+    public static readonly selectedDimensionModifier: number = 2 * (Container.margin + Container.selectedPadding);
+    public static readonly linkClasses: string[] = General.getNumericEnumKeys(Link).map(l => `tile-link-${General.formatCamelCaseString(Link[parseInt(l, 10)])}`);
+    public static readonly numberOfColors: number = General.getNumericEnumKeys(Color).length - 1;
+
+    public static getRandomColor(hasDetonationRange: boolean = false): number {
+        return hasDetonationRange ? Color.transparent : (Math.floor(Math.random() * Container.numberOfColors) + 1);
+    }
+
+    public static reverseLinkDirection(linkIndex: Link): Link {
+        return new Maybe(Container.reverseLinkRelations[linkIndex]).getOrDefault(Link.none);
+    }
+
+    public static generateRandomDetonationRange(canDetonate: boolean): DetonationRange {
+        if (!canDetonate) {
+            return DetonationRange.none;
+        }
+
+        const randomNumber: number = Math.floor(Math.random() * 100);
+
+        if (randomNumber === 99) {
+            return DetonationRange.large;
+        }
+
+        if (randomNumber > 95) {
+            return DetonationRange.medium;
+        }
+
+        if (randomNumber > 90) {
+            return DetonationRange.small;
+        }
+
         return DetonationRange.none;
     }
 
-    const randomNumber: number = Math.floor(Math.random() * 100);
-
-    if (randomNumber === 99) {
-        return DetonationRange.large;
-    }
-
-    if (randomNumber > 95) {
-        return DetonationRange.medium;
-    }
-
-    if (randomNumber > 90) {
-        return DetonationRange.small;
-    }
-
-    return DetonationRange.none;
-}
-
-const linkClasses: string[] = General.getNumericEnumKeys(Link).map(l => 'tile-link-' + General.camelCaseToKebabCase(Link[parseInt(l, 10)]));
-
-class Container {
     public readonly row: number;
     public readonly column: number;
     public readonly index: number;
@@ -146,21 +136,9 @@ interface IProps {
 }
 
 export {
-    dimension,
-    margin,
-    dimensionWithMargin,
-    selectedPadding,
-    selectedPlacementModifier,
-    selectedDimensionModifier,
     Link,
     Color,
-    numberOfColors,
-    reverseLinkDirection,
-    getRandomColor,
-    neighborIndices,
     DetonationRange,
-    generateRandomDetonationRange,
-    linkClasses,
     Container,
     IProps
 };

@@ -6,7 +6,8 @@ enum DomEvent {
 }
 
 function formatDatePart(datePart: number): string {
-    return (datePart > 10 ? String(datePart) : ('0' + datePart));
+    const prefix: string = datePart > 10 ? '' : '0';
+    return `${prefix}${datePart}`;
 }
 
 interface IDictionary<T> {
@@ -27,12 +28,12 @@ function isDefined(value: any): boolean {
     return value !== undefined;
 }
 
-function isFunction(value: any): boolean {
-    return typeof(value) === 'function';
+function isNotNull(value: any): boolean {
+    return value !== null;
 }
 
 function isObject(value: any): boolean {
-    return typeof(value) === 'object' && value !== null && !Array.isArray(value);
+    return typeof(value) === 'object' && isNotNull(value) && !Array.isArray(value);
 }
 
 function isString(value: any): boolean {
@@ -44,27 +45,22 @@ function isInteger(value: any): boolean {
 }
 
 function getDateStamp(date: Date): string {
-    return formatDatePart(date.getMonth() + 1) + '/' + formatDatePart(date.getDate()) + '/' + formatDatePart(date.getFullYear());
+    return `${formatDatePart(date.getMonth() + 1)}/${formatDatePart(date.getDate())}/${formatDatePart(date.getFullYear())}`;
 }
 
-function camelCaseToKebabCase(camelCase: string): string {
+function formatCamelCaseString(camelCase: string, separator: string = '-', uppercase: boolean = false): string {
     let i: number,
-        lowerCase: string,
-        snakeCase: string = '';
+        character: string,
+        formattedString: string = '';
 
     if (camelCase.length > 0) {
         for (i = 0; i < camelCase.length; ++i) {
-            lowerCase = camelCase[i].toLowerCase();
-
-            if (lowerCase === camelCase[i]) {
-                snakeCase += lowerCase;
-            } else {
-                snakeCase += '-' + lowerCase;
-            }
+            character = camelCase[i].toLowerCase();
+            formattedString += `${character !== camelCase[i] ? separator : ''}${uppercase ? character.toUpperCase() : character}`;
         }
     }
 
-    return snakeCase;
+    return formattedString;
 }
 
 function iterate(length: number, f: (index: number) => void) {
@@ -84,12 +80,6 @@ function fillArray<T>(length: number, f: (index: number) => T, backwards?: boole
     return array;
 }
 
-function forEach<T>(array: T[], f: (t: T, index: number, array: T[]) => void): void {
-    for (let i: number = 0; i < array.length; ++i) {
-        f(array[i], i, array);
-    }
-}
-
 // Note the reverse lookup generates properties for "0", "1" etc at runtime which while helpful also breaks the purity of the enum.
 function getNumericEnumKeys(collection: any): string[] {
     return isObject(collection) ? Object.keys(collection).filter(k => isInteger(parseInt(k, 10))) : [];
@@ -100,14 +90,13 @@ export {
     IDictionary,
     ICssStyle,
     isDefined,
-    isFunction,
+    isNotNull,
     isObject,
     isString,
     isInteger,
     getDateStamp,
-    camelCaseToKebabCase,
+    formatCamelCaseString,
     iterate,
     fillArray,
-    forEach,
     getNumericEnumKeys
 };

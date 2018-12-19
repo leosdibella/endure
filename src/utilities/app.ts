@@ -35,14 +35,38 @@ enum LetterGrade {
     f
 }
 
-const themeLocalStorageKey: string = 'ENDURE_THEME';
-const defaultTheme: Theme = Theme.light;
-
 interface IUpdate {
     theme?: Theme;
 }
 
 class State {
+    private static readonly themeLocalStorageKey: string = 'ENDURE_THEME';
+    private static readonly defaultTheme: Theme = Theme.light;
+
+    public static getOrientation(): Orientation {
+        if (window.innerWidth / window.innerHeight > 1) {
+            return Orientation.landscape;
+        }
+
+        return Orientation.portrait;
+    }
+
+    public static getPersistedState(): State {
+        return new State(Persistence.fetchEnumValue(State.themeLocalStorageKey, Theme, State.defaultTheme), State.getOrientation());
+    }
+
+    public static removeElementFocus(): void {
+        new Maybe(document.activeElement as HTMLElement).justDo(e => {
+            if (!(e instanceof HTMLInputElement) || e.type !== 'text') {
+                e.blur();
+            }
+        });
+    }
+
+    public static persistState(state: State): void {
+        Persistence.persistData(State.themeLocalStorageKey, state.theme);
+    }
+
     public theme: Theme;
     public orientation: Orientation;
 
@@ -52,39 +76,11 @@ class State {
     }
 }
 
-function getOrientation(): Orientation {
-    if (window.innerWidth / window.innerHeight > 1) {
-        return Orientation.landscape;
-    }
-
-    return Orientation.portrait;
-}
-
-function getPersistedState(): State {
-    return new State(Persistence.fetchEnumValue(themeLocalStorageKey, Theme, defaultTheme), getOrientation());
-}
-
-function removeElementFocus(): void {
-    new Maybe(document.activeElement as HTMLElement).justDo(e => {
-        if (!(e instanceof HTMLInputElement) || e.type !== 'text') {
-            e.blur();
-        }
-    });
-}
-
-function persistState(state: State): void {
-    Persistence.persistData(themeLocalStorageKey, state.theme);
-}
-
 export {
     Theme,
     Orientation,
     Difficulty,
     LetterGrade,
     IUpdate,
-    State,
-    getOrientation,
-    getPersistedState,
-    removeElementFocus,
-    persistState
+    State
 };

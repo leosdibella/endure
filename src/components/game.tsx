@@ -38,7 +38,7 @@ class Game extends React.PureComponent<GameUtilities.IProps, GameUtilities.State
     }
 
     private togglePaused(): void {
-        if (GameUtilities.isInProgress(this.state.mode)) {
+        if (GameUtilities.State.isInProgress(this.state.mode)) {
             this.setState({
                 mode: this.state.mode === GameUtilities.Mode.paused ? GameUtilities.Mode.inGame : GameUtilities.Mode.paused
             });
@@ -50,10 +50,10 @@ class Game extends React.PureComponent<GameUtilities.IProps, GameUtilities.State
             this.onThemeChange();
             this.onQuit();
         }).otherwiseDo(() => {
-            const nextState: GameUtilities.State = GameUtilities.getNextStateFromUpdate(update, this.state);
+            const nextState: GameUtilities.State = GameUtilities.State.getNextStateFromUpdate(update, this.state);
 
             this.setState(nextState);
-            GameUtilities.persistState(nextState);
+            GameUtilities.State.persistState(nextState);
         });
     }
 
@@ -75,7 +75,7 @@ class Game extends React.PureComponent<GameUtilities.IProps, GameUtilities.State
         return false;
     }
 
-    public readonly state: GameUtilities.State = GameUtilities.getPersistedState();
+    public readonly state: GameUtilities.State = GameUtilities.State.getPersistedState();
 
     public componentDidMount(): void {
         document.addEventListener(GeneralUtilities.DomEvent.keyDown, this.onKeyDown);
@@ -86,7 +86,7 @@ class Game extends React.PureComponent<GameUtilities.IProps, GameUtilities.State
     }
 
     public render(): JSX.Element {
-        return <div className={'game ' + AppUtilities.Theme[this.props.theme]}>
+        return <div className={`game ${AppUtilities.Theme[this.props.theme]}`}>
             {this.getOverlay()}
             <Header theme={this.props.theme}
                     mode={this.state.mode}

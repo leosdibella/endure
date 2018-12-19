@@ -5,24 +5,24 @@ interface IProps {
     orientation: App.Orientation;
 }
 
-const topMarginHeight: number = 100;
-const lineHeight: number = 25;
-const numberOfBinderHoles: number = 3;
-
-function calculateNumberOfLines(): number {
-    return Math.floor((window.innerHeight - topMarginHeight) / lineHeight);
-}
-
 class State {
+    private static readonly topMarginHeight: number = 100;
+    private static readonly lineHeight: number = 25;
+
+    private static calculateNumberOfLines(): number {
+        return Math.floor((window.innerHeight - State.topMarginHeight) / State.lineHeight);
+    }
+
+    public static readonly numberOfBinderHoles: number = 3;
+
     public numberOfLines: number;
 
     constructor() {
-        this.numberOfLines = calculateNumberOfLines();
+        this.numberOfLines = State.calculateNumberOfLines();
     }
 }
 
 export {
     IProps,
-    numberOfBinderHoles,
     State
 };
