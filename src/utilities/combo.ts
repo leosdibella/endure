@@ -1,7 +1,7 @@
 import * as Animation from './animation';
-import * as App from './app';
-import * as Game from './game';
-import * as General from './general';
+import * as AppUtilities from './app';
+import * as GameUtilities from './game';
+import * as GeneralUtilities from './general';
 
 enum CssClass {
     healthy = 0,
@@ -12,20 +12,20 @@ enum CssClass {
 class State {
     public static readonly minimumViableCombo: number = 2;
 
-    public static readonly durationModifiers: General.IDictionary<number> = {
-        [App.Difficulty.beginner]: 10,
-        [App.Difficulty.low]: 15,
-        [App.Difficulty.medium]: 20,
-        [App.Difficulty.hard]: 25,
-        [App.Difficulty.expert]: 30
+    public static readonly durationModifiers: GeneralUtilities.IDictionary<number> = {
+        [AppUtilities.Difficulty.beginner]: 10,
+        [AppUtilities.Difficulty.low]: 15,
+        [AppUtilities.Difficulty.medium]: 20,
+        [AppUtilities.Difficulty.hard]: 25,
+        [AppUtilities.Difficulty.expert]: 30
     };
 
-    public static readonly durations: General.IDictionary<number> = {
-        [App.Difficulty.beginner]: 3000,
-        [App.Difficulty.low]: 2800,
-        [App.Difficulty.medium]: 2600,
-        [App.Difficulty.hard]: 2400,
-        [App.Difficulty.expert]: 2200
+    public static readonly durations: GeneralUtilities.IDictionary<number> = {
+        [AppUtilities.Difficulty.beginner]: 3000,
+        [AppUtilities.Difficulty.low]: 2800,
+        [AppUtilities.Difficulty.medium]: 2600,
+        [AppUtilities.Difficulty.hard]: 2400,
+        [AppUtilities.Difficulty.expert]: 2200
     };
 
     public static getClassFromTimeFraction(timeFraction: number): string {
@@ -54,13 +54,13 @@ class State {
 }
 
 interface IProps {
-    theme: App.Theme;
+    theme: AppUtilities.Theme;
     combo: number;
-    letterGrade: App.LetterGrade;
+    letterGrade: AppUtilities.LetterGrade;
     stage: number;
-    difficulty: App.Difficulty;
-    mode: Game.Mode;
-    readonly onUpdate: (updates: Game.IUpdate) => void;
+    difficulty: AppUtilities.Difficulty;
+    mode: GameUtilities.Mode;
+    readonly onUpdate: (updates: GameUtilities.IUpdate) => void;
 }
 
 export {

@@ -1,9 +1,9 @@
-import * as App from './app';
-import * as Game from './game';
-import * as General from './general';
+import * as AppUtilities from './app';
+import * as GameUtilities from './game';
+import * as GeneralUtilities from './general';
 import { Maybe } from './maybe';
 import * as Rotation from './rotation';
-import * as Tile from './tile';
+import * as TileUtilities from './tile';
 
 const minimumTileChainLength = 4;
 
@@ -23,11 +23,11 @@ class Dimension {
         return [(index - column) / this.numberOfColumns, column];
     }
 
-    public generateTiles(): Tile.Container[] {
-        return General.fillArray(this.numberOfRows * this.numberOfColumns, index => {
+    public generateTiles(): TileUtilities.Container[] {
+        return GeneralUtilities.fillArray(this.numberOfRows * this.numberOfColumns, index => {
             const coordinates: number[] = this.getTileCoordinatesFromIndex(index);
 
-            return new Tile.Container(coordinates[0], coordinates[1], index, Tile.Container.getRandomColor());
+            return new TileUtilities.Container(coordinates[0], coordinates[1], index, TileUtilities.Container.getRandomColor());
         });
     }
 
@@ -39,21 +39,21 @@ class Dimension {
     }
 }
 
-const dimensions: General.IDictionary<Dimension> = {
-    [App.Orientation.landscape]: new Dimension(4, 6, 9, 13),
-    [App.Orientation.portrait]: new Dimension(6, 4, 13, 9)
+const dimensions: GeneralUtilities.IDictionary<Dimension> = {
+    [AppUtilities.Orientation.landscape]: new Dimension(4, 6, 9, 13),
+    [AppUtilities.Orientation.portrait]: new Dimension(6, 4, 13, 9)
 };
 
 interface IReduction {
     readonly collapsingTiles: number[];
-    readonly tiles: Tile.Container[];
+    readonly tiles: TileUtilities.Container[];
 }
 
 interface IProps {
-    theme: App.Theme;
-    orientation: App.Orientation;
-    mode: Game.Mode;
-    readonly onUpdate: (updates: Game.IUpdate) => void;
+    theme: AppUtilities.Theme;
+    orientation: AppUtilities.Orientation;
+    mode: GameUtilities.Mode;
+    readonly onUpdate: (updates: GameUtilities.IUpdate) => void;
 }
 
 class State {
@@ -62,24 +62,24 @@ class State {
     }
 
     private static iterateThroughStack(state: State,
-                                       stack: Tile.Container[],
-                                       visited: General.IDictionary<boolean>,
-                                       beforeExtending: (tile: Tile.Container) => void,
-                                       extend: (tile: Tile.Container, neighbor: Tile.Container, linkIndex: Tile.Link) => boolean): void {
-        let tile: Tile.Container,
-            neighbors: General.IDictionary<number>;
+                                       stack: TileUtilities.Container[],
+                                       visited: GeneralUtilities.IDictionary<boolean>,
+                                       beforeExtending: (tile: TileUtilities.Container) => void,
+                                       extend: (tile: TileUtilities.Container, neighbor: TileUtilities.Container, linkIndex: TileUtilities.Link) => boolean): void {
+        let tile: TileUtilities.Container,
+            neighbors: GeneralUtilities.IDictionary<number>;
 
         while (stack.length > 0) {
-            tile = stack.pop() as Tile.Container;
+            tile = stack.pop() as TileUtilities.Container;
 
             if (!visited[tile.index]) {
                 visited[tile.index] = true;
                 neighbors = state.graph[tile.index];
                 beforeExtending(tile);
 
-                Tile.Container.neighborIndices.forEach(linkIndex => {
+                TileUtilities.Container.neighborIndices.forEach(linkIndex => {
                     new Maybe(neighbors[linkIndex]).justDo(neighborIndex => {
-                        const neighbor: Tile.Container = state.tiles[neighborIndex];
+                        const neighbor: TileUtilities.Container = state.tiles[neighborIndex];
 
                         if (!visited[neighbor.index] && extend(tile, neighbor, linkIndex)) {
                             stack.push(neighbor);
@@ -90,13 +90,13 @@ class State {
         }
     }
 
-    private static rotateTilesFromRotationMap(state: State, centerTile: Tile.Container, rotationMap: number[][]): General.IDictionary<Tile.Container> {
-        const rotatedTiles: General.IDictionary<Tile.Container> = {};
+    private static rotateTilesFromRotationMap(state: State, centerTile: TileUtilities.Container, rotationMap: number[][]): GeneralUtilities.IDictionary<TileUtilities.Container> {
+        const rotatedTiles: GeneralUtilities.IDictionary<TileUtilities.Container> = {};
 
         let to: number[],
             from: number[],
-            toTile: Tile.Container,
-            fromTile: Tile.Container;
+            toTile: TileUtilities.Container,
+            fromTile: TileUtilities.Container;
 
         rotationMap.forEach((map, index, array) => {
             from = index > 0 ? array[index - 1] : array[rotationMap.length - 1];
@@ -109,17 +109,17 @@ class State {
         return rotatedTiles;
     }
 
-    private static reduceTile(state: State, visited: General.IDictionary<boolean>, stack: Tile.Container[]): General.IDictionary<Tile.Link> {
-        const group: General.IDictionary<Tile.Link> = {};
+    private static reduceTile(state: State, visited: GeneralUtilities.IDictionary<boolean>, stack: TileUtilities.Container[]): GeneralUtilities.IDictionary<TileUtilities.Link> {
+        const group: GeneralUtilities.IDictionary<TileUtilities.Link> = {};
 
         State.iterateThroughStack(state,
                                   stack,
                                   visited,
-                                  tile => group[tile.index] = new Maybe(group[tile.index]).getOrDefault(Tile.Link.none),
+                                  tile => group[tile.index] = new Maybe(group[tile.index]).getOrDefault(TileUtilities.Link.none),
                                   (tile, neighbor, linkIndex) => {
                                     if (tile.color === neighbor.color) {
                                         group[tile.index] |= linkIndex;
-                                        group[neighbor.index] = new Maybe(group[neighbor.index]).getOrDefault(Tile.Link.none) | Tile.Container.reverseLinkDirection(linkIndex);
+                                        group[neighbor.index] = new Maybe(group[neighbor.index]).getOrDefault(TileUtilities.Link.none) | TileUtilities.Container.reverseLinkDirection(linkIndex);
 
                                         return true;
                                     }
@@ -130,8 +130,8 @@ class State {
         return group;
     }
 
-    private static addDetonationRangeToStack(state: State, detonationCenter: Tile.Container, stack: Tile.Container[]): void {
-        General.iterate(detonationCenter.detonationRange, i => {
+    private static addDetonationRangeToStack(state: State, detonationCenter: TileUtilities.Container, stack: TileUtilities.Container[]): void {
+        GeneralUtilities.iterate(detonationCenter.detonationRange, i => {
             let index: number = detonationCenter.row + i;
 
             if (index < state.dimension.numberOfRows) {
@@ -158,47 +158,47 @@ class State {
         });
     }
 
-    private static chainDetonation(state: State, stack: Tile.Container[]): Tile.Container[] {
-        const detonatedTiles: Tile.Container[] = [];
+    private static chainDetonation(state: State, stack: TileUtilities.Container[]): TileUtilities.Container[] {
+        const detonatedTiles: TileUtilities.Container[] = [];
 
         State.iterateThroughStack(state,
                                   stack,
                                   {},
                                   tile => detonatedTiles.push(tile),
-                                  (tile, neighbor) => tile.color === neighbor.color || tile.detonationRange !== Tile.DetonationRange.none);
+                                  (tile, neighbor) => tile.color === neighbor.color || tile.detonationRange !== TileUtilities.DetonationRange.none);
 
-        return detonatedTiles.map(t => t.cloneWith(Tile.Color.transparent, Tile.DetonationRange.none)).sort((a, b) => a.index - b.index);
+        return detonatedTiles.map(t => t.cloneWith(TileUtilities.Color.transparent, TileUtilities.DetonationRange.none)).sort((a, b) => a.index - b.index);
     }
 
-    public static readonly moves: General.IDictionary<(state: State) => number> = {
-        [Tile.Link.top]: (state) => state.row > 0 ? state.row - 1 : state.dimension.numberOfRows - 1,
-        [Tile.Link.bottom]: (state) => state.row < state.dimension.numberOfRows - 1 ? state.row + 1 : 0,
-        [Tile.Link.right]: (state) => state.column < state.dimension.numberOfColumns - 1 ? state.column + 1 : 0,
-        [Tile.Link.left]: (state) => state.column > 0 ? state.column - 1 : state.dimension.numberOfColumns - 1
+    public static readonly moves: GeneralUtilities.IDictionary<(state: State) => number> = {
+        [TileUtilities.Link.top]: (state) => state.row > 0 ? state.row - 1 : state.dimension.numberOfRows - 1,
+        [TileUtilities.Link.bottom]: (state) => state.row < state.dimension.numberOfRows - 1 ? state.row + 1 : 0,
+        [TileUtilities.Link.right]: (state) => state.column < state.dimension.numberOfColumns - 1 ? state.column + 1 : 0,
+        [TileUtilities.Link.left]: (state) => state.column > 0 ? state.column - 1 : state.dimension.numberOfColumns - 1
     };
 
-    public static rotateTiles(state: State): General.IDictionary<Tile.Container> {
-        const centerTile: Tile.Container = state.tiles[state.dimension.getTileIndexFromCoordinates(state.row, state.column)];
+    public static rotateTiles(state: State): GeneralUtilities.IDictionary<TileUtilities.Container> {
+        const centerTile: TileUtilities.Container = state.tiles[state.dimension.getTileIndexFromCoordinates(state.row, state.column)];
 
-        let key: Tile.Link = Tile.Link.none;
+        let key: TileUtilities.Link = TileUtilities.Link.none;
 
-        key |= centerTile.row === 0 ? Tile.Link.top : Tile.Link.none;
-        key |= centerTile.row === state.dimension.numberOfRows - 1 ? Tile.Link.bottom : Tile.Link.none;
-        key |= centerTile.column === 0 ? Tile.Link.left : Tile.Link.none;
-        key |= centerTile.column === state.dimension.numberOfColumns - 1 ? Tile.Link.right : Tile.Link.none;
+        key |= centerTile.row === 0 ? TileUtilities.Link.top : TileUtilities.Link.none;
+        key |= centerTile.row === state.dimension.numberOfRows - 1 ? TileUtilities.Link.bottom : TileUtilities.Link.none;
+        key |= centerTile.column === 0 ? TileUtilities.Link.left : TileUtilities.Link.none;
+        key |= centerTile.column === state.dimension.numberOfColumns - 1 ? TileUtilities.Link.right : TileUtilities.Link.none;
 
         return State.rotateTilesFromRotationMap(state, centerTile, Rotation.maps[key]);
     }
 
     public static reduceTiles(state: State): IReduction {
-        const visited: General.IDictionary<boolean> = {},
+        const visited: GeneralUtilities.IDictionary<boolean> = {},
               reduction: IReduction = {
-                    collapsingTiles: General.fillArray(Tile.Container.numberOfColors, () => 0),
+                    collapsingTiles: GeneralUtilities.fillArray(TileUtilities.Container.numberOfColors, () => 0),
                     tiles: []
               };
 
         state.tiles.forEach(tile => {
-            const group: General.IDictionary<Tile.Link> = State.reduceTile(state, visited, [tile]),
+            const group: GeneralUtilities.IDictionary<TileUtilities.Link> = State.reduceTile(state, visited, [tile]),
                   keys = Object.keys(group);
 
             keys.forEach(key => {
@@ -215,25 +215,25 @@ class State {
         return reduction;
     }
 
-    public static cascadeTiles(state: State): Tile.Container[][] {
-        const tileUpdates: Tile.Container[][] = General.fillArray(state.dimension.numberOfColumns, () => []);
+    public static cascadeTiles(state: State): TileUtilities.Container[][] {
+        const tileUpdates: TileUtilities.Container[][] = GeneralUtilities.fillArray(state.dimension.numberOfColumns, () => []);
 
-        let hasDetonationTile: boolean = state.tiles.filter(t => t.detonationRange !== Tile.DetonationRange.none).length > 0,
-            detonationRange: Tile.DetonationRange,
-            color: Tile.Color;
+        let hasDetonationTile: boolean = state.tiles.filter(t => t.detonationRange !== TileUtilities.DetonationRange.none).length > 0,
+            detonationRange: TileUtilities.DetonationRange,
+            color: TileUtilities.Color;
 
-        General.iterate(state.dimension.numberOfColumns, column => {
-            const reorderedTiles: Tile.Container[] = General.fillArray(state.dimension.numberOfRows, row => state.tiles[state.dimension.getTileIndexFromCoordinates(row, column)], true)
-                                                            .filter(t => t.color !== Tile.Color.transparent)
+        GeneralUtilities.iterate(state.dimension.numberOfColumns, column => {
+            const reorderedTiles: TileUtilities.Container[] = GeneralUtilities.fillArray(state.dimension.numberOfRows, row => state.tiles[state.dimension.getTileIndexFromCoordinates(row, column)], true)
+                                                            .filter(t => t.color !== TileUtilities.Color.transparent)
                                                             .map((t, index) => state.tiles[state.dimension.getTileIndexFromCoordinates(index, column)].clone());
 
             if (reorderedTiles.length < state.dimension.numberOfRows) {
                 let row = state.dimension.numberOfRows - reorderedTiles.length;
 
                 while (row > 0) {
-                    detonationRange = Tile.Container.generateRandomDetonationRange(!hasDetonationTile);
-                    hasDetonationTile = hasDetonationTile || (detonationRange !== Tile.DetonationRange.none);
-                    color = Tile.Container.getRandomColor(hasDetonationTile);
+                    detonationRange = TileUtilities.Container.generateRandomDetonationRange(!hasDetonationTile);
+                    hasDetonationTile = hasDetonationTile || (detonationRange !== TileUtilities.DetonationRange.none);
+                    color = TileUtilities.Container.getRandomColor(hasDetonationTile);
                     tileUpdates[column].push(state.tiles[state.dimension.getTileIndexFromCoordinates(row, column)].cloneWith(color, detonationRange));
                     --row;
                 }
@@ -243,9 +243,9 @@ class State {
         return tileUpdates;
     }
 
-    public static detonateTile(state: State): Tile.Container[] {
-        const detonationCenter: Tile.Container = state.tiles[state.dimension.getTileIndexFromCoordinates(state.row, state.column)],
-              stack: Tile.Container[] = [detonationCenter];
+    public static detonateTile(state: State): TileUtilities.Container[] {
+        const detonationCenter: TileUtilities.Container = state.tiles[state.dimension.getTileIndexFromCoordinates(state.row, state.column)],
+              stack: TileUtilities.Container[] = [detonationCenter];
 
         State.addDetonationRangeToStack(state, detonationCenter, stack);
 
@@ -265,33 +265,33 @@ class State {
         return transposedState;
     }
 
-    private initializeGraph(): General.IDictionary<number>[] {
-        return General.fillArray(this.dimension.numberOfRows * this.dimension.numberOfColumns, index => {
-            const neighbors: General.IDictionary<number> = {},
+    private initializeGraph(): GeneralUtilities.IDictionary<number>[] {
+        return GeneralUtilities.fillArray(this.dimension.numberOfRows * this.dimension.numberOfColumns, index => {
+            const neighbors: GeneralUtilities.IDictionary<number> = {},
                   coordinates: number[] = this.dimension.getTileCoordinatesFromIndex(index);
 
             if (coordinates[0] > 0) {
-                neighbors[Tile.Link.top] = this.dimension.getTileIndexFromCoordinates(coordinates[0] - 1, coordinates[1]);
+                neighbors[TileUtilities.Link.top] = this.dimension.getTileIndexFromCoordinates(coordinates[0] - 1, coordinates[1]);
             }
 
             if (coordinates[1] < this.dimension.numberOfColumns - 1) {
-                neighbors[Tile.Link.right] = this.dimension.getTileIndexFromCoordinates(coordinates[0], coordinates[1] + 1);
+                neighbors[TileUtilities.Link.right] = this.dimension.getTileIndexFromCoordinates(coordinates[0], coordinates[1] + 1);
             }
 
             if (coordinates[0] < this.dimension.numberOfRows - 1) {
-                neighbors[Tile.Link.bottom] = this.dimension.getTileIndexFromCoordinates(coordinates[0] + 1, coordinates[1]);
+                neighbors[TileUtilities.Link.bottom] = this.dimension.getTileIndexFromCoordinates(coordinates[0] + 1, coordinates[1]);
             }
 
             if (coordinates[1] > 0) {
-                neighbors[Tile.Link.left] = this.dimension.getTileIndexFromCoordinates(coordinates[0], coordinates[1] - 1);
+                neighbors[TileUtilities.Link.left] = this.dimension.getTileIndexFromCoordinates(coordinates[0], coordinates[1] - 1);
             }
 
             return neighbors;
         });
     }
 
-    public tiles: Tile.Container[];
-    public graph: General.IDictionary<number>[];
+    public tiles: TileUtilities.Container[];
+    public graph: GeneralUtilities.IDictionary<number>[];
     public dimension: Dimension;
     public column: number;
     public row: number;

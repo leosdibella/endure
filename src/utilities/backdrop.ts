@@ -1,8 +1,8 @@
-import * as App from './app';
+import * as AppUtilities from './app';
 
 interface IProps {
-    theme: App.Theme;
-    orientation: App.Orientation;
+    theme: AppUtilities.Theme;
+    orientation: AppUtilities.Orientation;
 }
 
 class State {

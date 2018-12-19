@@ -1,4 +1,4 @@
-import * as General from './general';
+import * as GeneralUtilities from './general';
 import { Maybe } from './maybe';
 
 enum Timing {
@@ -25,7 +25,7 @@ function bounce(timeFraction: number) {
     }
 }
 
-const timingFunctions: General.IDictionary<(timeFraction: number) => number> = {
+const timingFunctions: GeneralUtilities.IDictionary<(timeFraction: number) => number> = {
     [Timing.linear]: (timeFraction: number) => timeFraction,
     [Timing.accelerate]: (timeFraction: number) => Math.pow(timeFraction, 4),
     [Timing.bounceEaseOut]: makeEaseOut(bounce)

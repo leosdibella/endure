@@ -1,8 +1,8 @@
-import * as General from './general';
+import * as GeneralUtilities from './general';
 import { Maybe } from './maybe';
 
 function isLocalStorageSupported(): boolean {
-    return typeof(Storage) !== 'undefined' && General.isDefined(window.localStorage) && General.isNotNull(window.localStorage);
+    return typeof(Storage) !== 'undefined' && GeneralUtilities.isDefined(window.localStorage) && GeneralUtilities.isNotNull(window.localStorage);
 }
 
 function persistData(key: string, value: any): boolean {
@@ -23,7 +23,7 @@ function fetchData(key: string): Maybe<any> {
 }
 
 function fetchEnumValue<T>(key: string, collection: any, defaultValue: T): T {
-    return fetchData(key).caseOf(t => General.isString(t) || General.isInteger(t) ? Maybe.mapThrough(collection[t], defaultValue) : defaultValue, () => defaultValue);
+    return fetchData(key).caseOf(t => GeneralUtilities.isString(t) || GeneralUtilities.isInteger(t) ? Maybe.mapThrough(collection[t], defaultValue) : defaultValue, () => defaultValue);
 }
 
 export {

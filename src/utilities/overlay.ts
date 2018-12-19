@@ -1,6 +1,6 @@
-import * as App from './app';
-import * as Game from './game';
-import * as General from './general';
+import * as AppUtilities from './app';
+import * as GameUtilities from './game';
+import * as GeneralUtilities from './general';
 import { Maybe } from './maybe';
 
 const defaultDefaultOptionsIndex: number = 0;
@@ -21,59 +21,65 @@ class MenuOption {
     }
 }
 
-const menuOptionInitializers: Maybe<((callback: (update: Game.IUpdate) => void, onNameChange: () => void) => MenuOption)>[] = [
-    new Maybe((callback: (update: Game.IUpdate) => void): MenuOption => {
-        const gameModes: Game.Mode[] = [Game.Mode.inGame, Game.Mode.specifyName, Game.Mode.selectDifficulty, Game.Mode.highScores, Game.Mode.setTheme];
+const menuOptionInitializers: Maybe<((callback: (update: GameUtilities.IUpdate) => void, onNameChange: () => void) => MenuOption)>[] = [
+    new Maybe((callback: (update: GameUtilities.IUpdate) => void): MenuOption => {
+        const gameModes: GameUtilities.Mode[] = [
+            GameUtilities.Mode.inGame,
+            GameUtilities.Mode.specifyName,
+            GameUtilities.Mode.selectDifficulty,
+            GameUtilities.Mode.highScores,
+            GameUtilities.Mode.setTheme
+        ];
 
-        return new MenuOption('Endure', 'new-game', ['New Game', 'Set Name', 'Difficulty', 'High Scores', 'Settings'], General.fillArray(gameModes.length, i => () => callback({
+        return new MenuOption('Endure', 'new-game', ['New Game', 'Set Name', 'Difficulty', 'High Scores', 'Settings'], GeneralUtilities.fillArray(gameModes.length, i => () => callback({
             mode: gameModes[i]
         })), 0);
     }),
-    new Maybe((callback: (update: Game.IUpdate) => void, onNameChange: () => void): MenuOption => {
+    new Maybe((callback: (update: GameUtilities.IUpdate) => void, onNameChange: () => void): MenuOption => {
         return new MenuOption('Name?', 'player-name', ['Remember it!', 'Forget it.'], [onNameChange, () => callback({
-            mode: Game.Mode.newGame
+            mode: GameUtilities.Mode.newGame
         })], 0);
     }),
-    new Maybe((callback: (update: Game.IUpdate) => void): MenuOption => {
+    new Maybe((callback: (update: GameUtilities.IUpdate) => void): MenuOption => {
         return new MenuOption( 'Grade Level',
                                 'select-difficulty',
                                 ['[ Pre-K ] I made poop.',  '[ K - 5 ] No I don\'t wanna!', '[ 6 - 8 ] Remove the training wheels!', '[ 9 - 12 ] Test me sensei!', '[ 12+ ] I know kung fu.'],
-                                General.fillArray(General.getNumericEnumKeys(App.Difficulty).length, i => () => callback({
-                                    difficulty: i as App.Difficulty,
-                                    mode: Game.Mode.newGame
+                                GeneralUtilities.fillArray(GeneralUtilities.getNumericEnumKeys(AppUtilities.Difficulty).length, i => () => callback({
+                                    difficulty: i as AppUtilities.Difficulty,
+                                    mode: GameUtilities.Mode.newGame
                                 })));
     }),
     new Maybe(),
-    new Maybe((callback: (update: Game.IUpdate) => void): MenuOption => {
-        const gameModes: Game.Mode[] = [Game.Mode.inGame, Game.Mode.newGame];
+    new Maybe((callback: (update: GameUtilities.IUpdate) => void): MenuOption => {
+        const gameModes: GameUtilities.Mode[] = [GameUtilities.Mode.inGame, GameUtilities.Mode.newGame];
 
-        return new MenuOption('Game Over', 'game-over', ['Put me in coach!', 'I Quit.'], General.fillArray(gameModes.length, i => () => callback({
+        return new MenuOption('Game Over', 'game-over', ['Put me in coach!', 'I Quit.'], GeneralUtilities.fillArray(gameModes.length, i => () => callback({
             mode: gameModes[i]
         })), 0);
     }),
-    new Maybe((callback: (update: Game.IUpdate) => void): MenuOption => {
-        const gameModes: Game.Mode[] = [Game.Mode.paused, Game.Mode.newGame];
+    new Maybe((callback: (update: GameUtilities.IUpdate) => void): MenuOption => {
+        const gameModes: GameUtilities.Mode[] = [GameUtilities.Mode.paused, GameUtilities.Mode.newGame];
 
-        return new MenuOption('Timeout', 'paused', ['Put me in coach!', 'I Quit.'], General.fillArray(gameModes.length, i => () => callback({
+        return new MenuOption('Timeout', 'paused', ['Put me in coach!', 'I Quit.'], GeneralUtilities.fillArray(gameModes.length, i => () => callback({
             mode: gameModes[i]
         })), 0);
     }),
-    new Maybe((callback: (update: Game.IUpdate) => void): MenuOption => {
-        const gameModes: Game.Mode[] = [Game.Mode.newGame, Game.Mode.inGame];
+    new Maybe((callback: (update: GameUtilities.IUpdate) => void): MenuOption => {
+        const gameModes: GameUtilities.Mode[] = [GameUtilities.Mode.newGame, GameUtilities.Mode.inGame];
 
-        return new MenuOption('Quit?', 'quit-confirmation', ['Yep', 'Nope'], General.fillArray(gameModes.length, i => () => callback({
+        return new MenuOption('Quit?', 'quit-confirmation', ['Yep', 'Nope'], GeneralUtilities.fillArray(gameModes.length, i => () => callback({
             mode: gameModes[i]
         })), 1);
     }),
-    new Maybe((callback: (update: Game.IUpdate) => void): MenuOption => {
+    new Maybe((callback: (update: GameUtilities.IUpdate) => void): MenuOption => {
         return  new MenuOption('Honor Roll', 'high-scores', ['Leave'], [() => callback({
-            mode: Game.Mode.newGame
+            mode: GameUtilities.Mode.newGame
         })], 0);
     }),
-    new Maybe((callback: (update: Game.IUpdate) => void): MenuOption => {
-        return new MenuOption('Lights On?', 'theme', ['Yep', 'Nope'], General.fillArray(General.getNumericEnumKeys(App.Theme).length, i => () => callback({
-            mode: Game.Mode.newGame,
-            theme: i as App.Theme
+    new Maybe((callback: (update: GameUtilities.IUpdate) => void): MenuOption => {
+        return new MenuOption('Lights On?', 'theme', ['Yep', 'Nope'], GeneralUtilities.fillArray(GeneralUtilities.getNumericEnumKeys(AppUtilities.Theme).length, i => () => callback({
+            mode: GameUtilities.Mode.newGame,
+            theme: i as AppUtilities.Theme
         })));
     })
 ];
@@ -82,31 +88,31 @@ class Menu {
     public readonly menuOptions: Maybe<MenuOption>[];
 
     public getDefaultOptionIndex(props: IProps): number {
-        if (props.mode === Game.Mode.selectDifficulty) {
+        if (props.mode === GameUtilities.Mode.selectDifficulty) {
             return props.difficulty;
         }
 
-        if (props.mode === Game.Mode.setTheme) {
-            return props.theme === App.Theme.light ? 0 : 1;
+        if (props.mode === GameUtilities.Mode.setTheme) {
+            return props.theme === AppUtilities.Theme.light ? 0 : 1;
         }
 
         return this.menuOptions[props.mode].caseOf(mo => mo.defaultOptionsIndex.getOrDefault(defaultDefaultOptionsIndex), () => defaultDefaultOptionsIndex);
     }
 
-    public constructor(callback: (update: Game.IUpdate) => void, onNameChange: () => void) {
-        this.menuOptions = General.fillArray(menuOptionInitializers.length, i => {
+    public constructor(callback: (update: GameUtilities.IUpdate) => void, onNameChange: () => void) {
+        this.menuOptions = GeneralUtilities.fillArray(menuOptionInitializers.length, i => {
             return menuOptionInitializers[i].caseOf(moi => new Maybe(moi(callback, onNameChange)), () => new Maybe() as Maybe<MenuOption>);
         });
     }
 }
 
 interface IProps {
-    difficulty: App.Difficulty;
-    theme: App.Theme;
-    mode: Game.Mode;
-    highScores: Game.HighScore[];
+    difficulty: AppUtilities.Difficulty;
+    theme: AppUtilities.Theme;
+    mode: GameUtilities.Mode;
+    highScores: GameUtilities.HighScore[];
     playerName: string;
-    readonly onUpdate: (updates: Game.IUpdate) => void;
+    readonly onUpdate: (updates: GameUtilities.IUpdate) => void;
 }
 
 class State {

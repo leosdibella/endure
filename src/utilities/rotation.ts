@@ -1,7 +1,7 @@
-import * as General from './general';
-import * as Tile from './tile';
+import * as GeneralUtilities from './general';
+import * as TileUtilities from './tile';
 
-const tileRelations: General.IDictionary<number[]> = {
+const tileRelations: GeneralUtilities.IDictionary<number[]> = {
     bottom: [1, 0],
     bottomLeft: [1, -1],
     bottomRight: [1, 1],
@@ -88,16 +88,16 @@ const rightSideRotationMap: number[][] = [
     tileRelations.bottomLeft
 ];
 
-const maps: General.IDictionary<number[][]> = {
-    [Tile.Link.topRight]: topRightHandCornerRotationMap,
-    [Tile.Link.rightBottom]: bottomRightHandCornerRotationMap,
-    [Tile.Link.bottomLeft]: bottomLeftHandCornerRotationMap,
-    [Tile.Link.topLeft]: topLeftHandCornerRotationMap,
-    [Tile.Link.top]: topSideRotationMap,
-    [Tile.Link.right]: rightSideRotationMap,
-    [Tile.Link.bottom]: bottomSideRotationMap,
-    [Tile.Link.left]: leftSideRotationMap,
-    [Tile.Link.none]: centralRotationMap
+const maps: GeneralUtilities.IDictionary<number[][]> = {
+    [TileUtilities.Link.topRight]: topRightHandCornerRotationMap,
+    [TileUtilities.Link.rightBottom]: bottomRightHandCornerRotationMap,
+    [TileUtilities.Link.bottomLeft]: bottomLeftHandCornerRotationMap,
+    [TileUtilities.Link.topLeft]: topLeftHandCornerRotationMap,
+    [TileUtilities.Link.top]: topSideRotationMap,
+    [TileUtilities.Link.right]: rightSideRotationMap,
+    [TileUtilities.Link.bottom]: bottomSideRotationMap,
+    [TileUtilities.Link.left]: leftSideRotationMap,
+    [TileUtilities.Link.none]: centralRotationMap
 };
 
 export {

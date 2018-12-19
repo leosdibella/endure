@@ -1,5 +1,5 @@
-import * as Game from './game';
-import * as General from './general';
+import * as GameUtilities from './game';
+import * as GeneralUtilities from './general';
 import { Maybe } from './maybe';
 
 enum Link {
@@ -40,7 +40,7 @@ enum DetonationRange {
 }
 
 class Container {
-    private static readonly reverseLinkRelations: General.IDictionary<Link> = {
+    private static readonly reverseLinkRelations: GeneralUtilities.IDictionary<Link> = {
         [Link.top]: Link.bottom,
         [Link.bottom]: Link.top,
         [Link.right]: Link.left,
@@ -60,8 +60,8 @@ class Container {
     public static readonly selectedPadding: number = 7;
     public static readonly selectedPlacementModifier: number = Container.margin + Container.selectedPadding;
     public static readonly selectedDimensionModifier: number = 2 * (Container.margin + Container.selectedPadding);
-    public static readonly linkClasses: string[] = General.getNumericEnumKeys(Link).map(l => `tile-link-${General.formatCamelCaseString(Link[parseInt(l, 10)])}`);
-    public static readonly numberOfColors: number = General.getNumericEnumKeys(Color).length - 1;
+    public static readonly linkClasses: string[] = GeneralUtilities.getNumericEnumKeys(Link).map(l => `tile-link-${GeneralUtilities.formatCamelCaseString(Link[parseInt(l, 10)])}`);
+    public static readonly numberOfColors: number = GeneralUtilities.getNumericEnumKeys(Color).length - 1;
 
     public static getRandomColor(hasDetonationRange: boolean = false): number {
         return hasDetonationRange ? Color.transparent : (Math.floor(Math.random() * Container.numberOfColors) + 1);
@@ -127,7 +127,7 @@ interface IProps {
     color: Color;
     row: number;
     column: number;
-    mode: Game.Mode;
+    mode: GameUtilities.Mode;
     selectedRow: number;
     detonationRange: DetonationRange;
     selectedColumn: number;

@@ -1,5 +1,5 @@
-import * as App from './app';
-import * as General from './general';
+import * as AppUtilities from './app';
+import * as GeneralUtilities from './general';
 import { Maybe } from './maybe';
 import * as Persistence from './persistence';
 
@@ -17,11 +17,11 @@ enum Mode {
 
 class HighScore {
     public name: string;
-    public difficulty: App.Difficulty;
+    public difficulty: AppUtilities.Difficulty;
     public value: number;
     public dateStamp: string;
 
-    public constructor(name: string, value: number, dateStamp: string, difficulty: App.Difficulty) {
+    public constructor(name: string, value: number, dateStamp: string, difficulty: AppUtilities.Difficulty) {
         this.name = name;
         this.value = value;
         this.dateStamp = dateStamp;
@@ -32,8 +32,8 @@ class HighScore {
 interface IUpdate {
     points?: number;
     mode?: Mode;
-    difficulty?: App.Difficulty;
-    theme?: App.Theme;
+    difficulty?: AppUtilities.Difficulty;
+    theme?: AppUtilities.Theme;
     playerName?: string;
     dropCombo?: boolean;
     letterGrade?: number;
@@ -44,7 +44,7 @@ class State {
     private static readonly difficultyLocalStorageKey: string = 'ENDURE_DIFFICULTY';
     private static readonly playerNameLocalStorageKey: string = 'ENDURE_PLAYER_NAME';
     private static readonly defaultPlayerName: string = 'Anonymous';
-    private static readonly defaultDifficulty: App.Difficulty = App.Difficulty.medium;
+    private static readonly defaultDifficulty: AppUtilities.Difficulty = AppUtilities.Difficulty.medium;
     private static readonly numberOfHighScoresToPersist: number = 10;
 
     private static getStage(score: number): number {
@@ -57,12 +57,12 @@ class State {
 
         if (Array.isArray(highScores)) {
             highScores.forEach(hs => {
-                if (General.isObject(hs)
-                        && General.isString(hs.name)
-                        && General.isString(hs.dateStamp)
-                        && General.isInteger(hs.value)
-                        && General.isInteger(hs.difficulty)) {
-                    new Maybe(App.Difficulty[hs.difficulty]).justDo(() => {
+                if (GeneralUtilities.isObject(hs)
+                        && GeneralUtilities.isString(hs.name)
+                        && GeneralUtilities.isString(hs.dateStamp)
+                        && GeneralUtilities.isInteger(hs.value)
+                        && GeneralUtilities.isInteger(hs.difficulty)) {
+                    new Maybe(AppUtilities.Difficulty[hs.difficulty]).justDo(() => {
                         highScoreArray.push(new HighScore(hs.name, hs.dateStamp, hs.value, hs.difficulty));
                     });
                 }
@@ -82,7 +82,7 @@ class State {
 
     public static getPersistedState(): State {
         return new State(Mode.newGame,
-                         Persistence.fetchEnumValue(State.difficultyLocalStorageKey, App.Difficulty, State.defaultDifficulty),
+                         Persistence.fetchEnumValue(State.difficultyLocalStorageKey, AppUtilities.Difficulty, State.defaultDifficulty),
                          Persistence.fetchData(State.highScoresLocalStorageKey).caseOf(hs => State.getHighScores(hs), () => []),
                          Persistence.fetchData(State.playerNameLocalStorageKey).getOrDefault(State.defaultPlayerName));
     }
@@ -95,7 +95,7 @@ class State {
 
     public static getNextStateFromUpdate(update: IUpdate, state: State): State {
         const playerName: string = new Maybe(update.playerName).getOrDefault(state.playerName),
-        difficulty: App.Difficulty = new Maybe(update.difficulty).getOrDefault(state.difficulty);
+        difficulty: AppUtilities.Difficulty = new Maybe(update.difficulty).getOrDefault(state.difficulty);
 
         let stage: number = state.score,
             score: number = state.score,
@@ -110,12 +110,12 @@ class State {
             stage = State.getStage(score);
         });
 
-        if (letterGrade === App.LetterGrade.f) {
+        if (letterGrade === AppUtilities.LetterGrade.f) {
             mode = Mode.gameOver;
         }
 
         if (mode === Mode.gameOver) {
-            highScores = highScores.concat(new HighScore(state.playerName, score, General.getDateStamp(new Date()), difficulty))
+            highScores = highScores.concat(new HighScore(state.playerName, score, GeneralUtilities.getDateStamp(new Date()), difficulty))
                                    .sort((a, b) => b.value - a.value)
                                    .slice(0, State.numberOfHighScoresToPersist);
         } else if (State.isInProgress(state.mode) && State.isInProgress(mode) && state.mode !== mode) {
@@ -126,7 +126,7 @@ class State {
             score = 0;
             combo = 0;
             stage = 0;
-            letterGrade = App.LetterGrade.aPlus;
+            letterGrade = AppUtilities.LetterGrade.aPlus;
         }
 
         if (mode === Mode.newGame && state.mode === Mode.inGame) {
@@ -148,18 +148,18 @@ class State {
     public score: number;
     public stage: number;
     public letterGrade: number;
-    public difficulty: App.Difficulty;
+    public difficulty: AppUtilities.Difficulty;
     public highScores: HighScore[];
     public playerName: string;
 
     public constructor(mode: Mode,
-                       difficulty: App.Difficulty,
+                       difficulty: AppUtilities.Difficulty,
                        highScores: HighScore[],
                        playerName: string,
                        combo: number = 0,
                        score: number = 0,
                        stage: number = 0,
-                       letterGrade: App.LetterGrade = App.LetterGrade.aPlus) {
+                       letterGrade: AppUtilities.LetterGrade = AppUtilities.LetterGrade.aPlus) {
         this.mode = mode;
         this.difficulty = difficulty;
         this.playerName = State.isValidPlayerName(playerName) ? playerName : State.defaultPlayerName;
@@ -172,9 +172,9 @@ class State {
 }
 
 interface IProps {
-    theme: App.Theme;
-    orientation: App.Orientation;
-    readonly onUpdate: (updates: App.IUpdate) => void;
+    theme: AppUtilities.Theme;
+    orientation: AppUtilities.Orientation;
+    readonly onUpdate: (updates: AppUtilities.IUpdate) => void;
 }
 
 export {

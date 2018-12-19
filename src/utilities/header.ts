@@ -1,16 +1,16 @@
-import * as App from './app';
-import * as Game from './game';
+import * as AppUtilities from './app';
+import * as GameUtilities from './game';
 
 interface IProps {
-    mode: Game.Mode;
-    theme: App.Theme;
-    letterGrade: App.LetterGrade;
-    difficulty: App.Difficulty;
+    mode: GameUtilities.Mode;
+    theme: AppUtilities.Theme;
+    letterGrade: AppUtilities.LetterGrade;
+    difficulty: AppUtilities.Difficulty;
     combo: number;
     score: number;
     stage: number;
     playerName: string;
-    readonly onUpdate: (updates: Game.IUpdate) => void;
+    readonly onUpdate: (updates: GameUtilities.IUpdate) => void;
 }
 
 export {
