@@ -20,7 +20,7 @@ class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State
     private readonly onMoveDown: () => void = this.moveDown.bind(this);
 
     private readonly keyDownEventActionMap: GeneralUtilities.IDictionary<() => void> = {
-        ' ': this.rotateTile.bind(this),
+        ' ': this.handleUpdate.bind(this),
         'a': this.onMoveLeft,
         'arrowdown': this.onMoveDown,
         'arrowleft': this.onMoveLeft,
@@ -48,19 +48,26 @@ class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State
         // TODO ---- ABOVE
     }
 
-    private setTiles = (row: number = this.state.row, column: number = this.state.column): void => {
-        const reduction: GridUtilities.IReduction = GridUtilities.reduceTiles(this.state);
+    private setTiles = (): void => {
+        const reduction: GridUtilities.IReduction = GridUtilities.State.reduceTiles(this.state);
 
         this.setState({
-            column,
             processingInput: true,
-            row,
             tiles: reduction.tiles
         }, () => this.removeReducedTiles(reduction));
     }
 
-    private rotateTiles(): void {
-        const rotatedTiles: GeneralUtilities.IDictionary<TileUtilities.Container> = GridUtilities.rotateTiles(this.props, this.state);
+    private detonateTile(): void {
+        const tiles: TileUtilities.Container[] = GridUtilities.State.detonateTile(this.state);
+
+        // TODO: Add Detonation Animations
+        this.setState({
+            tiles
+        });
+    }
+
+    private rotateTile(): void {
+        const rotatedTiles: GeneralUtilities.IDictionary<TileUtilities.Container> = GridUtilities.State.rotateTiles(this.state);
 
         // TODO: Add Rotation Animations
         this.setState({
@@ -68,48 +75,44 @@ class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State
         }, this.setTiles);
     }
 
-    private detonateTile(): void {
-        const  todo: number = 0;
+    private takeAction() {
+        const tile: TileUtilities.Container = this.state.tiles[this.state.dimension.getTileIndexFromCoordinates(this.state.row, this.state.column)];
+
+        tile.detonationRange === TileUtilities.DetonationRange.none ? this.rotateTile() : this.detonateTile();
     }
 
-    private handleUpdate(row: number, column: number): void {
+    private handleUpdate(row?: number, column?: number): void {
         if (!this.state.processingInput) {
-            const tile: TileUtilities.Container = this.state.tiles[GridUtilities.getTileIndexFromCoordinates(GridUtilities.getGridDimension(this.props), row, column)];
-
             this.setState({
-                column,
+                column: new Maybe(column).getOrDefault(this.state.column),
                 processingInput: true,
-                row
-            }, () => tile.detonationRange === TileUtilities.DetonationRange.none ? this.rotateTiles() : this.detonateTile());
+                row: new Maybe(row).getOrDefault(this.state.row)
+            }, this.takeAction);
         }
     }
 
     private moveRight(): void {
         this.setState({
-            column: GridUtilities.movementFunctions[TileUtilities.Link.right](this.props, this.state)
+            column: GridUtilities.State.moves[TileUtilities.Link.right](this.state)
         });
     }
 
     private moveLeft(): void {
         this.setState({
-            column: GridUtilities.movementFunctions[TileUtilities.Link.left](this.props, this.state)
+            column: GridUtilities.State.moves[TileUtilities.Link.left](this.state)
         });
     }
 
     private moveUp(): void {
         this.setState({
-            row: GridUtilities.movementFunctions[TileUtilities.Link.top](this.props, this.state)
+            row: GridUtilities.State.moves[TileUtilities.Link.top](this.state)
         });
     }
 
     private moveDown(): void {
         this.setState({
-            row: GridUtilities.movementFunctions[TileUtilities.Link.bottom](this.props, this.state)
+            row: GridUtilities.State.moves[TileUtilities.Link.bottom](this.state)
         });
-    }
-
-    private rotateTile(): void {
-        this.handleUpdate(this.state.row, this.state.column);
     }
 
     private handleKeyDown(keyboardEvent: KeyboardEvent): void {
@@ -133,13 +136,18 @@ class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State
     }
 
     public componentDidUpdate(previousProps: GridUtilities.IProps): void {
-        if (!GameUtilities.isInProgress(previousProps.mode) && GameUtilities.isInProgress(this.props.mode)) {
-            const dimension: GridUtilities.IGridDimension = GridUtilities.getGridDimension(this.props);
+        let nextState: GridUtilities.State = this.state;
 
-            this.setState({
-                tiles: GridUtilities.generateTiles(dimension)
-            }, () => this.setTiles(dimension.initialRow, dimension.initialColumn));
+        if (!GameUtilities.isInProgress(previousProps.mode) && GameUtilities.isInProgress(this.props.mode)) {
+            nextState = new GridUtilities.State(this.props);
+            nextState.tiles = this.state.dimension.generateTiles();
         }
+
+        if (previousProps.orientation !== this.props.orientation && GameUtilities.isInProgress(this.props.mode)) {
+            nextState = GridUtilities.State.transpose(this.props, nextState);
+        }
+
+        this.setState(nextState, this.setTiles);
     }
 
     public render(): JSX.Element {
