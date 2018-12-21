@@ -73,7 +73,7 @@ class Animator {
 
     public constructor(private draw: (progress: number) => void, private duration: number, private timing: Timing, private onComplete: () => void) {
         this.duration = Math.abs(duration);
-        this.timing = new Maybe(Timing[timing]).caseOf(() => timing, () => Timing.linear);
+        this.timing = new Maybe(Timing[timing]).mapTo(timing, Timing.linear);
         this.id = new Maybe();
         this.pausedTime = new Maybe();
         this.startTime = new Maybe();

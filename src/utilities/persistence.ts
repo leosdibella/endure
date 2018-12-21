@@ -38,14 +38,38 @@ function fetchString(key: string): Maybe<string> {
 
 function fetchStorableEnumValue(key: string, collection: Shared.IEnum, defaultValue: StorableEnumValue): StorableEnumValue {
     return fetchData<StorableEnumValue>(key).caseOf(t => Shared.isInteger(t)
-                                                        ? new Maybe(collection[t as number]).caseOf(() => t, () => defaultValue)
+                                                        ? new Maybe(collection[t as number]).mapTo(t, defaultValue)
                                                         : defaultValue,
                                                     () => defaultValue);
 }
 
+function mapHHighScores(highScores: Shared.HighScore[]): Shared.HighScore[] {
+    const highScoreArray: Shared.HighScore[] = [];
+
+    if (Array.isArray(highScores)) {
+        highScores.forEach(hs => {
+            if (Shared.isObject(hs)
+                    && Shared.isString(hs.name)
+                    && Shared.isString(hs.dateStamp)
+                    && Shared.isInteger(hs.value)
+                    && Shared.isInteger(hs.difficulty)) {
+                new Maybe(Shared.Difficulty[hs.difficulty]).justDo(() => {
+                    highScoreArray.push(new Shared.HighScore(hs.name, hs.value, hs.dateStamp, hs.difficulty));
+                });
+            }
+        });
+    }
+
+    return highScoreArray;
+}
+
+function fetchHighScores(key: string): Shared.HighScore[] {
+    return fetchData<Storable>(key).caseOf(t => mapHHighScores(t as Shared.HighScore[]), () => []);
+}
+
 export {
     persistData,
-    fetchData,
     fetchString,
-    fetchStorableEnumValue
+    fetchStorableEnumValue,
+    fetchHighScores
 };

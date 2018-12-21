@@ -39,26 +39,6 @@ class State {
         return Math.floor(stage * stage);
     }
 
-    private static mapHHighScores(highScores: Shared.HighScore[]): Shared.HighScore[] {
-        const highScoreArray: Shared.HighScore[] = [];
-
-        if (Array.isArray(highScores)) {
-            highScores.forEach(hs => {
-                if (Shared.isObject(hs)
-                        && Shared.isString(hs.name)
-                        && Shared.isString(hs.dateStamp)
-                        && Shared.isInteger(hs.value)
-                        && Shared.isInteger(hs.difficulty)) {
-                    new Maybe(Shared.Difficulty[hs.difficulty]).justDo(() => {
-                        highScoreArray.push(new Shared.HighScore(hs.name, hs.value, hs.dateStamp, hs.difficulty));
-                    });
-                }
-            });
-        }
-
-        return highScoreArray;
-    }
-
     private static isValidPlayerName(playerName: string): boolean {
         return playerName.trim() !== '';
     }
@@ -70,7 +50,7 @@ class State {
     public static getPersistedState(): State {
         return new State(Mode.newGame,
                          Persistence.fetchStorableEnumValue(State.difficultyLocalStorageKey, Shared.Difficulty, State.defaultDifficulty) as Shared.Difficulty,
-                         Persistence.fetchData<Shared.HighScore[]>(State.highScoresLocalStorageKey).caseOf(hs => State.mapHHighScores(hs), () => []),
+                         Persistence.fetchHighScores(State.highScoresLocalStorageKey),
                          Persistence.fetchString(State.playerNameLocalStorageKey).getOrDefault(State.defaultPlayerName));
     }
 
@@ -89,7 +69,7 @@ class State {
             mode: Mode = new Maybe(update.mode).getOrDefault(state.mode),
             letterGrade: number = new Maybe(update.letterGrade).getOrDefault(state.letterGrade),
             highScores: Shared.HighScore[] = state.highScores,
-            combo: number = new Maybe(update.dropCombo).caseOf(p => 0, () => state.combo);
+            combo: number = new Maybe(update.dropCombo).mapTo(0, state.combo);
 
         new Maybe(update.points).justDo(p => {
             score += (p * Math.max(combo, 1));

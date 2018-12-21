@@ -15,6 +15,10 @@ class Maybe<T> {
         return Shared.isDefined(this.value) ? just(this.value as T) : nothing();
     }
 
+    public mapTo<U>(just: U, nothing: U): U {
+        return Shared.isDefined(this.value) ? just : nothing;
+    }
+
     public justDo(f: (t: T) => void): Maybe<boolean> {
         if (Shared.isDefined(this.value)) {
             f(this.value as T);
