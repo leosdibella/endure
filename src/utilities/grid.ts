@@ -1,18 +1,17 @@
-import * as AppUtilities from './app';
 import * as GameUtilities from './game';
-import * as GeneralUtilities from './general';
 import { Maybe } from './maybe';
 import * as Rotation from './rotation';
+import * as Shared from './shared';
 import * as TileUtilities from './tile';
 
-const minimumTileChainLength = 4;
+const minimumTileChainLength: number = 4;
+const dimensionMinor: number = 9;
+const dimensionMajor: number = 13;
+const midpointDenominator: number = 2;
+const intiailMinor: number = (dimensionMinor - 1) / midpointDenominator;
+const intialMajor: number = (dimensionMajor - 1) / midpointDenominator;
 
 class Dimension {
-    public readonly initialColumn: number;
-    public readonly initialRow: number;
-    public readonly numberOfColumns: number;
-    public readonly numberOfRows: number;
-
     public getTileIndexFromCoordinates(row: number, column: number): number {
         return row * this.numberOfColumns + column;
     }
@@ -24,24 +23,23 @@ class Dimension {
     }
 
     public generateTiles(): TileUtilities.Container[] {
-        return GeneralUtilities.fillArray(this.numberOfRows * this.numberOfColumns, index => {
+        return Shared.fillArray(this.numberOfRows * this.numberOfColumns, index => {
             const coordinates: number[] = this.getTileCoordinatesFromIndex(index);
 
             return new TileUtilities.Container(coordinates[0], coordinates[1], index, TileUtilities.Container.getRandomColor());
         });
     }
 
-    public constructor(initialRow: number, initialColumn: number, numberOfRows: number, numberOfColumns: number) {
-        this.initialRow = initialRow;
-        this.initialColumn = initialColumn;
-        this.numberOfRows = numberOfRows;
-        this.numberOfColumns = numberOfColumns;
+    public constructor(public readonly initialRow: number,
+                       public readonly initialColumn: number,
+                       public readonly numberOfRows: number,
+                       public readonly numberOfColumns: number) {
     }
 }
 
-const dimensions: GeneralUtilities.IDictionary<Dimension> = {
-    [AppUtilities.Orientation.landscape]: new Dimension(4, 6, 9, 13),
-    [AppUtilities.Orientation.portrait]: new Dimension(6, 4, 13, 9)
+const dimensions: Shared.IDictionary<Dimension> = {
+    [Shared.Orientation.landscape]: new Dimension(intiailMinor, intialMajor, dimensionMinor, dimensionMajor),
+    [Shared.Orientation.portrait]: new Dimension(intialMajor, intiailMinor, dimensionMajor, dimensionMinor)
 };
 
 interface IReduction {
@@ -50,10 +48,10 @@ interface IReduction {
 }
 
 interface IProps {
-    theme: AppUtilities.Theme;
-    orientation: AppUtilities.Orientation;
+    theme: Shared.Theme;
+    orientation: Shared.Orientation;
     mode: GameUtilities.Mode;
-    readonly onUpdate: (updates: GameUtilities.IUpdate) => void;
+    onUpdate(updates: GameUtilities.IUpdate): void;
 }
 
 class State {
@@ -63,11 +61,11 @@ class State {
 
     private static iterateThroughStack(state: State,
                                        stack: TileUtilities.Container[],
-                                       visited: GeneralUtilities.IDictionary<boolean>,
+                                       visited: Shared.IDictionary<boolean>,
                                        beforeExtending: (tile: TileUtilities.Container) => void,
                                        extend: (tile: TileUtilities.Container, neighbor: TileUtilities.Container, linkIndex: TileUtilities.Link) => boolean): void {
         let tile: TileUtilities.Container,
-            neighbors: GeneralUtilities.IDictionary<number>;
+            neighbors: Shared.IDictionary<number>;
 
         while (stack.length > 0) {
             tile = stack.pop() as TileUtilities.Container;
@@ -90,8 +88,8 @@ class State {
         }
     }
 
-    private static rotateTilesFromRotationMap(state: State, centerTile: TileUtilities.Container, rotationMap: number[][]): GeneralUtilities.IDictionary<TileUtilities.Container> {
-        const rotatedTiles: GeneralUtilities.IDictionary<TileUtilities.Container> = {};
+    private static rotateTilesFromRotationMap(state: State, centerTile: TileUtilities.Container, rotationMap: number[][]): Shared.IDictionary<TileUtilities.Container> {
+        const rotatedTiles: Shared.IDictionary<TileUtilities.Container> = {};
 
         let to: number[],
             from: number[],
@@ -109,8 +107,8 @@ class State {
         return rotatedTiles;
     }
 
-    private static reduceTile(state: State, visited: GeneralUtilities.IDictionary<boolean>, stack: TileUtilities.Container[]): GeneralUtilities.IDictionary<TileUtilities.Link> {
-        const group: GeneralUtilities.IDictionary<TileUtilities.Link> = {};
+    private static reduceTile(state: State, visited: Shared.IDictionary<boolean>, stack: TileUtilities.Container[]): Shared.IDictionary<TileUtilities.Link> {
+        const group: Shared.IDictionary<TileUtilities.Link> = {};
 
         State.iterateThroughStack(state,
                                   stack,
@@ -131,7 +129,7 @@ class State {
     }
 
     private static addDetonationRangeToStack(state: State, detonationCenter: TileUtilities.Container, stack: TileUtilities.Container[]): void {
-        GeneralUtilities.iterate(detonationCenter.detonationRange, i => {
+        Shared.iterate(detonationCenter.detonationRange, i => {
             let index: number = detonationCenter.row + i;
 
             if (index < state.dimension.numberOfRows) {
@@ -170,14 +168,14 @@ class State {
         return detonatedTiles.map(t => t.cloneWith(TileUtilities.Color.transparent, TileUtilities.DetonationRange.none)).sort((a, b) => a.index - b.index);
     }
 
-    public static readonly moves: GeneralUtilities.IDictionary<(state: State) => number> = {
+    public static readonly moves: Shared.IDictionary<(state: State) => number> = {
         [TileUtilities.Link.top]: (state) => state.row > 0 ? state.row - 1 : state.dimension.numberOfRows - 1,
         [TileUtilities.Link.bottom]: (state) => state.row < state.dimension.numberOfRows - 1 ? state.row + 1 : 0,
         [TileUtilities.Link.right]: (state) => state.column < state.dimension.numberOfColumns - 1 ? state.column + 1 : 0,
         [TileUtilities.Link.left]: (state) => state.column > 0 ? state.column - 1 : state.dimension.numberOfColumns - 1
     };
 
-    public static rotateTiles(state: State): GeneralUtilities.IDictionary<TileUtilities.Container> {
+    public static rotateTiles(state: State): Shared.IDictionary<TileUtilities.Container> {
         const centerTile: TileUtilities.Container = state.tiles[state.dimension.getTileIndexFromCoordinates(state.row, state.column)];
 
         let key: TileUtilities.Link = TileUtilities.Link.none;
@@ -191,18 +189,18 @@ class State {
     }
 
     public static reduceTiles(state: State): IReduction {
-        const visited: GeneralUtilities.IDictionary<boolean> = {},
+        const visited: Shared.IDictionary<boolean> = {},
               reduction: IReduction = {
-                    collapsingTiles: GeneralUtilities.fillArray(TileUtilities.Container.numberOfColors, () => 0),
+                    collapsingTiles: Shared.fillArray(TileUtilities.Container.numberOfColors, () => 0),
                     tiles: []
               };
 
         state.tiles.forEach(tile => {
-            const group: GeneralUtilities.IDictionary<TileUtilities.Link> = State.reduceTile(state, visited, [tile]),
+            const group: Shared.IDictionary<TileUtilities.Link> = State.reduceTile(state, visited, [tile]),
                   keys = Object.keys(group);
 
             keys.forEach(key => {
-                const index: number = parseInt(key, 10);
+                const index: number = parseInt(key, Shared.decimalBase);
 
                 reduction.tiles[index] = state.tiles[index].cloneWith(tile.color, tile.detonationRange, group[key]);
             });
@@ -216,14 +214,14 @@ class State {
     }
 
     public static cascadeTiles(state: State): TileUtilities.Container[][] {
-        const tileUpdates: TileUtilities.Container[][] = GeneralUtilities.fillArray(state.dimension.numberOfColumns, () => []);
+        const tileUpdates: TileUtilities.Container[][] = Shared.fillArray(state.dimension.numberOfColumns, () => []);
 
         let hasDetonationTile: boolean = state.tiles.filter(t => t.detonationRange !== TileUtilities.DetonationRange.none).length > 0,
             detonationRange: TileUtilities.DetonationRange,
             color: TileUtilities.Color;
 
-        GeneralUtilities.iterate(state.dimension.numberOfColumns, column => {
-            const reorderedTiles: TileUtilities.Container[] = GeneralUtilities.fillArray(state.dimension.numberOfRows, row => state.tiles[state.dimension.getTileIndexFromCoordinates(row, column)], true)
+        Shared.iterate(state.dimension.numberOfColumns, column => {
+            const reorderedTiles: TileUtilities.Container[] = Shared.fillArray(state.dimension.numberOfRows, row => state.tiles[state.dimension.getTileIndexFromCoordinates(row, column)], true)
                                                             .filter(t => t.color !== TileUtilities.Color.transparent)
                                                             .map((t, index) => state.tiles[state.dimension.getTileIndexFromCoordinates(index, column)].clone());
 
@@ -265,9 +263,9 @@ class State {
         return transposedState;
     }
 
-    private initializeGraph(): GeneralUtilities.IDictionary<number>[] {
-        return GeneralUtilities.fillArray(this.dimension.numberOfRows * this.dimension.numberOfColumns, index => {
-            const neighbors: GeneralUtilities.IDictionary<number> = {},
+    private initializeGraph(): Shared.IDictionary<number>[] {
+        return Shared.fillArray(this.dimension.numberOfRows * this.dimension.numberOfColumns, index => {
+            const neighbors: Shared.IDictionary<number> = {},
                   coordinates: number[] = this.dimension.getTileCoordinatesFromIndex(index);
 
             if (coordinates[0] > 0) {
@@ -291,7 +289,7 @@ class State {
     }
 
     public tiles: TileUtilities.Container[];
-    public graph: GeneralUtilities.IDictionary<number>[];
+    public graph: Shared.IDictionary<number>[];
     public dimension: Dimension;
     public column: number;
     public row: number;

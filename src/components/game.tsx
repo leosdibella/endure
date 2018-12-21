@@ -1,9 +1,8 @@
 import * as React from 'react';
 
-import * as AppUtilities from '../utilities/app';
 import * as GameUtilities from '../utilities/game';
-import * as GeneralUtilities from '../utilities/general';
 import { Maybe } from '../utilities/maybe';
+import * as Shared from '../utilities/shared';
 
 import '../styles/game.scss';
 
@@ -17,7 +16,7 @@ class Game extends React.PureComponent<GameUtilities.IProps, GameUtilities.State
     private readonly onThemeChange: () => void = this.toggleTheme.bind(this);
     private readonly onQuit: () => void = this.quit.bind(this);
 
-    private readonly keyDownEventActionMap: GeneralUtilities.IDictionary<() => void> = {
+    private readonly keyDownEventActionMap: Shared.IDictionary<() => void> = {
         p: this.togglePaused.bind(this),
         q: this.onQuit,
         v: this.onThemeChange
@@ -26,7 +25,7 @@ class Game extends React.PureComponent<GameUtilities.IProps, GameUtilities.State
     private toggleTheme(): void {
         if (this.state.mode !== GameUtilities.Mode.specifyName) {
             this.props.onUpdate({
-                theme: this.props.theme === AppUtilities.Theme.dark ? AppUtilities.Theme.light : AppUtilities.Theme.dark
+                theme: this.props.theme === Shared.Theme.dark ? Shared.Theme.light : Shared.Theme.dark
             });
         }
     }
@@ -78,15 +77,15 @@ class Game extends React.PureComponent<GameUtilities.IProps, GameUtilities.State
     public readonly state: GameUtilities.State = GameUtilities.State.getPersistedState();
 
     public componentDidMount(): void {
-        document.addEventListener(GeneralUtilities.DomEvent.keyDown, this.onKeyDown);
+        document.addEventListener(Shared.DomEvent.keyDown, this.onKeyDown);
     }
 
     public componentWillUnmount(): void {
-        document.removeEventListener(GeneralUtilities.DomEvent.keyDown, this.onKeyDown);
+        document.removeEventListener(Shared.DomEvent.keyDown, this.onKeyDown);
     }
 
     public render(): JSX.Element {
-        return <div className={`game ${AppUtilities.Theme[this.props.theme]}`}>
+        return <div className={`game ${Shared.Theme[this.props.theme]}`}>
             {this.getOverlay()}
             <Header theme={this.props.theme}
                     mode={this.state.mode}

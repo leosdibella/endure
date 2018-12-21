@@ -1,16 +1,15 @@
 import * as React from 'react';
 
-import * as AppUtilities from '../utilities/app';
 import * as GameUtilities from '../utilities/game';
-import * as GeneralUtilities from '../utilities/general';
 import * as GradeUtilities from '../utilities/grade';
+import * as Shared from '../utilities/shared';
 
 import '../styles/grade.scss';
 
 class Grade extends React.PureComponent<GradeUtilities.IProps, GradeUtilities.State> {
     private expandGradeFill(timeFraction: number): void {
         this.setState({
-            fillRadiusPercentage: `${((1 - timeFraction) * 100).toFixed(2)}%`
+            fillRadiusPercentage: `${((1 - timeFraction) * Shared.totalPercentage).toFixed(Shared.percentageDecimalPlaceCutoff)}%`
         });
     }
 
@@ -32,7 +31,7 @@ class Grade extends React.PureComponent<GradeUtilities.IProps, GradeUtilities.St
         } else if (this.props.mode === GameUtilities.Mode.inGame) {
             if (previousProps.mode === GameUtilities.Mode.paused) {
                 this.state.animator.togglePaused();
-            } else if (this.props.letterGrade !== previousProps.letterGrade && this.props.letterGrade !== AppUtilities.LetterGrade.f) {
+            } else if (this.props.letterGrade !== previousProps.letterGrade && this.props.letterGrade !== Shared.LetterGrade.f) {
                 this.state.animator.animate(this.getDuration());
             }
         } else {
@@ -41,12 +40,12 @@ class Grade extends React.PureComponent<GradeUtilities.IProps, GradeUtilities.St
     }
 
     public render(): JSX.Element {
-        const style: GeneralUtilities.ICssStyle = {
+        const style: Shared.ICssStyle = {
             height: this.state.fillRadiusPercentage,
             width: this.state.fillRadiusPercentage
         };
 
-        return <div className={`grade-container ${AppUtilities.Theme[this.props.theme]}`}>
+        return <div className={`grade-container ${Shared.Theme[this.props.theme]}`}>
                     <div className='grade-letter-grade'>
                         {GradeUtilities.State.letterGrades[this.props.letterGrade]}
                     </div>

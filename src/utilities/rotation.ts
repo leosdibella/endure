@@ -1,7 +1,7 @@
-import * as GeneralUtilities from './general';
+import * as Shared from './shared';
 import * as TileUtilities from './tile';
 
-const tileRelations: GeneralUtilities.IDictionary<number[]> = {
+const tileRelations: Shared.IDictionary<number[]> = {
     bottom: [1, 0],
     bottomLeft: [1, -1],
     bottomRight: [1, 1],
@@ -88,7 +88,7 @@ const rightSideRotationMap: number[][] = [
     tileRelations.bottomLeft
 ];
 
-const maps: GeneralUtilities.IDictionary<number[][]> = {
+const maps: Shared.IDictionary<number[][]> = {
     [TileUtilities.Link.topRight]: topRightHandCornerRotationMap,
     [TileUtilities.Link.rightBottom]: bottomRightHandCornerRotationMap,
     [TileUtilities.Link.bottomLeft]: bottomLeftHandCornerRotationMap,

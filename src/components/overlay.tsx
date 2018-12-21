@@ -1,18 +1,20 @@
 import * as React from 'react';
 
-import * as AppUtilities from '../utilities/app';
 import * as GameUtilities from '../utilities/game';
-import * as GeneralUtilities from '../utilities/general';
 import { Maybe } from '../utilities/maybe';
 import * as OverlayUtilities from '../utilities/overlay';
+import * as Shared from '../utilities/shared';
 
 import '../styles/overlay.scss';
 
 class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilities.State> {
+    private static readonly firstPositionKey: number = 1;
+    private static readonly secondPositionKey: number = 2;
+    private static readonly thirdPositionKey: number = 3;
     private readonly onKeyDown: (keyboardEvent: KeyboardEvent) => void = this.handleKeyDown.bind(this);
     private readonly onNameChange: (event: React.ChangeEvent<HTMLInputElement>) => void = this.handleNameChange.bind(this);
 
-    private readonly keyDownEventActionMap: GeneralUtilities.IDictionary<() => void> = {
+    private readonly keyDownEventActionMap: Shared.IDictionary<() => void> = {
         arrowdown: this.onArrowDown.bind(this),
         arrowup: this.onArrowUp.bind(this),
         enter: this.onEnter.bind(this)
@@ -49,10 +51,10 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
 
     private getOverlayTitle(): Maybe<JSX.Element> {
         return this.state.menu.menuOptions[this.props.mode].bind(mo => {
-            const overlayTile: JSX.Element = <div className={`overlay-tile ${AppUtilities.Theme[this.props.theme]}`}>
+            const overlayTile: JSX.Element = <div className={`overlay-tile ${Shared.Theme[this.props.theme]}`}>
                                              </div>;
 
-            return new Maybe(<div key={1}
+            return new Maybe(<div key={Overlay.firstPositionKey}
                                   className={`overlay-${mo.className}-text`}>
                                   {overlayTile}
                                   {mo.title}
@@ -74,7 +76,7 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
                                                                                             </div>
                                                                                             <div>
                                                                                                 <span>
-                                                                                                    {GeneralUtilities.formatCamelCaseString(AppUtilities.Difficulty[s.difficulty], ' ', true)}
+                                                                                                    {Shared.formatCamelCaseString(Shared.Difficulty[s.difficulty], ' ', true)}
                                                                                                 </span>
                                                                                                 <span>
                                                                                                     {s.value}
@@ -83,9 +85,9 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
                                                                                        </div>),
                globalHighScores: JSX.Element[] = [];
 
-        return <div key={2}
+        return <div key={Overlay.secondPositionKey}
                     className='overlay-high-scores-listings'>
-                    <div className={`overlay-high-scores-local overlay-high-scores-listing ${AppUtilities.Theme[this.props.theme]}`}>
+                    <div className={`overlay-high-scores-local overlay-high-scores-listing ${Shared.Theme[this.props.theme]}`}>
                         <div className='overlay-high-scores-listing-title'>
                             You
                         </div>
@@ -94,9 +96,9 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
                             Nothing yet ...
                         </div>
                     </div>
-                    <div className={`overlay-high-scores-listing-separator ${AppUtilities.Theme[this.props.theme]}`}>
+                    <div className={`overlay-high-scores-listing-separator ${Shared.Theme[this.props.theme]}`}>
                     </div>
-                    <div className={`overlay-high-scores-global overlay-high-scores-listing ${AppUtilities.Theme[this.props.theme]}`}>
+                    <div className={`overlay-high-scores-global overlay-high-scores-listing ${Shared.Theme[this.props.theme]}`}>
                         <div className='overlay-high-scores-listing-title'>
                             The Entire Class
                         </div>
@@ -112,10 +114,10 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
         if (this.props.mode === GameUtilities.Mode.highScores) {
             return new Maybe(this.getHighScoresOverlayExtras());
         } else if (this.props.mode === GameUtilities.Mode.specifyName) {
-            return new Maybe(<div key={2}
+            return new Maybe(<div key={Overlay.secondPositionKey}
                                   className='overlay-player-name-input-container'>
                                   <input value={this.state.playerName}
-                                         className={AppUtilities.Theme[this.props.theme]}
+                                         className={Shared.Theme[this.props.theme]}
                                          onChange={this.onNameChange}/>
                              </div>);
         }
@@ -125,7 +127,7 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
 
     private getOverlayButtonPanel(): Maybe<JSX.Element> {
         return this.state.menu.menuOptions[this.props.mode].bind(mo => {
-            const buttons: JSX.Element[] = GeneralUtilities.fillArray(mo.options.length, i => {
+            const buttons: JSX.Element[] = Shared.fillArray(mo.options.length, i => {
                 return <button key={i}
                                className={`overlay-button ${this.state.selectedOptionIndex === i ? 'overlay-selected-option' : ''}`}
                                onClick={mo.actions[i]}>
@@ -133,7 +135,7 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
                        </button>;
             });
 
-            return new Maybe(<div key={3}
+            return new Maybe(<div key={Overlay.thirdPositionKey}
                                   className='overlay-button-panel'>
                                  {buttons}
                              </div>);
@@ -175,15 +177,15 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
     }
 
     public componentDidMount(): void {
-        document.addEventListener(GeneralUtilities.DomEvent.keyDown, this.onKeyDown);
+        document.addEventListener(Shared.DomEvent.keyDown, this.onKeyDown);
     }
 
     public componentWillUnmount(): void {
-        document.removeEventListener(GeneralUtilities.DomEvent.keyDown, this.onKeyDown);
+        document.removeEventListener(Shared.DomEvent.keyDown, this.onKeyDown);
     }
 
     public render(): JSX.Element {
-        return <div className={`overlay-container ${AppUtilities.Theme[this.props.theme]}`}>
+        return <div className={`overlay-container ${Shared.Theme[this.props.theme]}`}>
                    <div className='overlay'>
                         {this.getOverlayBody()}
                    </div>

@@ -1,58 +1,21 @@
 import { Maybe } from './maybe';
 import * as Persistence from './persistence';
-
-enum Theme {
-    dark = 0,
-    light
-}
-
-enum Orientation {
-    portrait = 0,
-    landscape
-}
-
-enum Difficulty {
-    beginner = 0,
-    low,
-    medium,
-    hard,
-    expert
-}
-
-enum LetterGrade {
-    aPlus = 0,
-    a,
-    aMinus,
-    bPlus,
-    b,
-    bMinus,
-    cPlus,
-    c,
-    cMinus,
-    dPlus,
-    d,
-    dMinus,
-    f
-}
+import * as Shared from './shared';
 
 interface IUpdate {
-    theme?: Theme;
+    theme?: Shared.Theme;
 }
 
 class State {
     private static readonly themeLocalStorageKey: string = 'ENDURE_THEME';
-    private static readonly defaultTheme: Theme = Theme.light;
+    private static readonly defaultTheme: Shared.Theme = Shared.Theme.light;
 
-    public static getOrientation(): Orientation {
-        if (window.innerWidth / window.innerHeight > 1) {
-            return Orientation.landscape;
-        }
-
-        return Orientation.portrait;
+    public static getOrientation(): Shared.Orientation {
+        return window.innerWidth / window.innerHeight > 1 ? Shared.Orientation.landscape : Shared.Orientation.portrait;
     }
 
     public static getPersistedState(): State {
-        return new State(Persistence.fetchEnumValue(State.themeLocalStorageKey, Theme, State.defaultTheme), State.getOrientation());
+        return new State(Persistence.fetchStorableEnumValue(State.themeLocalStorageKey, Shared.Theme, State.defaultTheme) as Shared.Theme, State.getOrientation());
     }
 
     public static removeElementFocus(): void {
@@ -67,20 +30,11 @@ class State {
         Persistence.persistData(State.themeLocalStorageKey, state.theme);
     }
 
-    public theme: Theme;
-    public orientation: Orientation;
-
-    public constructor(theme: Theme, orientation: Orientation) {
-        this.theme = theme;
-        this.orientation = orientation;
+    public constructor(public theme: Shared.Theme, public orientation: Shared.Orientation) {
     }
 }
 
 export {
-    Theme,
-    Orientation,
-    Difficulty,
-    LetterGrade,
     IUpdate,
     State
 };

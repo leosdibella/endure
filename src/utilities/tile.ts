@@ -1,6 +1,6 @@
 import * as GameUtilities from './game';
-import * as GeneralUtilities from './general';
 import { Maybe } from './maybe';
+import * as Shared from './shared';
 
 enum Link {
     none = 0,
@@ -40,7 +40,13 @@ enum DetonationRange {
 }
 
 class Container {
-    private static readonly reverseLinkRelations: GeneralUtilities.IDictionary<Link> = {
+    private static readonly detonationRangeThreshold: number = 100;
+    private static readonly largeDetonantionRangeThreshold: number = 99;
+    private static readonly mediumDetonationRangeThreshold: number = 95;
+    private static readonly smallDetonationRangeThreshold: number = 90;
+    private static readonly selectedDimensionMultiplier: number = 2;
+
+    private static readonly reverseLinkRelations: Shared.IDictionary<Link> = {
         [Link.top]: Link.bottom,
         [Link.bottom]: Link.top,
         [Link.right]: Link.left,
@@ -59,9 +65,9 @@ class Container {
     public static readonly dimensionWithMargin: number = Container.dimension + Container.margin;
     public static readonly selectedPadding: number = 7;
     public static readonly selectedPlacementModifier: number = Container.margin + Container.selectedPadding;
-    public static readonly selectedDimensionModifier: number = 2 * (Container.margin + Container.selectedPadding);
-    public static readonly linkClasses: string[] = GeneralUtilities.getNumericEnumKeys(Link).map(l => `tile-link-${GeneralUtilities.formatCamelCaseString(Link[parseInt(l, 10)])}`);
-    public static readonly numberOfColors: number = GeneralUtilities.getNumericEnumKeys(Color).length - 1;
+    public static readonly selectedDimensionModifier: number = Container.selectedPlacementModifier * Container.selectedDimensionMultiplier;
+    public static readonly linkClasses: string[] = Shared.getNumericEnumKeys(Link).map(l => `tile-link-${Shared.formatCamelCaseString(Link[parseInt(l, Shared.decimalBase)])}`);
+    public static readonly numberOfColors: number = Shared.getNumericEnumKeys(Color).length - 1;
 
     public static getRandomColor(hasDetonationRange: boolean = false): number {
         return hasDetonationRange ? Color.transparent : (Math.floor(Math.random() * Container.numberOfColors) + 1);
@@ -76,29 +82,22 @@ class Container {
             return DetonationRange.none;
         }
 
-        const randomNumber: number = Math.floor(Math.random() * 100);
+        const randomNumber: number = Math.floor(Math.random() * Container.detonationRangeThreshold);
 
-        if (randomNumber === 99) {
+        if (randomNumber === Container.largeDetonantionRangeThreshold) {
             return DetonationRange.large;
         }
 
-        if (randomNumber > 95) {
+        if (randomNumber > Container.mediumDetonationRangeThreshold) {
             return DetonationRange.medium;
         }
 
-        if (randomNumber > 90) {
+        if (randomNumber > Container.smallDetonationRangeThreshold) {
             return DetonationRange.small;
         }
 
         return DetonationRange.none;
     }
-
-    public readonly row: number;
-    public readonly column: number;
-    public readonly index: number;
-    public readonly color: Color;
-    public readonly link: Link;
-    public readonly detonationRange: DetonationRange;
 
     public cloneWith(color: Color, detonationRange: DetonationRange, link?: Link,): Container {
         return new Container(this.row, this.column, this.index, color, detonationRange, new Maybe(link).getOrDefault(Link.none));
@@ -108,18 +107,12 @@ class Container {
         return new Container(this.row, this.column, this.index, this.color, this.detonationRange, this.link);
     }
 
-    public constructor(row: number,
-                       column: number,
-                       index: number,
-                       color: Color,
-                       detonationRange: DetonationRange = DetonationRange.none,
-                       link: Link = Link.none) {
-        this.row = row;
-        this.column = column;
-        this.color = color;
-        this.detonationRange = detonationRange;
-        this.link = link;
-        this.index = index;
+    public constructor(public readonly row: number,
+                       public readonly column: number,
+                       public readonly index: number,
+                       public readonly color: Color,
+                       public readonly detonationRange: DetonationRange = DetonationRange.none,
+                       public readonly link: Link = Link.none) {
     }
 }
 
@@ -132,7 +125,7 @@ interface IProps {
     detonationRange: DetonationRange;
     selectedColumn: number;
     link: Link;
-    onUpdate: (row: number, column: number) => void;
+    onUpdate(row: number, column: number): void;
 }
 
 export {

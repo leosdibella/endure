@@ -1,10 +1,9 @@
 import * as React from 'react';
 
-import * as AppUtilities from '../utilities/app';
 import * as GameUtilities from '../utilities/game';
-import * as GeneralUtilities from '../utilities/general';
 import * as GridUtilities from '../utilities/grid';
 import { Maybe } from '../utilities/maybe';
+import * as Shared from '../utilities/shared';
 import * as TileUtilities from '../utilities/tile';
 
 import '../styles/grid.scss';
@@ -19,16 +18,16 @@ class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State
     private readonly onMoveUp: () => void = this.moveUp.bind(this);
     private readonly onMoveDown: () => void = this.moveDown.bind(this);
 
-    private readonly keyDownEventActionMap: GeneralUtilities.IDictionary<() => void> = {
+    private readonly keyDownEventActionMap: Shared.IDictionary<() => void> = {
         ' ': this.handleUpdate.bind(this),
-        'a': this.onMoveLeft,
-        'arrowdown': this.onMoveDown,
-        'arrowleft': this.onMoveLeft,
-        'arrowright': this.onMoveRight,
-        'arrowup': this.onMoveUp,
-        'd': this.onMoveRight,
-        's': this.onMoveDown,
-        'w': this.onMoveUp
+        a: this.onMoveLeft,
+        arrowdown: this.onMoveDown,
+        arrowleft: this.onMoveLeft,
+        arrowright: this.onMoveRight,
+        arrowup: this.onMoveUp,
+        d: this.onMoveRight,
+        s: this.onMoveDown,
+        w: this.onMoveUp
     };
 
     private removeReducedTiles(reduction: GridUtilities.IReduction): void {
@@ -67,7 +66,7 @@ class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State
     }
 
     private rotateTile(): void {
-        const rotatedTiles: GeneralUtilities.IDictionary<TileUtilities.Container> = GridUtilities.State.rotateTiles(this.state);
+        const rotatedTiles: Shared.IDictionary<TileUtilities.Container> = GridUtilities.State.rotateTiles(this.state);
 
         // TODO: Add Rotation Animations
         this.setState({
@@ -124,7 +123,7 @@ class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State
     public readonly state: GridUtilities.State = new GridUtilities.State(this.props);
 
     public componentDidMount(): void {
-        document.addEventListener(GeneralUtilities.DomEvent.keyDown, this.onKeyDown);
+        document.addEventListener(Shared.DomEvent.keyDown, this.onKeyDown);
 
         this.setState({
             processingInput: false
@@ -132,7 +131,7 @@ class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State
     }
 
     public componentWillUnmount(): void {
-        document.removeEventListener(GeneralUtilities.DomEvent.keyDown, this.onKeyDown);
+        document.removeEventListener(Shared.DomEvent.keyDown, this.onKeyDown);
     }
 
     public componentDidUpdate(previousProps: GridUtilities.IProps): void {
@@ -166,7 +165,7 @@ class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State
                                                                         link={tile.link}
                                                                         onUpdate={this.onUpdate}/>);
 
-        return <div className={`grid ${GameUtilities.State.isInProgress(this.props.mode) ? '' : 'hide '} ${AppUtilities.Theme[this.props.theme]}`}>
+        return <div className={`grid ${GameUtilities.State.isInProgress(this.props.mode) ? '' : 'hide '} ${Shared.Theme[this.props.theme]}`}>
                     {tiles}
                </div>;
     }

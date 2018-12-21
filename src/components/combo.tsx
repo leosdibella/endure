@@ -1,9 +1,8 @@
 import * as React from 'react';
 
-import * as AppUtilities from '../utilities/app';
 import * as ComboUtilities from '../utilities/combo';
 import * as GameUtilities from '../utilities/game';
-import * as GeneralUtilities from '../utilities/general';
+import * as Shared from '../utilities/Shared';
 
 import '../styles/combo.scss';
 
@@ -11,7 +10,7 @@ class Combo extends React.PureComponent<ComboUtilities.IProps, ComboUtilities.St
     private adjustOverlay(timeFraction: number): void {
         this.setState({
             overlayClass: ComboUtilities.State.getClassFromTimeFraction(timeFraction),
-            overlayWidthPercentage: ((1 - timeFraction) * 100)
+            overlayWidthPercentage: ((1 - timeFraction) * Shared.totalPercentage)
         });
     }
 
@@ -33,6 +32,7 @@ class Combo extends React.PureComponent<ComboUtilities.IProps, ComboUtilities.St
     public readonly state: ComboUtilities.State = new ComboUtilities.State(this.adjustOverlay.bind(this), this.getDuration(), this.onAnimationComplete.bind(this));
 
     public componentDidUpdate(previousProps: ComboUtilities.IProps): void {
+        // TODO: Fix THIS
         if (this.props.mode === GameUtilities.Mode.paused) {
             this.state.animator.togglePaused();
         } else if (this.props.mode === GameUtilities.Mode.inGame) {
@@ -47,11 +47,11 @@ class Combo extends React.PureComponent<ComboUtilities.IProps, ComboUtilities.St
     }
 
     public render(): JSX.Element {
-        const style: GeneralUtilities.ICssStyle = {
-            width: `${ this.state.overlayWidthPercentage.toFixed(2)}%`
+        const style: Shared.ICssStyle = {
+            width: `${ this.state.overlayWidthPercentage.toFixed(Shared.percentageDecimalPlaceCutoff)}%`
         };
 
-        return <span className={`header-combo-container ${AppUtilities.Theme[this.props.theme]} ${this.props.combo < ComboUtilities.State.minimumViableCombo ? ' hide' : ''}`}>
+        return <span className={`header-combo-container ${Shared.Theme[this.props.theme]} ${this.props.combo < ComboUtilities.State.minimumViableCombo ? ' hide' : ''}`}>
                     <div className='header-combo combo-bar-base'>
                         Combo: x{this.props.combo}
                     </div>

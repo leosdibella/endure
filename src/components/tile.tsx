@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import * as GameUtilities from '../utilities/game';
-import * as GeneralUtilities from '../utilities/general';
+import * as Shared from '../utilities/shared';
 import * as TileUtilities from '../utilities/tile';
 
 import '../styles/tile.scss';
@@ -19,7 +19,7 @@ class Tile extends React.PureComponent<TileUtilities.IProps, object> {
         return className;
     }
 
-    private getStyle(additionalClass: string): GeneralUtilities.ICssStyle {
+    private getStyle(additionalClass: string): Shared.ICssStyle {
         const placementModifier: number = additionalClass && this.props.mode === GameUtilities.Mode.inGame ? -TileUtilities.Container.selectedPlacementModifier : 0,
               dimension: string = `${TileUtilities.Container.dimension + (additionalClass && this.props.mode === GameUtilities.Mode.inGame ? TileUtilities.Container.selectedDimensionModifier : 0)}px`;
 
@@ -32,9 +32,10 @@ class Tile extends React.PureComponent<TileUtilities.IProps, object> {
     }
 
     private getAdditionalClass(): string {
-        const additionalClass: string = '';
+        // TODO: FIX THIS
+        const additionalClass: string = this.props.column.toString();
 
-        return additionalClass;
+        return '';
     }
 
     private handleClick(): void {

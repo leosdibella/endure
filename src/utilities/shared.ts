@@ -1,3 +1,51 @@
+function formatDatePart(datePart: number): string {
+    const prefix: string = datePart > decimalBase ? '' : '0';
+
+    return `${prefix}${datePart}`;
+}
+
+enum Difficulty {
+    beginner = 0,
+    low,
+    medium,
+    hard,
+    expert
+}
+
+enum Theme {
+    dark = 0,
+    light
+}
+
+enum Orientation {
+    portrait = 0,
+    landscape
+}
+
+enum LetterGrade {
+    aPlus = 0,
+    a,
+    aMinus,
+    bPlus,
+    b,
+    bMinus,
+    cPlus,
+    c,
+    cMinus,
+    dPlus,
+    d,
+    dMinus,
+    f
+}
+
+class HighScore {
+    public constructor(public readonly name: string,
+                       public readonly value: number,
+                       public readonly dateStamp: string,
+                       public readonly difficulty: Difficulty) {
+    }
+}
+
 enum DomEvent {
     resize = 'resize',
     orientationChange = 'orientationchange',
@@ -5,13 +53,16 @@ enum DomEvent {
     click = 'click'
 }
 
-function formatDatePart(datePart: number): string {
-    const prefix: string = datePart > 10 ? '' : '0';
-    return `${prefix}${datePart}`;
-}
+const totalPercentage: number = 100;
+const percentageDecimalPlaceCutoff: number = 2;
+const decimalBase: number = 10;
 
 interface IDictionary<T> {
     [id: string]: T;
+}
+
+interface IEnum {
+    [id: number]: string;
 }
 
 interface ICssStyle {
@@ -24,23 +75,23 @@ interface ICssStyle {
     backgroundColor?: string;
 }
 
-function isDefined(value: any): boolean {
+function isDefined<T>(value: T): boolean {
     return value !== undefined;
 }
 
-function isNotNull(value: any): boolean {
+function isNotNull<T>(value: T): boolean {
     return value !== null;
 }
 
-function isObject(value: any): boolean {
+function isObject<T>(value: T): boolean {
     return typeof(value) === 'object' && isNotNull(value) && !Array.isArray(value);
 }
 
-function isString(value: any): boolean {
+function isString<T>(value: T): boolean {
     return typeof(value) === 'string';
 }
 
-function isInteger(value: any): boolean {
+function isInteger<T>(value: T): boolean {
     return typeof(value) === 'number' && isFinite(value) && Math.floor(value) === value;
 }
 
@@ -81,13 +132,22 @@ function fillArray<T>(length: number, f: (index: number) => T, backwards?: boole
 }
 
 // Note the reverse lookup generates properties for "0", "1" etc at runtime which while helpful also breaks the purity of the enum.
-function getNumericEnumKeys(collection: any): string[] {
-    return isObject(collection) ? Object.keys(collection).filter(k => isInteger(parseInt(k, 10))) : [];
+function getNumericEnumKeys(collection: IEnum): string[] {
+    return isObject(collection) ? Object.keys(collection).filter(k => isInteger(parseInt(k, decimalBase))) : [];
 }
 
 export {
+    Difficulty,
+    Theme,
+    Orientation,
+    LetterGrade,
+    HighScore,
     DomEvent,
+    totalPercentage,
+    percentageDecimalPlaceCutoff,
+    decimalBase,
     IDictionary,
+    IEnum,
     ICssStyle,
     isDefined,
     isNotNull,

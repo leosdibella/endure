@@ -1,7 +1,7 @@
 import * as AppUtilities from './app';
-import * as GeneralUtilities from './general';
 import { Maybe } from './maybe';
 import * as Persistence from './persistence';
+import * as Shared from './shared';
 
 enum Mode {
     newGame = 0,
@@ -15,25 +15,11 @@ enum Mode {
     setTheme
 }
 
-class HighScore {
-    public name: string;
-    public difficulty: AppUtilities.Difficulty;
-    public value: number;
-    public dateStamp: string;
-
-    public constructor(name: string, value: number, dateStamp: string, difficulty: AppUtilities.Difficulty) {
-        this.name = name;
-        this.value = value;
-        this.dateStamp = dateStamp;
-        this.difficulty = difficulty;
-    }
-}
-
 interface IUpdate {
     points?: number;
     mode?: Mode;
-    difficulty?: AppUtilities.Difficulty;
-    theme?: AppUtilities.Theme;
+    difficulty?: Shared.Difficulty;
+    theme?: Shared.Theme;
     playerName?: string;
     dropCombo?: boolean;
     letterGrade?: number;
@@ -44,26 +30,27 @@ class State {
     private static readonly difficultyLocalStorageKey: string = 'ENDURE_DIFFICULTY';
     private static readonly playerNameLocalStorageKey: string = 'ENDURE_PLAYER_NAME';
     private static readonly defaultPlayerName: string = 'Anonymous';
-    private static readonly defaultDifficulty: AppUtilities.Difficulty = AppUtilities.Difficulty.medium;
+    private static readonly defaultDifficulty: Shared.Difficulty = Shared.Difficulty.medium;
     private static readonly numberOfHighScoresToPersist: number = 10;
 
     private static getStage(score: number): number {
         const stage: number = Math.log(score);
+
         return Math.floor(stage * stage);
     }
 
-    private static getHighScores(highScores: any): HighScore[] {
-        const highScoreArray: HighScore[] = [];
+    private static mapHHighScores(highScores: Shared.HighScore[]): Shared.HighScore[] {
+        const highScoreArray: Shared.HighScore[] = [];
 
         if (Array.isArray(highScores)) {
             highScores.forEach(hs => {
-                if (GeneralUtilities.isObject(hs)
-                        && GeneralUtilities.isString(hs.name)
-                        && GeneralUtilities.isString(hs.dateStamp)
-                        && GeneralUtilities.isInteger(hs.value)
-                        && GeneralUtilities.isInteger(hs.difficulty)) {
-                    new Maybe(AppUtilities.Difficulty[hs.difficulty]).justDo(() => {
-                        highScoreArray.push(new HighScore(hs.name, hs.dateStamp, hs.value, hs.difficulty));
+                if (Shared.isObject(hs)
+                        && Shared.isString(hs.name)
+                        && Shared.isString(hs.dateStamp)
+                        && Shared.isInteger(hs.value)
+                        && Shared.isInteger(hs.difficulty)) {
+                    new Maybe(Shared.Difficulty[hs.difficulty]).justDo(() => {
+                        highScoreArray.push(new Shared.HighScore(hs.name, hs.value, hs.dateStamp, hs.difficulty));
                     });
                 }
             });
@@ -82,9 +69,9 @@ class State {
 
     public static getPersistedState(): State {
         return new State(Mode.newGame,
-                         Persistence.fetchEnumValue(State.difficultyLocalStorageKey, AppUtilities.Difficulty, State.defaultDifficulty),
-                         Persistence.fetchData(State.highScoresLocalStorageKey).caseOf(hs => State.getHighScores(hs), () => []),
-                         Persistence.fetchData(State.playerNameLocalStorageKey).getOrDefault(State.defaultPlayerName));
+                         Persistence.fetchStorableEnumValue(State.difficultyLocalStorageKey, Shared.Difficulty, State.defaultDifficulty) as Shared.Difficulty,
+                         Persistence.fetchData<Shared.HighScore[]>(State.highScoresLocalStorageKey).caseOf(hs => State.mapHHighScores(hs), () => []),
+                         Persistence.fetchString(State.playerNameLocalStorageKey).getOrDefault(State.defaultPlayerName));
     }
 
     public static persistState(state: State): void {
@@ -95,13 +82,13 @@ class State {
 
     public static getNextStateFromUpdate(update: IUpdate, state: State): State {
         const playerName: string = new Maybe(update.playerName).getOrDefault(state.playerName),
-        difficulty: AppUtilities.Difficulty = new Maybe(update.difficulty).getOrDefault(state.difficulty);
+        difficulty: Shared.Difficulty = new Maybe(update.difficulty).getOrDefault(state.difficulty);
 
         let stage: number = state.score,
             score: number = state.score,
             mode: Mode = new Maybe(update.mode).getOrDefault(state.mode),
             letterGrade: number = new Maybe(update.letterGrade).getOrDefault(state.letterGrade),
-            highScores: HighScore[] = state.highScores,
+            highScores: Shared.HighScore[] = state.highScores,
             combo: number = new Maybe(update.dropCombo).caseOf(p => 0, () => state.combo);
 
         new Maybe(update.points).justDo(p => {
@@ -110,12 +97,12 @@ class State {
             stage = State.getStage(score);
         });
 
-        if (letterGrade === AppUtilities.LetterGrade.f) {
+        if (letterGrade === Shared.LetterGrade.f) {
             mode = Mode.gameOver;
         }
 
         if (mode === Mode.gameOver) {
-            highScores = highScores.concat(new HighScore(state.playerName, score, GeneralUtilities.getDateStamp(new Date()), difficulty))
+            highScores = highScores.concat(new Shared.HighScore(state.playerName, score, Shared.getDateStamp(new Date()), difficulty))
                                    .sort((a, b) => b.value - a.value)
                                    .slice(0, State.numberOfHighScoresToPersist);
         } else if (State.isInProgress(state.mode) && State.isInProgress(mode) && state.mode !== mode) {
@@ -126,7 +113,7 @@ class State {
             score = 0;
             combo = 0;
             stage = 0;
-            letterGrade = AppUtilities.LetterGrade.aPlus;
+            letterGrade = Shared.LetterGrade.aPlus;
         }
 
         if (mode === Mode.newGame && state.mode === Mode.inGame) {
@@ -143,43 +130,26 @@ class State {
                          letterGrade);
     }
 
-    public mode: Mode;
-    public combo: number;
-    public score: number;
-    public stage: number;
-    public letterGrade: number;
-    public difficulty: AppUtilities.Difficulty;
-    public highScores: HighScore[];
-    public playerName: string;
-
-    public constructor(mode: Mode,
-                       difficulty: AppUtilities.Difficulty,
-                       highScores: HighScore[],
-                       playerName: string,
-                       combo: number = 0,
-                       score: number = 0,
-                       stage: number = 0,
-                       letterGrade: AppUtilities.LetterGrade = AppUtilities.LetterGrade.aPlus) {
-        this.mode = mode;
-        this.difficulty = difficulty;
+    public constructor(public mode: Mode,
+                       public difficulty: Shared.Difficulty,
+                       public highScores: Shared.HighScore[],
+                       public playerName: string,
+                       public combo: number = 0,
+                       public score: number = 0,
+                       public stage: number = 0,
+                       public letterGrade: Shared.LetterGrade = Shared.LetterGrade.aPlus) {
         this.playerName = State.isValidPlayerName(playerName) ? playerName : State.defaultPlayerName;
-        this.combo = combo;
-        this.score = score;
-        this.stage = stage;
-        this.letterGrade = letterGrade;
-        this.highScores = highScores;
     }
 }
 
 interface IProps {
-    theme: AppUtilities.Theme;
-    orientation: AppUtilities.Orientation;
-    readonly onUpdate: (updates: AppUtilities.IUpdate) => void;
+    theme: Shared.Theme;
+    orientation: Shared.Orientation;
+    onUpdate(updates: AppUtilities.IUpdate): void;
 }
 
 export {
     Mode,
-    HighScore,
     IUpdate,
     State,
     IProps

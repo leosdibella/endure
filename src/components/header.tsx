@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import * as AppUtilities from '../utilities/app';
 import * as GameUtilities from '../utilities/game';
 import * as HeaderUtilities from '../utilities/header';
+import * as Shared from '../utilities/shared';
 
 import '../styles/header.scss';
 
@@ -11,7 +11,7 @@ import { Grade } from './grade';
 
 class Header extends React.PureComponent<HeaderUtilities.IProps, object> {
     public render(): JSX.Element {
-        return <div className={`header ${AppUtilities.Theme[this.props.theme]} ${!GameUtilities.State.isInProgress(this.props.mode) ? ' hide' : ''}`}>
+        return <div className={`header ${Shared.Theme[this.props.theme]} ${!GameUtilities.State.isInProgress(this.props.mode) ? ' hide' : ''}`}>
             <div className='header-left-hud'>
                 <Combo combo={this.props.combo}
                        stage={this.props.stage}

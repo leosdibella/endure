@@ -1,5 +1,5 @@
-import * as GeneralUtilities from './general';
 import { Maybe } from './maybe';
+import * as Shared from './shared';
 
 enum Timing {
     linear = 0,
@@ -7,41 +7,22 @@ enum Timing {
     bounceEaseOut
 }
 
-function makeEaseOut(timing: (timeFraction: number) => number) {
-    return (timeFraction: number) => 1 - timing(1 - timeFraction);
-}
+const accelerationExponent: number = 4;
 
-function bounce(timeFraction: number) {
-    let a: number = 0,
-        b: number = 1;
-
-    while (true) {
-        if (timeFraction >= (7 - 4 * a) / 11) {
-            return -Math.pow((11 - 6 * a - 11 * timeFraction) / 4, 2) + Math.pow(b, 2);
-        }
-
-        a += b;
-        b /= 2;
-    }
-}
-
-const timingFunctions: GeneralUtilities.IDictionary<(timeFraction: number) => number> = {
+const timingFunctions: Shared.IDictionary<(timeFraction: number) => number> = {
     [Timing.linear]: (timeFraction: number) => timeFraction,
-    [Timing.accelerate]: (timeFraction: number) => Math.pow(timeFraction, 4),
-    [Timing.bounceEaseOut]: makeEaseOut(bounce)
+    [Timing.accelerate]: (timeFraction: number) => Math.pow(timeFraction, accelerationExponent),
+    // TODO: Implmenet bounce function
+    [Timing.bounceEaseOut]: (timeFraction: number) => timeFraction
 };
 
 class Animator {
-    private draw: (progress: number) => void;
-    private onComplete: () => void;
-    private timing: Timing;
-    private duration: number;
     private pausedTime: Maybe<number>;
     private startTime: Maybe<number>;
     private id: Maybe<number>;
 
     private resetAnimationParameters(): void {
-        this.id.justDo(id => cancelAnimationFrame(id));
+        this.id.justDo(cancelAnimationFrame);
         this.id = new Maybe();
         this.startTime = new Maybe();
         this.pausedTime = new Maybe();
@@ -90,11 +71,9 @@ class Animator {
         });
     }
 
-    public constructor(draw: (progress: number) => void, duration: number, timing: Timing, onComplete: () => void) {
-        this.draw = draw;
-        this.onComplete = onComplete;
-        this.duration = duration;
-        this.timing = Maybe.mapThrough(new Maybe(Timing[timing]), Timing.linear);
+    public constructor(private draw: (progress: number) => void, private duration: number, private timing: Timing, private onComplete: () => void) {
+        this.duration = Math.abs(duration);
+        this.timing = new Maybe(Timing[timing]).caseOf(() => timing, () => Timing.linear);
         this.id = new Maybe();
         this.pausedTime = new Maybe();
         this.startTime = new Maybe();

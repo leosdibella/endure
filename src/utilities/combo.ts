@@ -1,7 +1,6 @@
 import * as Animation from './animation';
-import * as AppUtilities from './app';
 import * as GameUtilities from './game';
-import * as GeneralUtilities from './general';
+import * as Shared from './shared';
 
 enum CssClass {
     healthy = 0,
@@ -10,30 +9,33 @@ enum CssClass {
 }
 
 class State {
+    private static readonly healthyThreshold: number = 0.67;
+    private static readonly warningThreshold: number = 0.33;
+
     public static readonly minimumViableCombo: number = 2;
 
-    public static readonly durationModifiers: GeneralUtilities.IDictionary<number> = {
-        [AppUtilities.Difficulty.beginner]: 10,
-        [AppUtilities.Difficulty.low]: 15,
-        [AppUtilities.Difficulty.medium]: 20,
-        [AppUtilities.Difficulty.hard]: 25,
-        [AppUtilities.Difficulty.expert]: 30
+    public static readonly durationModifiers: Shared.IDictionary<number> = {
+        [Shared.Difficulty.beginner]: 10,
+        [Shared.Difficulty.low]: 15,
+        [Shared.Difficulty.medium]: 20,
+        [Shared.Difficulty.hard]: 25,
+        [Shared.Difficulty.expert]: 30
     };
 
-    public static readonly durations: GeneralUtilities.IDictionary<number> = {
-        [AppUtilities.Difficulty.beginner]: 3000,
-        [AppUtilities.Difficulty.low]: 2800,
-        [AppUtilities.Difficulty.medium]: 2600,
-        [AppUtilities.Difficulty.hard]: 2400,
-        [AppUtilities.Difficulty.expert]: 2200
+    public static readonly durations: Shared.IDictionary<number> = {
+        [Shared.Difficulty.beginner]: 3000,
+        [Shared.Difficulty.low]: 2800,
+        [Shared.Difficulty.medium]: 2600,
+        [Shared.Difficulty.hard]: 2400,
+        [Shared.Difficulty.expert]: 2200
     };
 
     public static getClassFromTimeFraction(timeFraction: number): string {
         let cssClass: string = '';
 
-        if (timeFraction >= 0.67) {
+        if (timeFraction >= State.healthyThreshold) {
             cssClass = CssClass[CssClass.healthy];
-        } else if (timeFraction >= 0.33) {
+        } else if (timeFraction >= State.warningThreshold) {
             cssClass = CssClass[CssClass.warning];
         } else {
             cssClass = CssClass[CssClass.danger];
@@ -54,13 +56,13 @@ class State {
 }
 
 interface IProps {
-    theme: AppUtilities.Theme;
+    theme: Shared.Theme;
     combo: number;
-    letterGrade: AppUtilities.LetterGrade;
+    letterGrade: Shared.LetterGrade;
     stage: number;
-    difficulty: AppUtilities.Difficulty;
+    difficulty: Shared.Difficulty;
     mode: GameUtilities.Mode;
-    readonly onUpdate: (updates: GameUtilities.IUpdate) => void;
+    onUpdate(updates: GameUtilities.IUpdate): void;
 }
 
 export {
