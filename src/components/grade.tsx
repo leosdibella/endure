@@ -26,6 +26,7 @@ class Grade extends React.PureComponent<GradeUtilities.IProps, GradeUtilities.St
     public readonly state: GradeUtilities.State = new GradeUtilities.State(this.expandGradeFill.bind(this), this.getDuration(), this.onAnimationComplete.bind(this));
 
     public componentDidUpdate(previousProps: GradeUtilities.IProps): void {
+        // TODO: Fix THIS
         if (this.props.mode === GameUtilities.Mode.paused) {
             this.state.animator.togglePaused();
         } else if (this.props.mode === GameUtilities.Mode.inGame) {
