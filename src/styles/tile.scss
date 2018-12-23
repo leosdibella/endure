@@ -2,9 +2,19 @@
     position: absolute;
 }
 
-.tile-highlighted {
+%tile-highlighted {
     z-index: 2;
+}
+
+.light-tile-highlighted {
+    @extend %tile-highlighted;
     box-shadow: 0px 1px 10px 4px rgba(0, 0, 0, 0.75);
+}
+
+
+.dark-tile-highlighted {
+    @extend %tile-highlighted;
+    box-shadow: 0px 1px 10px 4px rgba(255, 255, 255, 0.75);
 }
 
 @each $theme, $color-map in $color-maps {

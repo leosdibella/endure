@@ -121,9 +121,8 @@ interface IProps {
     row: number;
     column: number;
     mode: GameUtilities.Mode;
-    selectedRow: number;
     detonationRange: DetonationRange;
-    selectedColumn: number;
+    additionalClassName: string;
     link: Link;
     onUpdate(row: number, column: number): void;
 }

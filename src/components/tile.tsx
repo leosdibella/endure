@@ -9,19 +9,19 @@ import '../styles/tile.scss';
 class Tile extends React.PureComponent<TileUtilities.IProps, object> {
     private readonly onClick: () => void = this.handleClick.bind(this);
 
-    private getClassName(additionalClass: string): string {
+    private getClassName(): string {
         let className: string = 'tile';
 
         if (this.props.mode === GameUtilities.Mode.inGame) {
-            className += `-${TileUtilities.Color[this.props.color]} ${additionalClass} ${TileUtilities.Container.linkClasses[this.props.link]}`;
+            className += `-${TileUtilities.Color[this.props.color]} ${this.props.additionalClassName} ${TileUtilities.Container.linkClasses[this.props.link]}`;
         }
 
         return className;
     }
 
-    private getStyle(additionalClass: string): Shared.ICssStyle {
-        const placementModifier: number = additionalClass && this.props.mode === GameUtilities.Mode.inGame ? -TileUtilities.Container.selectedPlacementModifier : 0,
-              dimension: string = `${TileUtilities.Container.dimension + (additionalClass && this.props.mode === GameUtilities.Mode.inGame ? TileUtilities.Container.selectedDimensionModifier : 0)}px`;
+    private getStyle(): Shared.ICssStyle {
+        const placementModifier: number = this.props.additionalClassName && this.props.mode === GameUtilities.Mode.inGame ? -TileUtilities.Container.selectedPlacementModifier : 0,
+              dimension: string = `${TileUtilities.Container.dimension + (this.props.additionalClassName && this.props.mode === GameUtilities.Mode.inGame ? TileUtilities.Container.selectedDimensionModifier : 0)}px`;
 
         return {
             height: dimension,
@@ -31,22 +31,13 @@ class Tile extends React.PureComponent<TileUtilities.IProps, object> {
         };
     }
 
-    private getAdditionalClass(): string {
-        // TODO: FIX THIS
-        const additionalClass: string = this.props.column.toString();
-
-        return '';
-    }
-
     private handleClick(): void {
         this.props.onUpdate(this.props.row, this.props.column);
     }
 
     public render(): JSX.Element {
-        const additionalClass: string = this.getAdditionalClass();
-
-        return <div className={this.getClassName(additionalClass)}
-                    style={this.getStyle(additionalClass)}
+        return <div className={this.getClassName()}
+                    style={this.getStyle()}
                     onClick={this.onClick}>
                     {this.props.detonationRange !== TileUtilities.DetonationRange.none ? this.props.detonationRange : ''}
                </div>;

@@ -256,11 +256,26 @@ class State {
         transposedState.row = state.column;
         transposedState.column = state.row;
 
-        state.tiles.forEach(tile => {
-            transposedState.tiles.push(state.tiles[state.dimension.getTileIndexFromCoordinates(tile.column, tile.row)]);
+        let index: number = 0;
+
+        Shared.iterate(state.dimension.numberOfColumns, column => {
+            Shared.iterate(state.dimension.numberOfRows, row => {
+                const tile: TileUtilities.Container = state.tiles[state.dimension.getTileIndexFromCoordinates(row, column)];
+
+                transposedState.tiles.push(new TileUtilities.Container(column, row, index, tile.color, tile.detonationRange));
+                ++index;
+            });
         });
 
         return transposedState;
+    }
+
+    public static getAdditionalTileClassName(props: IProps, state: State, tile: TileUtilities.Container): string {
+        if (state.row === tile.row && state.column === tile.column) {
+            return `${Shared.Theme[props.theme]}-tile-highlighted`;
+        }
+
+        return '';
     }
 
     private initializeGraph(): Shared.IDictionary<number>[] {

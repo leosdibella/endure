@@ -160,8 +160,7 @@ class Grid extends React.PureComponent<GridUtilities.IProps, GridUtilities.State
                                                                         detonationRange={tile.detonationRange}
                                                                         row={tile.row}
                                                                         column={tile.column}
-                                                                        selectedRow={this.state.row}
-                                                                        selectedColumn={this.state.column}
+                                                                        additionalClassName={GridUtilities.State.getAdditionalTileClassName(this.props, this.state, tile)}
                                                                         link={tile.link}
                                                                         onUpdate={this.onUpdate}/>);
 
