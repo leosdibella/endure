@@ -1,21 +1,22 @@
 import * as React from 'react';
-
-import * as BackdropUtilities from '../utilities/backdrop';
+import { BackdropState } from '../classes/backdropState';
+import { IBackdropProps } from '../interfaces/iBackdropProps';
+import { Theme } from '../utilities/enum';
 import * as Shared from '../utilities/shared';
 
 import '../styles/backdrop.scss';
 
-const binderHoles: JSX.Element[] = Shared.fillArray(BackdropUtilities.State.numberOfBinderHoles, i => {
-    return <div key={i}
-        className='backdrop-binder-hole'>
-    </div>;
-});
+export class Backdrop extends React.PureComponent<IBackdropProps, BackdropState> {
+    private static readonly binderHoles: JSX.Element[] = Shared.fillArray(BackdropState.numberOfBinderHoles, i => {
+        return <div key={i}
+            className='backdrop-binder-hole'>
+        </div>;
+    });
 
-class Backdrop extends React.PureComponent<BackdropUtilities.IProps, BackdropUtilities.State> {
-    public readonly state: BackdropUtilities.State = new BackdropUtilities.State();
+    public readonly state: BackdropState = new BackdropState();
 
     public componentDidUpdate(): void {
-        this.setState(new BackdropUtilities.State());
+        this.setState(new BackdropState());
     }
 
     public render(): JSX.Element {
@@ -25,10 +26,10 @@ class Backdrop extends React.PureComponent<BackdropUtilities.IProps, BackdropUti
                    </div>;
         });
 
-        return <div className={`backdrop ${Shared.Theme[this.props.theme]}`}>
+        return <div className={`backdrop ${Theme[this.props.theme]}`}>
             <div className='backdrop-left-margin'>
                 <div className='backdrop-binder-holes'>
-                    {binderHoles}
+                    {Backdrop.binderHoles}
                 </div>
             </div>
             <div className='backdrop-right-margin'>
@@ -39,7 +40,3 @@ class Backdrop extends React.PureComponent<BackdropUtilities.IProps, BackdropUti
         </div>;
     }
 }
-
-export {
-    Backdrop
-};

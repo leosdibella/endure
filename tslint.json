@@ -7,7 +7,29 @@
     "rules": {
         "adjacent-overload-signatures": true,
         "ban-ts-ignore": true,
-        "ban-types": false,
+        "ban-types": [
+            true,
+            [
+                "Object",
+                "Use {} instead."
+            ],
+            [
+                "String",
+                "Use 'string' instead."
+            ],
+            [
+                "Number",
+                "Use 'number' instead."
+            ],
+            [
+                "Boolean",
+                "Use 'boolean' instead."
+            ],
+            [
+                "Array",
+                "Use [] instead."
+            ]
+        ],
         "member-access": true,
         "member-ordering": [
             true,
@@ -146,7 +168,7 @@
         "eofline": false,
         "indent": [true, "spaces", 4],
         "linebreak-style": [true, "CRLF"],
-        "max-classes-per-file": false,
+        "max-classes-per-file": [true, 1],
         "max-file-line-count": false,
         "max-line-length": false,
         "no-default-export": true,

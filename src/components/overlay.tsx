@@ -1,20 +1,21 @@
 import * as React from 'react';
-
-import * as GameUtilities from '../utilities/game';
-import { Maybe } from '../utilities/maybe';
-import * as OverlayUtilities from '../utilities/overlay';
+import { OverlayState } from '../classes/overlayState';
+import { IDictionary } from '../interfaces/iDictionary';
+import { IOverlayMenuOption } from '../interfaces/iOverlayMenuOption';
+import { IOverlayProps } from '../interfaces/iOverlayProps';
+import { Difficulty, DomEvent, GameMode, Theme } from '../utilities/enum';
 import * as Shared from '../utilities/shared';
 
 import '../styles/overlay.scss';
 
-class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilities.State> {
+export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
     private static readonly firstPositionKey: number = 1;
     private static readonly secondPositionKey: number = 2;
     private static readonly thirdPositionKey: number = 3;
     private readonly onKeyDown: (keyboardEvent: KeyboardEvent) => void = this.handleKeyDown.bind(this);
     private readonly onNameChange: (event: React.ChangeEvent<HTMLInputElement>) => void = this.handleNameChange.bind(this);
 
-    private readonly keyDownEventActionMap: Shared.IDictionary<() => void> = {
+    private readonly keyDownEventActionMap: IDictionary<() => void> = {
         arrowdown: this.onArrowDown.bind(this),
         arrowup: this.onArrowUp.bind(this),
         enter: this.onEnter.bind(this)
@@ -29,16 +30,24 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
     }
 
     private onEnter(): void {
-        this.state.menu.menuOptions[this.props.mode].justDo(mo => mo.actions[this.state.selectedOptionIndex]());
+        const menuOption: IOverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
+
+        if (Shared.isDefined(menuOption)) {
+            (menuOption as IOverlayMenuOption).actions[this.state.selectedOptionIndex]();
+        }
     }
 
     private handleKeyDown(keyboardEvent: KeyboardEvent): void {
-        new Maybe(this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()]).justDo(kdh => kdh());
+        const handler: (() => void) | undefined = this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()];
+
+        if (Shared.isDefined(handler)) {
+            handler();
+        }
     }
 
     private saveNameChange(): void {
         this.props.onUpdate({
-            mode: GameUtilities.Mode.newGame,
+            gameMode: GameMode.newGame,
             playerName: this.state.playerName
         });
     }
@@ -49,45 +58,49 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
         });
     }
 
-    private getOverlayTitle(): Maybe<JSX.Element> {
-        return this.state.menu.menuOptions[this.props.mode].bind(mo => {
-            const overlayTile: JSX.Element = <div className={`overlay-tile ${Shared.Theme[this.props.theme]}`}>
+    private getOverlayTitle(): JSX.Element | boolean {
+        const menuOption: IOverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
+
+        if (Shared.isDefined(menuOption)) {
+            const overlayTile: JSX.Element = <div className={`overlay-tile ${Theme[this.props.theme]}`}>
                                              </div>;
 
-            return new Maybe(<div key={Overlay.firstPositionKey}
-                                  className={`overlay-${mo.className}-text`}>
-                                  {overlayTile}
-                                  {mo.title}
-                                  {overlayTile}
-                              </div>);
-        });
+            return <div key={Overlay.firstPositionKey}
+                        className={`overlay-${(menuOption as IOverlayMenuOption).className}-text`}>
+                        {overlayTile}
+                        {(menuOption as IOverlayMenuOption).title}
+                        {overlayTile}
+                    </div>;
+        }
+
+        return false;
     }
 
     private getHighScoresOverlayExtras(): JSX.Element {
         const localHighScores: JSX.Element[] = this.props.highScores.map((s, i) => <div key={i}
-                                                                                            className='overlay-high-score'>
-                                                                                            <div>
-                                                                                                <span>
-                                                                                                    {s.dateStamp}
-                                                                                                </span>
-                                                                                                <span>
-                                                                                                    {s.name}
-                                                                                                </span>
-                                                                                            </div>
-                                                                                            <div>
-                                                                                                <span>
-                                                                                                    {Shared.formatCamelCaseString(Shared.Difficulty[s.difficulty], ' ', true)}
-                                                                                                </span>
-                                                                                                <span>
-                                                                                                    {s.value}
-                                                                                                </span>
-                                                                                            </div>
-                                                                                       </div>),
+                                                                                        className='overlay-high-score'>
+                                                                                        <div>
+                                                                                            <span>
+                                                                                                {s.dateStamp}
+                                                                                            </span>
+                                                                                            <span>
+                                                                                                {s.name}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                        <div>
+                                                                                            <span>
+                                                                                                {Shared.formatCamelCaseString(Difficulty[s.difficulty], ' ', true)}
+                                                                                            </span>
+                                                                                            <span>
+                                                                                                {s.value}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                    </div>),
                globalHighScores: JSX.Element[] = [];
 
         return <div key={Overlay.secondPositionKey}
                     className='overlay-high-scores-listings'>
-                    <div className={`overlay-high-scores-local overlay-high-scores-listing ${Shared.Theme[this.props.theme]}`}>
+                    <div className={`overlay-high-scores-local overlay-high-scores-listing ${Theme[this.props.theme]}`}>
                         <div className='overlay-high-scores-listing-title'>
                             You
                         </div>
@@ -96,9 +109,9 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
                             Nothing yet ...
                         </div>
                     </div>
-                    <div className={`overlay-high-scores-listing-separator ${Shared.Theme[this.props.theme]}`}>
+                    <div className={`overlay-high-scores-listing-separator ${Theme[this.props.theme]}`}>
                     </div>
-                    <div className={`overlay-high-scores-global overlay-high-scores-listing ${Shared.Theme[this.props.theme]}`}>
+                    <div className={`overlay-high-scores-global overlay-high-scores-listing ${Theme[this.props.theme]}`}>
                         <div className='overlay-high-scores-listing-title'>
                             The Entire Class
                         </div>
@@ -110,66 +123,72 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
                 </div>;
     }
 
-    private getOverlayExtras(): Maybe<JSX.Element> {
-        if (this.props.mode === GameUtilities.Mode.highScores) {
-            return new Maybe(this.getHighScoresOverlayExtras());
-        } else if (this.props.mode === GameUtilities.Mode.specifyName) {
-            return new Maybe(<div key={Overlay.secondPositionKey}
-                                  className='overlay-player-name-input-container'>
-                                  <input value={this.state.playerName}
-                                         className={Shared.Theme[this.props.theme]}
-                                         onChange={this.onNameChange}/>
-                             </div>);
+    private getOverlayExtras(): JSX.Element | boolean {
+        if (this.props.gameMode === GameMode.highScores) {
+            return this.getHighScoresOverlayExtras();
+        } else if (this.props.gameMode === GameMode.specifyName) {
+            return <div key={Overlay.secondPositionKey}
+                        className='overlay-player-name-input-container'>
+                        <input value={this.state.playerName}
+                               className={Theme[this.props.theme]}
+                               onChange={this.onNameChange}/>
+                   </div>;
         }
 
-        return new Maybe() as Maybe<JSX.Element>;
+        return false;
     }
 
-    private getOverlayButtonPanel(): Maybe<JSX.Element> {
-        return this.state.menu.menuOptions[this.props.mode].bind(mo => {
-            const buttons: JSX.Element[] = Shared.fillArray(mo.options.length, i => {
-                return <button key={i}
-                               className={`overlay-button ${this.state.selectedOptionIndex === i ? 'overlay-selected-option' : ''}`}
-                               onClick={mo.actions[i]}>
-                            {mo.options[i]}
-                       </button>;
+    private getOverlayButtonPanel(): JSX.Element | boolean {
+        const menuOption: IOverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
+
+        if (Shared.isDefined(menuOption)) {
+            const buttons: JSX.Element[] = (menuOption as IOverlayMenuOption).options.map((option, index) => {
+                return <button key={index}
+                               className={`overlay-button ${this.state.selectedOptionIndex === index ? 'overlay-selected-option' : ''}`}
+                               onClick={(menuOption as IOverlayMenuOption).actions[index]}>
+                            {option}
+                        </button>;
             });
 
-            return new Maybe(<div key={Overlay.thirdPositionKey}
-                                  className='overlay-button-panel'>
-                                 {buttons}
-                             </div>);
-        });
+            return <div key={Overlay.thirdPositionKey}
+                        className='overlay-button-panel'>
+                        {buttons}
+                   </div>;
+        }
+
+        return false;
     }
 
     private getOverlayBody(): JSX.Element[] {
-        return Maybe.filterCollection([
+        return [
             this.getOverlayTitle(),
             this.getOverlayExtras(),
             this.getOverlayButtonPanel()
-        ]);
+        ].filter(e => !!e) as JSX.Element[];
     }
 
     private incrementOrDecrementOptionsIndex(direction: number): void {
-        this.state.menu.menuOptions[this.props.mode].justDo(mo => {
+        const menuOption: IOverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
+
+        if (Shared.isDefined(menuOption)) {
             const optionIndex = this.state.selectedOptionIndex + direction;
 
             this.setState({
-                selectedOptionIndex: optionIndex >= 0 ? (optionIndex % mo.options.length) : (mo.options.length - 1)
+                selectedOptionIndex: optionIndex >= 0 ? (optionIndex % (menuOption as IOverlayMenuOption).options.length) : ((menuOption as IOverlayMenuOption).options.length - 1)
             });
-        });
+        }
     }
 
-    public readonly state: OverlayUtilities.State = new OverlayUtilities.State(this.props, this.saveNameChange.bind(this));
+    public readonly state: OverlayState = new OverlayState(this.props, this.saveNameChange.bind(this));
 
-    public componentDidUpdate(previousProps: OverlayUtilities.IProps): void {
-        if (previousProps.mode !== this.props.mode) {
+    public componentDidUpdate(previousProps: IOverlayProps): void {
+        if (previousProps.gameMode !== this.props.gameMode) {
             this.setState({
                 selectedOptionIndex: this.state.menu.getDefaultOptionIndex(this.props)
             });
         }
 
-        if (this.props.mode !== GameUtilities.Mode.specifyName) {
+        if (this.props.gameMode !== GameMode.specifyName) {
             this.setState({
                 playerName: this.props.playerName
             });
@@ -177,22 +196,18 @@ class Overlay extends React.PureComponent<OverlayUtilities.IProps, OverlayUtilit
     }
 
     public componentDidMount(): void {
-        document.addEventListener(Shared.DomEvent.keyDown, this.onKeyDown);
+        document.addEventListener(DomEvent.keyDown, this.onKeyDown);
     }
 
     public componentWillUnmount(): void {
-        document.removeEventListener(Shared.DomEvent.keyDown, this.onKeyDown);
+        document.removeEventListener(DomEvent.keyDown, this.onKeyDown);
     }
 
     public render(): JSX.Element {
-        return <div className={`overlay-container ${Shared.Theme[this.props.theme]}`}>
+        return <div className={`overlay-container ${Theme[this.props.theme]}`}>
                    <div className='overlay'>
                         {this.getOverlayBody()}
                    </div>
                </div>;
     }
 }
-
-export {
-    Overlay
-};

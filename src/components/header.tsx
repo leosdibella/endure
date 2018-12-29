@@ -1,17 +1,14 @@
 import * as React from 'react';
-
-import * as GameUtilities from '../utilities/game';
-import * as HeaderUtilities from '../utilities/header';
-import * as Shared from '../utilities/shared';
-
-import '../styles/header.scss';
-
+import { IHeaderProps } from '../interfaces/iHeaderProps';
+import { Theme } from '../utilities/enum';
 import { Combo } from './combo';
 import { Grade } from './grade';
 
-class Header extends React.PureComponent<HeaderUtilities.IProps, object> {
+import '../styles/header.scss';
+
+export class Header extends React.PureComponent<IHeaderProps, object> {
     public render(): JSX.Element {
-        return <div className={`header ${Shared.Theme[this.props.theme]} ${!GameUtilities.State.isInProgress(this.props.mode) ? ' hide' : ''}`}>
+        return <div className={`header ${Theme[this.props.theme]}`}>
             <div className='header-left-hud'>
                 <Combo combo={this.props.combo}
                        stage={this.props.stage}
@@ -19,7 +16,7 @@ class Header extends React.PureComponent<HeaderUtilities.IProps, object> {
                        difficulty={this.props.difficulty}
                        onUpdate={this.props.onUpdate}
                        letterGrade={this.props.letterGrade}
-                       mode={this.props.mode}>
+                       gameMode={this.props.gameMode}>
                 </Combo>
                 <div className='header-name'>
                     {this.props.playerName}
@@ -29,7 +26,7 @@ class Header extends React.PureComponent<HeaderUtilities.IProps, object> {
                    letterGrade={this.props.letterGrade}
                    difficulty={this.props.difficulty}
                    stage={this.props.stage}
-                   mode={this.props.mode}
+                   gameMode={this.props.gameMode}
                    onUpdate={this.props.onUpdate}>
             </Grade>
             <div className='header-right-hud'>
@@ -43,7 +40,3 @@ class Header extends React.PureComponent<HeaderUtilities.IProps, object> {
         </div>;
     }
 }
-
-export {
-    Header
-};

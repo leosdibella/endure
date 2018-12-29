@@ -1,15 +1,16 @@
 import * as React from 'react';
-
-import * as ComboUtilities from '../utilities/combo';
-import * as GameUtilities from '../utilities/game';
-import * as Shared from '../utilities/Shared';
+import { ComboState } from '../classes/comboState';
+import { IComboProps } from '../interfaces/iComboProps';
+import { ICssStyle } from '../interfaces/iCssStyle';
+import { GameMode, Theme } from '../utilities/enum';
+import * as Shared from '../utilities/shared';
 
 import '../styles/combo.scss';
 
-class Combo extends React.PureComponent<ComboUtilities.IProps, ComboUtilities.State> {
+export class Combo extends React.PureComponent<IComboProps, ComboState> {
     private adjustOverlay(timeFraction: number): void {
         this.setState({
-            overlayClass: ComboUtilities.State.getClassFromTimeFraction(timeFraction),
+            overlayClass: ComboState.getClassFromTimeFraction(timeFraction),
             overlayWidthPercentage: ((1 - timeFraction) * Shared.totalPercentage)
         });
     }
@@ -26,32 +27,32 @@ class Combo extends React.PureComponent<ComboUtilities.IProps, ComboUtilities.St
     }
 
     private getDuration(): number {
-        return ComboUtilities.State.durations[this.props.difficulty] - (ComboUtilities.State.durationModifiers[this.props.difficulty] * this.props.stage);
+        return ComboState.durations[this.props.difficulty] - (ComboState.durationModifiers[this.props.difficulty] * this.props.stage);
     }
 
-    public readonly state: ComboUtilities.State = new ComboUtilities.State(this.adjustOverlay.bind(this), this.getDuration(), this.onAnimationComplete.bind(this));
+    public readonly state: ComboState = new  ComboState(); // ComboState(this.adjustOverlay.bind(this), this.getDuration(), this.onAnimationComplete.bind(this));
 
-    public componentDidUpdate(previousProps: ComboUtilities.IProps): void {
+    /* public componentDidUpdate(previousProps: IComboProps): void {
         // TODO: Fix THIS
-        if (this.props.mode === GameUtilities.Mode.paused) {
+        if (this.props.gameMode === GameMode.paused) {
             this.state.animator.togglePaused();
-        } else if (this.props.mode === GameUtilities.Mode.inGame) {
-            if (previousProps.mode === GameUtilities.Mode.paused) {
+        } else if (this.props.gameMode === GameMode.inGame) {
+            if (previousProps.gameMode === GameMode.paused) {
                 this.state.animator.togglePaused();
-            } else if (this.props.combo >= ComboUtilities.State.minimumViableCombo && this.props.combo !== previousProps.combo) {
-                this.state.animator.animate(this.getDuration());
+            } else if (this.props.combo >= ComboState.minimumViableCombo && this.props.combo !== previousProps.combo) {
+                this.state.animator.animate();
             }
         } else {
             this.state.animator.cancel();
         }
-    }
+    } */
 
     public render(): JSX.Element {
-        const style: Shared.ICssStyle = {
+        const style: ICssStyle = {
             width: `${ this.state.overlayWidthPercentage.toFixed(Shared.percentageDecimalPlaceCutoff)}%`
         };
 
-        return <span className={`header-combo-container ${Shared.Theme[this.props.theme]} ${this.props.combo < ComboUtilities.State.minimumViableCombo ? ' hide' : ''}`}>
+        return <span className={`header-combo-container ${Theme[this.props.theme]} ${this.props.combo < ComboState.minimumViableCombo ? ' hide' : ''}`}>
                     <div className='header-combo combo-bar-base'>
                         Combo: x{this.props.combo}
                     </div>
@@ -62,7 +63,3 @@ class Combo extends React.PureComponent<ComboUtilities.IProps, ComboUtilities.St
                </span>;
     }
 }
-
-export {
-    Combo
-};

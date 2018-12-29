@@ -1,49 +1,45 @@
 import * as React from 'react';
-
-import * as GameUtilities from '../utilities/game';
-import * as Shared from '../utilities/shared';
-import * as TileUtilities from '../utilities/tile';
+import { TileContainer } from '../classes/tileContainer';
+import { ICssStyle } from '../interfaces/iCssStyle';
+import { ITileProps } from '../interfaces/iTileProps';
+import { Color, DetonationRange, GameMode } from '../utilities/enum';
 
 import '../styles/tile.scss';
 
-class Tile extends React.PureComponent<TileUtilities.IProps, object> {
+export class Tile extends React.PureComponent<ITileProps, object> {
     private readonly onClick: () => void = this.handleClick.bind(this);
 
     private getClassName(): string {
         let className: string = 'tile';
 
-        if (this.props.mode === GameUtilities.Mode.inGame) {
-            className += `-${TileUtilities.Color[this.props.color]} ${this.props.additionalClassName} ${TileUtilities.Container.linkClasses[this.props.link]}`;
+        if (this.props.gameMode === GameMode.inGame) {
+            className += `-${Color[this.props.container.color]} ${this.props.additionalClassName} ${TileContainer.boundaryClasses[this.props.container.boundary]}`;
         }
 
         return className;
     }
 
-    private getStyle(): Shared.ICssStyle {
-        const placementModifier: number = this.props.additionalClassName && this.props.mode === GameUtilities.Mode.inGame ? -TileUtilities.Container.selectedPlacementModifier : 0,
-              dimension: string = `${TileUtilities.Container.dimension + (this.props.additionalClassName && this.props.mode === GameUtilities.Mode.inGame ? TileUtilities.Container.selectedDimensionModifier : 0)}px`;
+    private getStyle(): ICssStyle {
+        const placementModifier: number = this.props.additionalClassName && this.props.gameMode === GameMode.inGame ? -TileContainer.selectedPlacementModifier : 0,
+              dimension: string = `${TileContainer.dimension + (this.props.additionalClassName && this.props.gameMode === GameMode.inGame ? TileContainer.selectedDimensionModifier : 0)}px`;
 
         return {
             height: dimension,
-            left: `${(this.props.column * (TileUtilities.Container.dimensionWithMargin)) + placementModifier}px`,
-            top: `${(this.props.row * (TileUtilities.Container.dimensionWithMargin)) + placementModifier}px`,
+            left: `${(this.props.container.column * (TileContainer.dimensionWithMargin)) + placementModifier}px`,
+            top: `${(this.props.container.row * (TileContainer.dimensionWithMargin)) + placementModifier}px`,
             width: dimension
         };
     }
 
     private handleClick(): void {
-        this.props.onUpdate(this.props.row, this.props.column);
+        this.props.onUpdate(this.props.container.row, this.props.container.column);
     }
 
     public render(): JSX.Element {
         return <div className={this.getClassName()}
                     style={this.getStyle()}
                     onClick={this.onClick}>
-                    {this.props.detonationRange !== TileUtilities.DetonationRange.none ? this.props.detonationRange : ''}
+                    {this.props.container.detonationRange !== DetonationRange.none ? this.props.container.detonationRange : ''}
                </div>;
     }
 }
-
-export {
-    Tile
-};

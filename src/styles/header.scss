@@ -17,15 +17,15 @@ $header-side-margin-width: $global-side-bar-width + 10;
 
 .header.dark {
     .header-combo-container {
-        .healthy-combo {
+        .combo-3 {
             color: map-get($dark-colors, green);
         }
         
-        .warning-combo {
+        .combo-2 {
             color: map-get($dark-colors, orange);
         }
         
-        .danger-combo {
+        .combo-1 {
             color: map-get($dark-colors, red);
         }
     }

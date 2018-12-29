@@ -1,8 +1,10 @@
-import { Maybe } from './maybe';
+import { IEnum } from '../interfaces/iEnum';
+import { IHighScore } from '../interfaces/iHighScore';
+import { Difficulty, Theme } from './enum';
 import * as Shared from './shared';
 
-type Storable = string | number | Shared.Difficulty | Shared.Theme | Shared.HighScore[];
-type StorableEnumValue = Shared.Difficulty | Shared.Theme;
+type Storable = string | number | Difficulty | Theme | IHighScore[];
+type StorableEnumValue = Difficulty | Theme;
 
 function isLocalStorageSupported(): boolean {
     return typeof(Storage) !== 'undefined' && Shared.isDefined(window.localStorage) && Shared.isNotNull(window.localStorage);
@@ -22,29 +24,40 @@ function persistData(key: string, value: Storable): boolean {
     return false;
 }
 
-function fetchData<T>(key: string): Maybe<T> {
-    return isLocalStorageSupported() ? new Maybe(window.localStorage.getItem(key)).bind(s => new Maybe(JSON.parse(s) as T)) : new Maybe();
+function fetchData<T>(key: string): T | undefined {
+    if (isLocalStorageSupported()) {
+        const data: string | null = window.localStorage.getItem(key);
+
+        if (Shared.isNotNull(data)) {
+            return JSON.parse(data as string) as T;
+        }
+
+        return undefined;
+    }
 }
 
-function fetchString(key: string): Maybe<string> {
-    const data: string = fetchData<string>(key).getOrDefault('');
+function fetchString(key: string): string | undefined {
+    const data: string | undefined = fetchData<string>(key);
 
-    if (Shared.isString(data) && data.length > 0) {
-        return new Maybe(data);
+    if (Shared.isString(data)) {
+        return (data as string).length > 0 ? data as string : undefined;
     }
 
-    return new Maybe();
+    return undefined;
 }
 
-function fetchStorableEnumValue(key: string, collection: Shared.IEnum, defaultValue: StorableEnumValue): StorableEnumValue {
-    return fetchData<StorableEnumValue>(key).caseOf(t => Shared.isInteger(t)
-                                                        ? new Maybe(collection[t as number]).mapTo(t, defaultValue)
-                                                        : defaultValue,
-                                                    () => defaultValue);
+function fetchStorableEnumValue(key: string, collection: IEnum, defaultValue: StorableEnumValue): StorableEnumValue {
+    const data: StorableEnumValue | undefined = fetchData<StorableEnumValue>(key);
+
+    if (Shared.isInteger(data) && Shared.isDefined(collection[data as number])) {
+        return data as StorableEnumValue;
+    }
+
+    return defaultValue;
 }
 
-function mapHHighScores(highScores: Shared.HighScore[]): Shared.HighScore[] {
-    const highScoreArray: Shared.HighScore[] = [];
+function mapHHighScores(highScores: IHighScore[]): IHighScore[] {
+    const highScoreArray: IHighScore[] = [];
 
     if (Array.isArray(highScores)) {
         highScores.forEach(hs => {
@@ -52,10 +65,9 @@ function mapHHighScores(highScores: Shared.HighScore[]): Shared.HighScore[] {
                     && Shared.isString(hs.name)
                     && Shared.isString(hs.dateStamp)
                     && Shared.isInteger(hs.value)
-                    && Shared.isInteger(hs.difficulty)) {
-                new Maybe(Shared.Difficulty[hs.difficulty]).justDo(() => {
-                    highScoreArray.push(new Shared.HighScore(hs.name, hs.value, hs.dateStamp, hs.difficulty));
-                });
+                    && Shared.isInteger(hs.difficulty)
+                    && Shared.isDefined(Difficulty[hs.difficulty])) {
+                highScoreArray.push(hs);
             }
         });
     }
@@ -63,8 +75,8 @@ function mapHHighScores(highScores: Shared.HighScore[]): Shared.HighScore[] {
     return highScoreArray;
 }
 
-function fetchHighScores(key: string): Shared.HighScore[] {
-    return fetchData<Storable>(key).caseOf(t => mapHHighScores(t as Shared.HighScore[]), () => []);
+function fetchHighScores(key: string): IHighScore[] {
+    return mapHHighScores(fetchData<Storable>(key) as IHighScore[]);
 }
 
 export {

@@ -1,7 +1,7 @@
-import * as Shared from './shared';
-import * as TileUtilities from './tile';
+import { IDictionary } from '../interfaces/iDictionary';
+import { Boundary } from './enum';
 
-const tileRelations: Shared.IDictionary<number[]> = {
+const tileRelations: IDictionary<number[]> = {
     bottom: [1, 0],
     bottomLeft: [1, -1],
     bottomRight: [1, 1],
@@ -88,18 +88,14 @@ const rightSideRotationMap: number[][] = [
     tileRelations.bottomLeft
 ];
 
-const maps: Shared.IDictionary<number[][]> = {
-    [TileUtilities.Link.topRight]: topRightHandCornerRotationMap,
-    [TileUtilities.Link.rightBottom]: bottomRightHandCornerRotationMap,
-    [TileUtilities.Link.bottomLeft]: bottomLeftHandCornerRotationMap,
-    [TileUtilities.Link.topLeft]: topLeftHandCornerRotationMap,
-    [TileUtilities.Link.top]: topSideRotationMap,
-    [TileUtilities.Link.right]: rightSideRotationMap,
-    [TileUtilities.Link.bottom]: bottomSideRotationMap,
-    [TileUtilities.Link.left]: leftSideRotationMap,
-    [TileUtilities.Link.none]: centralRotationMap
-};
-
-export {
-    maps
+export const rotationMaps: IDictionary<number[][]> = {
+    [Boundary.topRight]: topRightHandCornerRotationMap,
+    [Boundary.rightBottom]: bottomRightHandCornerRotationMap,
+    [Boundary.bottomLeft]: bottomLeftHandCornerRotationMap,
+    [Boundary.topLeft]: topLeftHandCornerRotationMap,
+    [Boundary.top]: topSideRotationMap,
+    [Boundary.right]: rightSideRotationMap,
+    [Boundary.bottom]: bottomSideRotationMap,
+    [Boundary.left]: leftSideRotationMap,
+    [Boundary.none]: centralRotationMap
 };
