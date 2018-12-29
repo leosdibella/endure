@@ -88,7 +88,7 @@ const rightSideRotationMap: number[][] = [
     tileRelations.bottomLeft
 ];
 
-export const rotationMaps: IDictionary<number[][]> = {
+const rotationMaps: IDictionary<number[][]> = {
     [Boundary.topRight]: topRightHandCornerRotationMap,
     [Boundary.rightBottom]: bottomRightHandCornerRotationMap,
     [Boundary.bottomLeft]: bottomLeftHandCornerRotationMap,
@@ -98,4 +98,9 @@ export const rotationMaps: IDictionary<number[][]> = {
     [Boundary.bottom]: bottomSideRotationMap,
     [Boundary.left]: leftSideRotationMap,
     [Boundary.none]: centralRotationMap
+};
+
+export {
+    rotationMaps,
+    centralRotationMap
 };

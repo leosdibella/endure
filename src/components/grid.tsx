@@ -48,7 +48,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     }
 
     private reduceTiles = (): void => {
-        const reduction: IGridReduction = GridState.reduceTiles(this.state);
+        const reduction: IGridReduction = GridState.reduceTiles(this.props, this.state);
 
         this.setState({
             processingInput: true,
@@ -129,9 +129,12 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     public componentDidMount(): void {
         document.addEventListener(DomEvent.keyDown, this.onKeyDown);
 
+        const reduction: IGridReduction = GridState.reduceTiles(this.props, this.state);
+
+         // TODO: Animate reduction
         this.setState({
-            processingInput: false
-        });
+            tiles: reduction.tiles
+        }, () => this.removeReducedTiles(reduction));
     }
 
     public componentWillUnmount(): void {
@@ -139,24 +142,23 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     }
 
     public componentDidUpdate(previousProps: IGridProps): void {
-        let nextState: GridState = this.state;
-
         if (previousProps.orientation !== this.props.orientation) {
-            nextState = GridState.transpose(this.props, nextState);
+            const nextState = GridState.transpose(this.props, this.state);
+            const reduction: IGridReduction = GridState.reduceTiles(this.props, nextState);
+            nextState.tiles = reduction.tiles;
+
+            // TODO: Animate reduction
+            this.setState(nextState, () => this.removeReducedTiles(reduction));
         }
-
-        // TODO: Animate reduction
-        const reduction: IGridReduction = GridState.reduceTiles(nextState);
-        nextState.tiles = reduction.tiles;
-
-        this.setState(nextState, () => this.removeReducedTiles(reduction));
     }
 
     public render(): JSX.Element {
         const tiles: JSX.Element[] = this.state.tiles.map(tile => <Tile key={tile.index}
+                                                                        selectedColumn={this.state.column}
+                                                                        selectedRow={this.state.row}
+                                                                        gridDefinition={this.state.gridDefinition}
                                                                         gameMode={this.props.gameMode}
                                                                         container={tile}
-                                                                        additionalClassName={GridState.getAdditionalTileClassName(this.props, this.state, tile)}
                                                                         onUpdate={this.onUpdate}/>);
 
         return <div className={`grid ${Theme[this.props.theme]}`}>

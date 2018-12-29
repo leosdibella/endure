@@ -94,6 +94,13 @@ enum Theme {
     light
 }
 
+enum TileType {
+    standard = 0,
+    highlighted,
+    highlightedNeighbor,
+    obscured
+}
+
 export {
     AnimationTiming,
     Boundary,
@@ -104,5 +111,6 @@ export {
     GameMode,
     LetterGrade,
     Orientation,
-    Theme
+    Theme,
+    TileType
 };

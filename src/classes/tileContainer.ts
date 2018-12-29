@@ -7,7 +7,6 @@ export class TileContainer {
     private static readonly largeDetonantionRangeThreshold: number = 98;
     private static readonly mediumDetonationRangeThreshold: number = 94;
     private static readonly smallDetonationRangeThreshold: number = 79;
-    private static readonly selectedDimensionMultiplier: number = 2;
 
     private static readonly reverseBoundaryRelations: IDictionary<Boundary> = {
         [Boundary.top]: Boundary.bottom,
@@ -23,13 +22,6 @@ export class TileContainer {
         Boundary.left
     ];
 
-    public static readonly dimension: number = 50;
-    public static readonly margin: number = 5;
-    public static readonly dimensionWithMargin: number = TileContainer.dimension + TileContainer.margin;
-    public static readonly selectedPadding: number = 7;
-    public static readonly selectedPlacementModifier: number = TileContainer.margin + TileContainer.selectedPadding;
-    public static readonly selectedDimensionModifier: number = TileContainer.selectedPlacementModifier * TileContainer.selectedDimensionMultiplier;
-    public static readonly boundaryClasses: string[] = Shared.getNumericEnumKeys(Boundary).map(b => `tile-boundary-${Shared.formatCamelCaseString(Boundary[b])}`);
     public static readonly numberOfColors: number = Shared.getNumericEnumKeys(Color).length - 1;
 
     public static getRandomColor(hasDetonationRange: boolean = false): number {

@@ -1,14 +1,21 @@
 import { IDictionary } from '../interfaces/iDictionary';
 import { IGridProps } from '../interfaces/iGridProps';
 import { IGridReduction } from '../interfaces/iGridReduction';
-import { Boundary, Color, DetonationRange, Theme } from '../utilities/enum';
+import { Boundary, Color, DetonationRange, Difficulty } from '../utilities/enum';
 import { rotationMaps } from '../utilities/rotation';
 import * as Shared from '../utilities/shared';
+import { Animator } from './animator';
 import { GridDefinition } from './gridDefinition';
 import { TileContainer } from './tileContainer';
 
 export class GridState {
-    private static readonly minimumTileChainLength: number = 4;
+    private static readonly minimumTileChainLengths: IDictionary<number> = {
+        [Difficulty.beginner]: 4,
+        [Difficulty.low]: 5,
+        [Difficulty.medium]: 6,
+        [Difficulty.hard]: 7,
+        [Difficulty.expert]: 8
+    };
 
     private static getGridDimension(props: IGridProps): GridDefinition {
         return GridDefinition.orientedDefinitions[props.orientation];
@@ -145,7 +152,7 @@ export class GridState {
         return GridState.rotateTilesFromRotationMap(state, centerTile, rotationMaps[key]);
     }
 
-    public static reduceTiles(state: GridState): IGridReduction {
+    public static reduceTiles(props: IGridProps, state: GridState): IGridReduction {
         const visited: IDictionary<boolean> = {},
               reduction: IGridReduction = {
                     collapsingTiles: Shared.fillArray(TileContainer.numberOfColors, () => 0),
@@ -162,7 +169,7 @@ export class GridState {
                 reduction.tiles[index] = state.tiles[index].cloneWith(tile.color, tile.detonationRange, group[key]);
             });
 
-            if (keys.length > GridState.minimumTileChainLength) {
+            if (keys.length > GridState.minimumTileChainLengths[props.difficulty]) {
                 reduction.collapsingTiles[tile.color] += keys.length;
             }
         });
@@ -227,18 +234,6 @@ export class GridState {
         return transposedState;
     }
 
-    public static getAdditionalTileClassName(props: IGridProps, state: GridState, tile: TileContainer): string {
-        if (state.row === tile.row && state.column === tile.column) {
-            return `${Theme[props.theme]}-tile-highlighted`;
-        }
-
-        if ((state.row === tile.row - 1 || state.row === tile.row + 1) && (state.column === tile.column - 1 || state.column === tile.column + 1)) {
-            return `${Theme[props.theme]}-tile-highlighted-neighbor`;
-        }
-
-        return '';
-    }
-
     private initializeGraph(): IDictionary<number>[] {
         return Shared.fillArray(this.gridDefinition.numberOfRows * this.gridDefinition.numberOfColumns, index => {
             const neighbors: IDictionary<number> = {},
@@ -264,6 +259,7 @@ export class GridState {
         });
     }
 
+    public animator?: Animator;
     public tiles: TileContainer[];
     public graph: IDictionary<number>[];
     public gridDefinition: GridDefinition;

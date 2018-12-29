@@ -6,17 +6,6 @@
     z-index: 2;
 }
 
-.light-tile-highlighted {
-    @extend %tile-highlighted;
-    box-shadow: 0px 1px 10px 4px rgba(0, 0, 0, 0.75);
-}
-
-
-.dark-tile-highlighted {
-    @extend %tile-highlighted;
-    box-shadow: 0px 1px 10px 4px rgba(255, 255, 255, 0.75);
-}
-
 @each $theme, $color-map in $color-maps {
     @each $key, $color in $color-map {
         @if $key == 'foreground' {
@@ -38,62 +27,80 @@
 }
 
 .light {
-    .tile {
+    .tile-obscured {
         @extend %tile;
         background-color: map-get($light-colors, midground);
+    }
+
+    .tile-highlighted {
+        @extend %tile-highlighted;
+        box-shadow: 0px 1px 10px 4px rgba(0, 0, 0, 0.75);
+    }
+
+    .tile-highlighted-neighbor {
+        @extend %tile;
     }
 }
 
 
 .dark {
-    .tile {
+    .tile-obscured {
         @extend %tile;
         background-color: map-get($dark-colors, midground);
     }
+
+    .tile-highlighted {
+        @extend %tile-highlighted;
+        box-shadow: 0px 1px 10px 4px rgba(255, 255, 255, 0.75);
+    }
+
+    .tile-highlighted-neighbor {
+        @extend %tile;
+    }
 }
 
-.tile-link-none {
+.tile-boundary-none {
     border-radius: 50%;
 }
 
-.tile-link-all,
-.tile-link-top-right-bottom,
-.tile-link-right-bottom-left,
-.tile-link-bottom-left-top,
-.tile-link-top-right-left,
-.tile-link-top-bottom,
-.tile-link-right-left {
+.tile-boundary-all,
+.tile-boundary-top-right-bottom,
+.tile-boundary-right-bottom-left,
+.tile-boundary-bottom-left-top,
+.tile-boundary-top-right-left,
+.tile-boundary-top-bottom,
+.tile-boundary-right-left {
     border-radius: 0%;
 }
 
-.tile-link-top {
+.tile-boundary-top {
     border-radius: 0% 0% 50% 50%;
 }
 
-.tile-link-right {
+.tile-boundary-right {
     border-radius: 50% 0% 0% 50%;
 }
 
-.tile-link-bottom {
+.tile-boundary-bottom {
     border-radius: 50% 50% 0% 0%;
 }
 
-.tile-link-left {
+.tile-boundary-left {
     border-radius: 0% 50% 50% 0%;
 }
 
-.tile-link-right-bottom {
+.tile-boundary-right-bottom {
     border-radius: 50% 0% 0% 0%;
 }
 
-.tile-link-bottom-left {
+.tile-boundary-bottom-left {
     border-radius: 0% 50% 0% 0%;
 }
 
-.tile-link-top-left {
+.tile-boundary-top-left {
     border-radius: 0% 0% 50% 0%;
 }
 
-.tile-link-top-right {
+.tile-boundary-top-right {
     border-radius: 0% 0% 0% 50%;
 }
