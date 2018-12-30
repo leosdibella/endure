@@ -1,8 +1,9 @@
 import * as React from 'react';
+import { Animator } from '../classes/animator';
 import { GradeState } from '../classes/gradeState';
 import { ICssStyle } from '../interfaces/iCssStyle';
 import { IGradeProps } from '../interfaces/iGradeProps';
-import { GameMode, LetterGrade, Theme } from '../utilities/enum';
+import { AnimationTiming, Theme } from '../utilities/enum';
 import * as Shared from '../utilities/shared';
 
 import '../styles/grade.scss';
@@ -18,28 +19,41 @@ export class Grade extends React.PureComponent<IGradeProps, GradeState> {
         this.props.onUpdate({
             letterGrade: this.props.letterGrade + 1
         });
+
+        this.generateNewAnimator();
     }
 
     private getDuration(): number {
         return GradeState.durations[this.props.difficulty] - (GradeState.durationModifiers[this.props.difficulty] * this.props.stage);
     }
 
-    public readonly state: GradeState = new  GradeState(); // GradeState(this.expandGradeFill.bind(this), this.getDuration(), this.onAnimationComplete.bind(this));
+    private generateNewAnimator(): void {
+        this.setState({
+            animator: new Animator(this.getDuration(), this.expandGradeFill.bind(this), this.onAnimationComplete.bind(this), AnimationTiming.linear)
+        });
+    }
 
-    /* public componentDidUpdate(previousProps: IGradeProps): void {
-        // TODO: Fix THIS
-        if (this.props.gameMode === GameMode.paused) {
-            this.state.animator.togglePaused();
-        } else if (this.props.gameMode === GameMode.inGame) {
-            if (previousProps.gameMode === GameMode.paused) {
-                this.state.animator.togglePaused();
-            } else if (this.props.letterGrade !== previousProps.letterGrade && this.props.letterGrade !== LetterGrade.f) {
-                this.state.animator.animate();
-            }
-        } else {
-            this.state.animator.cancel();
+    private destroyAnimator(): void {
+        if (Shared.isDefined(this.state.animator)) {
+            (this.state.animator as Animator).cancel();
         }
-    } */
+    }
+
+    public readonly state: GradeState = new  GradeState();
+
+    public componentDidUpdate(previousProps: IGradeProps): void {
+        if (Shared.isDefined(this.state.animator) && this.props.gameMode !== previousProps.gameMode) {
+            (this.state.animator as Animator).togglePaused();
+        }
+    }
+
+    public componentDidMount(): void {
+        this.generateNewAnimator();
+    }
+
+    public componentWillUnmount(): void {
+        this.destroyAnimator();
+    }
 
     public render(): JSX.Element {
         const style: ICssStyle = {

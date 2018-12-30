@@ -16,17 +16,7 @@ export class Animator {
     private startTime?: number;
     private id?: number;
     private timingFunction: (timeFraction: number) => number;
-
-    private resetAnimationParameters(): void {
-        if (Shared.isDefined(this.id)) {
-            cancelAnimationFrame(this.id as number);
-        }
-
-        this.id = undefined;
-        this.startTime = undefined;
-        this.pausedTime = undefined;
-        this.onComplete();
-    }
+    private onAnimate = this.loopAnimation.bind(this);
 
     private loopAnimation(time: number): void {
         let timeFraction: number = (time - Shared.castSafeOr(this.startTime, time)) / this.duration;
@@ -34,24 +24,21 @@ export class Animator {
 
         if (timeFraction < 1) {
             this.draw(this.timingFunction(timeFraction));
-            this.id = requestAnimationFrame(this.loopAnimation);
+            this.id = requestAnimationFrame(this.onAnimate);
         } else {
-            this.resetAnimationParameters();
+            this.cancel();
+            this.onComplete();
         }
     }
 
-    public animate(): void {
-        if (Shared.isDefined(this.startTime)) {
-            this.resetAnimationParameters();
-        }
-
+    private animate(): void {
         this.startTime = performance.now();
-        this.id = requestAnimationFrame(this.loopAnimation);
+        this.id = requestAnimationFrame(this.onAnimate);
     }
 
     public cancel(): void {
         if (Shared.isDefined(this.id)) {
-            this.resetAnimationParameters();
+            cancelAnimationFrame(this.id as number);
         }
     }
 
@@ -59,7 +46,7 @@ export class Animator {
         if (Shared.isDefined(this.pausedTime)) {
             this.startTime = performance.now() - ((this.pausedTime as number) - (this.startTime as number) || (this.pausedTime as number));
             this.pausedTime = undefined;
-            this.id = requestAnimationFrame(this.loopAnimation);
+            this.id = requestAnimationFrame(this.onAnimate);
         } else if (Shared.isDefined(this.id)) {
             cancelAnimationFrame(this.id as number);
             this.id = undefined;
@@ -72,6 +59,7 @@ export class Animator {
                        private onComplete: () => void,
                        animationTiming: AnimationTiming) {
         this.duration = Math.max(Math.abs(duration), 1);
-        this.timingFunction = Animator.timingFunctions[Shared.isDefined(AnimationTiming[animationTiming]) ? AnimationTiming[animationTiming] : AnimationTiming.linear];
+        this.timingFunction = Animator.timingFunctions[Shared.isDefined(AnimationTiming[animationTiming]) ? animationTiming : AnimationTiming.linear];
+        this.animate();
     }
 }

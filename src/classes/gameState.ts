@@ -72,7 +72,7 @@ export class GameState {
             gameMode = gameMode === GameMode.paused ? GameMode.inGame : GameMode.paused;
         }
 
-        if (gameMode === GameMode.gameOver || gameMode === GameMode.newGame) {
+        if (gameMode === GameMode.inGame && (state.gameMode === GameMode.gameOver || state.gameMode === GameMode.newGame)) {
             score = 0;
             combo = 0;
             stage = 0;

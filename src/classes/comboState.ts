@@ -3,9 +3,6 @@ import { Difficulty} from '../utilities/enum';
 import { Animator } from './animator';
 
 export class ComboState {
-    private static readonly cssClassThresholdModifier: number = 3;
-    public static readonly minimumViableCombo: number = 2;
-
     public static readonly durationModifiers: IDictionary<number> = {
         [Difficulty.beginner]: 10,
         [Difficulty.low]: 15,
@@ -21,10 +18,6 @@ export class ComboState {
         [Difficulty.hard]: 2400,
         [Difficulty.expert]: 2200
     };
-
-    public static getClassFromTimeFraction(timeFraction: number): string {
-        return `combo-${Math.ceil(timeFraction * ComboState.cssClassThresholdModifier)}`;
-    }
 
     public animator?: Animator;
 
