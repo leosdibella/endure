@@ -5,3 +5,87 @@
     display: flex;
     justify-content: space-around;
 }
+
+$header-side-margin-width: $global-side-bar-width + 10;
+
+.header {
+    @extend %global-flex-row;
+    width: 100%;
+    top: 0px;
+    position: absolute;
+    font-size: 35px;
+    padding: 10px 0px 10px 0px;
+    justify-content: space-between;
+    flex: 1;
+    margin-left: $header-side-margin-width;
+    margin-right: $header-side-margin-width;
+    flex-wrap: nowrap;
+    max-height: 100px;
+}
+
+.header.dark {
+    .header-combo-container {
+        .combo-3 {
+            color: map-get($dark-colors, green);
+        }
+        
+        .combo-2 {
+            color: map-get($dark-colors, orange);
+        }
+        
+        .combo-1 {
+            color: map-get($dark-colors, red);
+        }
+    }
+
+    .header-score, .header-combo {
+        color: map-get($dark-colors, foreground);
+    }
+}
+
+.header.light {
+    .header-combo-container {
+        .healthy-combo {
+            color: map-get($light-colors, green);
+        }
+        
+        .warning-combo {
+            color: map-get($light-colors, orange);
+        }
+        
+        .danger-combo {
+            color: map-get($light-colors, red);
+        }
+    }
+
+    .header-score, .header-combo {
+        color: map-get($light-colors, foreground);
+    }
+}
+
+.header-combo-container {
+    margin-top: 45px;
+}
+
+.header-count-down {
+    margin-left: 5px;
+}
+
+.header-count-down {
+    span:last-child, span:first-child {
+        font-size: 30px;
+    }
+
+    span:nth-child(2) {
+        font-size: 24px;
+    }
+
+    span:nth-child(4) {
+        font-size: 16px;
+    }
+}
+
+.header-score {
+    margin-top: 50px;
+    margin-right: $header-side-margin-width + 90;
+}

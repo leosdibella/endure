@@ -90,8 +90,8 @@ enum Orientation {
 }
 
 enum Theme {
-    dark = 0,
-    light
+    light = 0,
+    dark
 }
 
 enum TileType {

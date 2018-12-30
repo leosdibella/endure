@@ -16,6 +16,8 @@ export class Tile extends React.PureComponent<ITileProps, object> {
     private static readonly highlightedNeighborMargin: number = 1;
     private static readonly highlightedNeighborPadding: number = 3;
     private static readonly dimensionWithMargin: number = Tile.dimension + Tile.highlightedMargin;
+    private static readonly boundaryClasses: string[] = Shared.getNumericEnumKeys(Boundary).map(b => `tile-boundary-${Shared.formatCamelCaseString(Boundary[b])}`);
+    private static readonly tileTypes: string[] = Shared.getNumericEnumKeys(TileType).map(tt => `tile-${Shared.formatCamelCaseString(TileType[tt])}`);
 
     private static readonly layoutModifiers: IDictionary<number> = {
         [TileType.standard]: 0,
@@ -23,9 +25,6 @@ export class Tile extends React.PureComponent<ITileProps, object> {
         [TileType.highlighted]: Tile.highlightedMargin + Tile.highlightedPadding,
         [TileType.highlightedNeighbor]: Tile.highlightedNeighborMargin + Tile.highlightedNeighborPadding
     };
-
-    private static readonly boundaryClasses: string[] = Shared.getNumericEnumKeys(Boundary).map(b => `tile-boundary-${Shared.formatCamelCaseString(Boundary[b])}`);
-    private static readonly tileTypes: string[] = Shared.getNumericEnumKeys(TileType).map(tt => `tile-${Shared.formatCamelCaseString(TileType[tt])}`);
 
     private readonly onClick: () => void = this.handleClick.bind(this);
 
@@ -62,6 +61,7 @@ export class Tile extends React.PureComponent<ITileProps, object> {
     }
 
     private handleClick(): void {
+
         this.props.onUpdate(this.props.container.row, this.props.container.column);
     }
 

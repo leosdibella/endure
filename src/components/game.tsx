@@ -5,9 +5,12 @@ import { IGameProps } from '../interfaces/iGameProps';
 import { IGameUpdate } from '../interfaces/iGameUpdate';
 import { DomEvent, GameMode, Theme } from '../utilities/enum';
 import * as Shared from '../utilities/shared';
+import { Combo } from './combo';
+import { Grade } from './grade';
 import { Grid } from './grid';
-import { Header } from './header';
 import { Overlay } from './overlay';
+
+import '../styles/game.scss';
 
 export class Game extends React.PureComponent<IGameProps, GameState> {
     private static readonly overlayKey: number = 1;
@@ -16,13 +19,11 @@ export class Game extends React.PureComponent<IGameProps, GameState> {
 
     private readonly onKeyDown: (keyboardEvent: KeyboardEvent) => void = this.handleKeyDown.bind(this);
     private readonly onUpdate: (update: IGameUpdate) => void = this.handleUpdate.bind(this);
-    private readonly onThemeChange: () => void = this.toggleTheme.bind(this);
-    private readonly onQuit: () => void = this.quit.bind(this);
 
     private readonly keyDownEventActionMap: IDictionary<() => void> = {
         p: this.togglePaused.bind(this),
-        q: this.onQuit,
-        v: this.onThemeChange
+        q: this.quit.bind(this),
+        v: this.toggleTheme.bind(this)
     };
 
     private toggleTheme(): void {
@@ -49,8 +50,11 @@ export class Game extends React.PureComponent<IGameProps, GameState> {
 
     private handleUpdate(update: IGameUpdate): void {
         if (Shared.isInteger(update.theme)) {
-            this.onThemeChange();
-            this.onQuit();
+            this.props.onUpdate({
+                theme: update.theme
+            });
+
+            this.quit();
         } else {
             const nextState: GameState = GameState.getNextStateFromUpdate(update, this.state);
 
@@ -67,46 +71,63 @@ export class Game extends React.PureComponent<IGameProps, GameState> {
         }
     }
 
-    private getOverlay(): JSX.Element | boolean {
+    private getLayout(): JSX.Element[] {
+        const elements: JSX.Element[] = [];
+
         if (this.state.gameMode !== GameMode.inGame) {
-            return <Overlay key={Game.overlayKey}
-                            theme={this.props.theme}
-                            gameMode={this.state.gameMode}
-                            playerName={this.state.playerName}
-                            difficulty={this.state.difficulty}
-                            highScores={this.state.highScores}
-                            onUpdate={this.onUpdate}>
-                   </Overlay>;
+            elements.push(<Overlay key={Game.overlayKey}
+                                   theme={this.props.theme}
+                                   gameMode={this.state.gameMode}
+                                   playerName={this.state.playerName}
+                                   difficulty={this.state.difficulty}
+                                   highScores={this.state.highScores}
+                                   onUpdate={this.onUpdate}>
+                          </Overlay>);
         }
 
-        return false;
-    }
-
-    private getInProgressLayout(): JSX.Element[] | boolean {
         if (GameState.isInProgress(this.state.gameMode)) {
-            return [
-                <Header key={Game.headerKey}
-                        theme={this.props.theme}
-                        gameMode={this.state.gameMode}
-                        combo={this.state.combo}
-                        difficulty={this.state.difficulty}
-                        letterGrade={this.state.letterGrade}
-                        score={this.state.score}
-                        playerName={this.state.playerName}
-                        stage={this.state.stage}
-                        onUpdate={this.onUpdate}>
-                </Header>,
-                <Grid key={Game.gridKey}
-                      difficulty={this.state.difficulty}
-                      theme={this.props.theme}
-                      gameMode={this.state.gameMode}
-                      orientation={this.props.orientation}
-                      onUpdate={this.onUpdate}>
-                </Grid>
-            ];
+            elements.push(<div key={Game.headerKey}
+                               className={`header ${Theme[this.props.theme]}`}>
+                              <div className='header-left-hud'>
+                                   <Combo combo={this.state.combo}
+                                          stage={this.state.stage}
+                                          theme={this.props.theme}
+                                          difficulty={this.state.difficulty}
+                                          onUpdate={this.onUpdate}
+                                          letterGrade={this.state.letterGrade}
+                                          gameMode={this.state.gameMode}>
+                                  </Combo>
+                                  <div className='header-name'>
+                                      {this.state.playerName}
+                                  </div>
+                              </div>
+                              <Grade theme={this.props.theme}
+                                     letterGrade={this.state.letterGrade}
+                                     difficulty={this.state.difficulty}
+                                     stage={this.state.stage}
+                                     gameMode={this.state.gameMode}
+                                     onUpdate={this.onUpdate}>
+                              </Grade>
+                              <div className='header-right-hud'>
+                                  <div className='header-score'>
+                                      Score: {this.state.score}
+                                  </div>
+                                  <div className='header-stage'>
+                                      Stage: {this.state.stage}
+                                  </div>
+                              </div>
+                          </div>);
+
+            elements.push(<Grid key={Game.gridKey}
+                                difficulty={this.state.difficulty}
+                                theme={this.props.theme}
+                                gameMode={this.state.gameMode}
+                                orientation={this.props.orientation}
+                                onUpdate={this.onUpdate}>
+                          </Grid>);
         }
 
-        return false;
+        return elements;
     }
 
     public readonly state: GameState = GameState.getPersistedState();
@@ -121,8 +142,7 @@ export class Game extends React.PureComponent<IGameProps, GameState> {
 
     public render(): JSX.Element {
         return <div className={`game ${Theme[this.props.theme]}`}>
-            {this.getOverlay()}
-            {this.getInProgressLayout()}
+            {this.getLayout()}
         </div>;
     }
 }
