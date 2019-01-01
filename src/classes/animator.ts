@@ -19,15 +19,18 @@ export class Animator {
     private onAnimate = this.loopAnimation.bind(this);
 
     private loopAnimation(time: number): void {
-        let timeFraction: number = (time - Shared.castSafeOr(this.startTime, time)) / this.duration;
-        timeFraction = Math.min(timeFraction, 1);
+        if (Shared.isDefined(this.id)) {
+            let timeFraction: number = (time - (this.startTime as number)) / this.duration;
 
-        if (timeFraction < 1) {
-            this.draw(this.timingFunction(timeFraction));
-            this.id = requestAnimationFrame(this.onAnimate);
-        } else {
-            this.cancel();
-            this.onComplete();
+            timeFraction = Math.min(timeFraction, 1);
+
+            if (timeFraction < 1) {
+                this.draw(this.timingFunction(timeFraction));
+                this.id = requestAnimationFrame(this.onAnimate);
+            } else {
+                this.cancel();
+                this.onComplete();
+            }
         }
     }
 
@@ -39,6 +42,10 @@ export class Animator {
     public cancel(): void {
         if (Shared.isDefined(this.id)) {
             cancelAnimationFrame(this.id as number);
+
+            this.id = undefined;
+            this.startTime = undefined;
+            this.pausedTime = undefined;
         }
     }
 
@@ -57,7 +64,7 @@ export class Animator {
     public constructor(private duration: number,
                        private draw: (progress: number) => void,
                        private onComplete: () => void,
-                       animationTiming: AnimationTiming) {
+                       animationTiming: AnimationTiming = AnimationTiming.linear) {
         this.duration = Math.max(Math.abs(duration), 1);
         this.timingFunction = Animator.timingFunctions[Shared.isDefined(AnimationTiming[animationTiming]) ? animationTiming : AnimationTiming.linear];
         this.animate();

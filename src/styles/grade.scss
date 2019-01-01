@@ -5,18 +5,51 @@
     padding: 5px 0px;
     height: 85px;
     width: 90px;
+    position: relative;
+    z-index: 1;
 }
 
-.light .grade-container { 
-    @extend %grade-container;
-    border-color: map-get($light-colors, red);
-    color: map-get($light-colors, red);
+%grade-fill {
+    border-radius: 50%;
+    position: absolute;
+    top: -85px;
+    z-index: 1;
+    margin: auto;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
 }
 
-.dark .grade-container {
-    @extend %grade-container;
-    border-color: map-get($dark-colors, red);
-    color: map-get($dark-colors, red);
+.grade-letter-grade {
+    position: relative;
+    z-index: 3;
+}
+
+.light {
+    .grade-container { 
+        @extend %grade-container;
+        border-color: map-get($light-colors, red);
+        color: map-get($light-colors, red);
+    }
+
+    .grade-fill {
+        @extend %grade-fill;
+        background-color: map-get($light-colors, foreground);
+    }
+}
+
+.dark {
+    .grade-container {
+        @extend %grade-container;
+        border-color: map-get($dark-colors, red);
+        color: map-get($dark-colors, red);
+    }
+
+    .grade-fill {
+        @extend %grade-fill;
+        background-color: map-get($dark-colors, foreground);
+    }
 }
 
 .grade-container {

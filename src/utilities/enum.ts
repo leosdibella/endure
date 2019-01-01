@@ -63,7 +63,6 @@ enum GameMode {
     inGame,
     gameOver,
     paused,
-    quitConfirmation,
     highScores,
     setTheme
 }

@@ -9,6 +9,7 @@ function formatDatePart(datePart: number): string {
 const totalPercentage: number = 100;
 const percentageDecimalPlaceCutoff: number = 2;
 const decimalBase: number = 10;
+const dateStampLength: number = 10;
 
 function isDefined<T>(value: T): boolean {
     return value !== undefined;
@@ -90,6 +91,7 @@ export {
     totalPercentage,
     percentageDecimalPlaceCutoff,
     decimalBase,
+    dateStampLength,
     isDefined,
     isNotNull,
     isObject,

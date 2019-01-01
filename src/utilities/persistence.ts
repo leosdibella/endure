@@ -3,7 +3,7 @@ import { IHighScore } from '../interfaces/iHighScore';
 import { Difficulty, Theme } from './enum';
 import * as Shared from './shared';
 
-type Storable = string | number | Difficulty | Theme | IHighScore[];
+type Storable = string | number | Difficulty | Theme | IHighScore[][];
 type StorableEnumValue = Difficulty | Theme;
 
 function isLocalStorageSupported(): boolean {
@@ -56,18 +56,25 @@ function fetchStorableEnumValue(key: string, collection: IEnum, defaultValue: St
     return defaultValue;
 }
 
-function mapHHighScores(highScores: IHighScore[]): IHighScore[] {
-    const highScoreArray: IHighScore[] = [];
+function mapHHighScores(highScores: IHighScore[][]): IHighScore[][] {
+    const highScoreArray: IHighScore[][] = Shared.fillArray(Shared.getNumericEnumKeys(Difficulty).length, () => []);
 
     if (Array.isArray(highScores)) {
-        highScores.forEach(hs => {
-            if (Shared.isObject(hs)
-                    && Shared.isString(hs.name)
-                    && Shared.isString(hs.dateStamp)
-                    && Shared.isInteger(hs.value)
-                    && Shared.isInteger(hs.difficulty)
-                    && Shared.isDefined(Difficulty[hs.difficulty])) {
-                highScoreArray.push(hs);
+        highScores.forEach((hsd, difficulty) => {
+            if (Array.isArray(hsd) && Shared.isDefined(Difficulty[difficulty])) {
+                hsd.forEach(hs => {
+                    if (Shared.isObject(hs)
+                            && Shared.isString(hs.name)
+                            && hs.name.length > 0
+                            && Shared.isString(hs.dateStamp)
+                            && hs.dateStamp.length === Shared.dateStampLength
+                            && Shared.isInteger(hs.value)
+                            && hs.value > 0
+                            && Shared.isInteger(hs.difficulty)
+                            && Shared.isDefined(Difficulty[hs.difficulty])) {
+                        highScoreArray[difficulty].push(hs);
+                    }
+                });
             }
         });
     }
@@ -75,8 +82,8 @@ function mapHHighScores(highScores: IHighScore[]): IHighScore[] {
     return highScoreArray;
 }
 
-function fetchHighScores(key: string): IHighScore[] {
-    return mapHHighScores(fetchData<Storable>(key) as IHighScore[]);
+function fetchHighScores(key: string): IHighScore[][] {
+    return mapHHighScores(fetchData<Storable>(key) as IHighScore[][]);
 }
 
 export {

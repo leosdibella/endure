@@ -91,7 +91,6 @@ export class Game extends React.PureComponent<IGameProps, GameState> {
                               <div className='header-left-hud'>
                                    <Combo combo={this.state.combo}
                                           stage={this.state.stage}
-                                          theme={this.props.theme}
                                           difficulty={this.state.difficulty}
                                           onUpdate={this.onUpdate}
                                           letterGrade={this.state.letterGrade}
@@ -101,8 +100,7 @@ export class Game extends React.PureComponent<IGameProps, GameState> {
                                       {this.state.playerName}
                                   </div>
                               </div>
-                              <Grade theme={this.props.theme}
-                                     letterGrade={this.state.letterGrade}
+                              <Grade letterGrade={this.state.letterGrade}
                                      difficulty={this.state.difficulty}
                                      stage={this.state.stage}
                                      gameMode={this.state.gameMode}

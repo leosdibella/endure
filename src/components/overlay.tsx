@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { OverlayState } from '../classes/overlayState';
 import { IDictionary } from '../interfaces/iDictionary';
+import { IHighScore } from '../interfaces/iHighScore';
 import { IOverlayMenuOption } from '../interfaces/iOverlayMenuOption';
 import { IOverlayProps } from '../interfaces/iOverlayProps';
 import { Difficulty, DomEvent, GameMode, Theme } from '../utilities/enum';
@@ -12,6 +13,29 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
     private static readonly firstPositionKey: number = 1;
     private static readonly secondPositionKey: number = 2;
     private static readonly thirdPositionKey: number = 3;
+
+    private static formatHighScore(highScore: IHighScore, index: number): JSX.Element {
+        return <div key={index}
+                    className='overlay-high-score'>
+                    <div>
+                        <span>
+                            {highScore.dateStamp}
+                        </span>
+                         <span>
+                            {highScore.name}
+                        </span>
+                    </div>
+                    <div>
+                        <span>
+                             {Shared.formatCamelCaseString(Difficulty[highScore.difficulty], ' ', true)}
+                        </span>
+                        <span>
+                            {highScore.value}
+                        </span>
+                     </div>
+               </div>;
+    }
+
     private readonly onKeyDown: (keyboardEvent: KeyboardEvent) => void = this.handleKeyDown.bind(this);
     private readonly onNameChange: (event: React.ChangeEvent<HTMLInputElement>) => void = this.handleNameChange.bind(this);
 
@@ -77,26 +101,8 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
     }
 
     private getHighScoresOverlayExtras(): JSX.Element {
-        const localHighScores: JSX.Element[] = this.props.highScores.map((s, i) => <div key={i}
-                                                                                        className='overlay-high-score'>
-                                                                                        <div>
-                                                                                            <span>
-                                                                                                {s.dateStamp}
-                                                                                            </span>
-                                                                                            <span>
-                                                                                                {s.name}
-                                                                                            </span>
-                                                                                        </div>
-                                                                                        <div>
-                                                                                            <span>
-                                                                                                {Shared.formatCamelCaseString(Difficulty[s.difficulty], ' ', true)}
-                                                                                            </span>
-                                                                                            <span>
-                                                                                                {s.value}
-                                                                                            </span>
-                                                                                        </div>
-                                                                                    </div>),
-               globalHighScores: JSX.Element[] = [];
+        const localHighScores: JSX.Element[] = this.props.highScores[this.props.difficulty].map(Overlay.formatHighScore),
+              globalHighScores: JSX.Element[] = [];
 
         return <div key={Overlay.secondPositionKey}
                     className='overlay-high-scores-listings'>

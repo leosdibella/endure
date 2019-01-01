@@ -61,24 +61,13 @@ export class OverlayMenu {
         },
         (callback: (update: IGameUpdate) => void): IOverlayMenuOption => {
             return {
-                actions: [GameMode.paused, GameMode.newGame].map(gm => () => callback({
+                actions: [GameMode.inGame, GameMode.newGame].map(gm => () => callback({
                     gameMode: gm
                 })),
                 className: 'paused',
                 defaultOptionsIndex: 0,
                 options: ['Put me in coach!', 'I Quit.'],
                 title:'Timeout'
-            };
-        },
-        (callback: (update: IGameUpdate) => void): IOverlayMenuOption => {
-            return {
-                actions: [GameMode.newGame, GameMode.inGame].map(gm => () => callback({
-                    gameMode: gm
-                })),
-                className: 'quit-confirmation',
-                defaultOptionsIndex: 1,
-                options: ['Yep', 'Nope'],
-                title: 'Quit?'
             };
         },
         (callback: (update: IGameUpdate) => void): IOverlayMenuOption => {

@@ -1,0 +1,35 @@
+.header.dark {
+    .header-combo-container {
+        .combo-3 {
+            color: map-get($dark-colors, green);
+        }
+        
+        .combo-2 {
+            color: map-get($dark-colors, orange);
+        }
+        
+        .combo-1 {
+            color: map-get($dark-colors, red);
+        }
+    }
+}
+
+.header.light {
+    .header-combo-container {
+        .healthy-combo {
+            color: map-get($light-colors, green);
+        }
+        
+        .warning-combo {
+            color: map-get($light-colors, orange);
+        }
+        
+        .danger-combo {
+            color: map-get($light-colors, red);
+        }
+    }
+}
+
+.header-combo-container {
+    margin-top: 45px;
+}

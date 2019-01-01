@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { GridState } from '../classes/gridState';
 import { TileContainer } from '../classes/tileContainer';
+import { ICssStyle } from '../interfaces/iCssStyle';
 import { IDictionary } from '../interfaces/iDictionary';
 import { IGridProps } from '../interfaces/iGridProps';
 import { IGridReduction } from '../interfaces/iGridReduction';
-import { Boundary, DetonationRange, DomEvent, GameMode, Theme } from '../utilities/enum';
+import { Boundary, DetonationRange, DomEvent, GameMode, Orientation, Theme } from '../utilities/enum';
 import * as Shared from '../utilities/shared';
 import { Tile } from './tile';
 
@@ -159,9 +160,14 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
                                                                         gridDefinition={this.state.gridDefinition}
                                                                         gameMode={this.props.gameMode}
                                                                         container={tile}
-                                                                        onUpdate={this.onUpdate}/>);
+                                                                        onUpdate={this.onUpdate}/>),
+              style: ICssStyle = {
+                  height: this.props.orientation === Orientation.portrait ? '685px' : '500px',
+                  width: this.props.orientation === Orientation.portrait ? '475px' : '700px'
+              };
 
-        return <div className={`grid ${Theme[this.props.theme]}`}>
+        return <div className={`grid ${Theme[this.props.theme]}`}
+                    style={style}>
                     {tiles}
                </div>;
     }

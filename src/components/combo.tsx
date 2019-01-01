@@ -3,7 +3,7 @@ import { Animator } from '../classes/animator';
 import { ComboState } from '../classes/comboState';
 import { IComboProps } from '../interfaces/iComboProps';
 import { ICssStyle } from '../interfaces/iCssStyle';
-import { AnimationTiming, Theme } from '../utilities/enum';
+import { AnimationTiming } from '../utilities/enum';
 import * as Shared from '../utilities/shared';
 
 import '../styles/combo.scss';
@@ -72,7 +72,7 @@ export class Combo extends React.PureComponent<IComboProps, ComboState> {
             width: `${ this.state.overlayWidthPercentage.toFixed(Shared.percentageDecimalPlaceCutoff)}%`
         };
 
-        return <span className={`header-combo-container ${Theme[this.props.theme]} ${this.props.combo < Combo.minimumViableCombo ? ' hide' : ''}`}>
+        return <span className={`header-combo-container ${this.props.combo < Combo.minimumViableCombo ? ' hide' : ''}`}>
                     <div className='header-combo combo-bar-base'>
                         Combo: x{this.props.combo}
                     </div>

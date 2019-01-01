@@ -3,7 +3,7 @@ import { Animator } from '../classes/animator';
 import { GradeState } from '../classes/gradeState';
 import { ICssStyle } from '../interfaces/iCssStyle';
 import { IGradeProps } from '../interfaces/iGradeProps';
-import { AnimationTiming, Theme } from '../utilities/enum';
+import { LetterGrade } from '../utilities/enum';
 import * as Shared from '../utilities/shared';
 
 import '../styles/grade.scss';
@@ -16,11 +16,11 @@ export class Grade extends React.PureComponent<IGradeProps, GradeState> {
     }
 
     private onAnimationComplete(): void {
-        this.props.onUpdate({
-            letterGrade: this.props.letterGrade + 1
-        });
-
-        this.generateNewAnimator();
+        this.setState({
+            animator: undefined
+        }, () => this.props.onUpdate({
+            letterGrade: Math.min(this.props.letterGrade + 1, LetterGrade.f)
+        }));
     }
 
     private getDuration(): number {
@@ -29,7 +29,7 @@ export class Grade extends React.PureComponent<IGradeProps, GradeState> {
 
     private generateNewAnimator(): void {
         this.setState({
-            animator: new Animator(this.getDuration(), this.expandGradeFill.bind(this), this.onAnimationComplete.bind(this), AnimationTiming.linear)
+            animator: new Animator(this.getDuration(), this.expandGradeFill.bind(this), this.onAnimationComplete.bind(this))
         });
     }
 
@@ -44,6 +44,10 @@ export class Grade extends React.PureComponent<IGradeProps, GradeState> {
     public componentDidUpdate(previousProps: IGradeProps): void {
         if (Shared.isDefined(this.state.animator) && this.props.gameMode !== previousProps.gameMode) {
             (this.state.animator as Animator).togglePaused();
+        }
+
+        if (!Shared.isDefined(this.state.animator) && this.props.letterGrade !== LetterGrade.f) {
+            this.generateNewAnimator();
         }
     }
 
@@ -61,12 +65,12 @@ export class Grade extends React.PureComponent<IGradeProps, GradeState> {
             width: this.state.fillRadiusPercentage
         };
 
-        return <div className={`grade-container ${Theme[this.props.theme]}`}>
+        return <div className='grade-container'>
                     <div className='grade-letter-grade'>
                         {GradeState.letterGrades[this.props.letterGrade]}
                     </div>
                     <div className='grade-fill'
-                         style={style}>
+                        style={style}>
                     </div>
                </div>;
     }

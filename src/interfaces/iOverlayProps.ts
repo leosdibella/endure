@@ -6,7 +6,7 @@ export interface IOverlayProps {
     difficulty: Difficulty;
     theme: Theme;
     gameMode: GameMode;
-    highScores: IHighScore[];
+    highScores: IHighScore[][];
     playerName: string;
     onUpdate(updates: IGameUpdate): void;
 }

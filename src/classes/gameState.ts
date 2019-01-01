@@ -41,46 +41,44 @@ export class GameState {
 
     public static getNextStateFromUpdate(update: IGameUpdate, state: GameState): GameState {
         const playerName: string = Shared.castSafeOr(update.playerName, state.playerName),
-        difficulty: Difficulty =  Shared.castSafeOr(update.difficulty, state.difficulty);
+              difficulty: Difficulty =  Shared.castSafeOr(update.difficulty, state.difficulty),
+              highScores: IHighScore[][] = state.highScores;
 
         let stage: number = state.score,
             score: number = state.score,
             gameMode: GameMode =  Shared.castSafeOr(update.gameMode, state.gameMode),
             letterGrade: number =  Shared.castSafeOr(update.letterGrade, state.letterGrade),
-            highScores: IHighScore[] = state.highScores,
             combo: number = Shared.isDefined(update.dropCombo) ? 0 : state.combo;
 
         if (Shared.isDefined(update.points)) {
             score += ((update.points as number) * Math.max(combo, 1));
             ++combo;
             stage = GameState.getStage(score);
+
+            if (stage > state.stage) {
+                letterGrade = LetterGrade.aPlus;
+            }
         }
 
         if (letterGrade === LetterGrade.f) {
             gameMode = GameMode.gameOver;
         }
 
-        if (gameMode === GameMode.gameOver) {
-            highScores = highScores.concat({
-                                        dateStamp: Shared.getDateStamp(new Date()),
-                                        difficulty,
-                                        name: state.playerName,
-                                        value: score
-                                   }).sort((a, b) => b.value - a.value)
-                                     .slice(0, GameState.numberOfHighScoresToPersist);
-        } else if (GameState.isInProgress(state.gameMode) && GameState.isInProgress(gameMode) && state.gameMode !== gameMode) {
-            gameMode = gameMode === GameMode.paused ? GameMode.inGame : GameMode.paused;
+        if (gameMode === GameMode.gameOver && score > 0) {
+            highScores[difficulty] = highScores[difficulty].concat({
+                                                                dateStamp: Shared.getDateStamp(new Date()),
+                                                                difficulty,
+                                                                name: state.playerName,
+                                                                value: score
+                                                            }).sort((a, b) => b.value - a.value)
+                                                              .slice(0, GameState.numberOfHighScoresToPersist);
         }
 
-        if (gameMode === GameMode.inGame && (state.gameMode === GameMode.gameOver || state.gameMode === GameMode.newGame)) {
+        if (!GameState.isInProgress(gameMode)) {
             score = 0;
             combo = 0;
             stage = 0;
             letterGrade = LetterGrade.aPlus;
-        }
-
-        if (gameMode === GameMode.newGame && state.gameMode === GameMode.inGame) {
-            gameMode = GameMode.quitConfirmation;
         }
 
         return new GameState(gameMode,
@@ -95,7 +93,7 @@ export class GameState {
 
     public constructor(public gameMode: GameMode,
                        public difficulty: Difficulty,
-                       public highScores: IHighScore[],
+                       public highScores: IHighScore[][],
                        public playerName: string,
                        public combo: number = 0,
                        public score: number = 0,

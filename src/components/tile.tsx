@@ -14,7 +14,7 @@ export class Tile extends React.PureComponent<ITileProps, object> {
     private static readonly highlightedMargin: number = 3;
     private static readonly highlightedPadding: number = 5;
     private static readonly highlightedNeighborMargin: number = 1;
-    private static readonly highlightedNeighborPadding: number = 3;
+    private static readonly highlightedNeighborPadding: number = 1;
     private static readonly dimensionWithMargin: number = Tile.dimension + Tile.highlightedMargin;
     private static readonly boundaryClasses: string[] = Shared.getNumericEnumKeys(Boundary).map(b => `tile-boundary-${Shared.formatCamelCaseString(Boundary[b])}`);
     private static readonly tileTypes: string[] = Shared.getNumericEnumKeys(TileType).map(tt => `tile-${Shared.formatCamelCaseString(TileType[tt])}`);
