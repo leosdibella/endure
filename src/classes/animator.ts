@@ -7,9 +7,7 @@ export class Animator {
 
     private static readonly timingFunctions: IDictionary<(timeFraction: number) => number> = {
         [AnimationTiming.linear]: (timeFraction: number) => timeFraction,
-        [AnimationTiming.accelerate]: (timeFraction: number) => Math.pow(timeFraction, Animator.accelerationExponent),
-        // TODO: Implmenet bounce function
-        [AnimationTiming.bounceEaseOut]: (timeFraction: number) => timeFraction
+        [AnimationTiming.accelerate]: (timeFraction: number) => Math.pow(timeFraction, Animator.accelerationExponent)
     };
 
     private pausedTime?: number;
@@ -28,45 +26,37 @@ export class Animator {
                 this.draw(this.timingFunction(timeFraction));
                 this.id = requestAnimationFrame(this.onAnimate);
             } else {
-                this.cancel();
+                this.stop();
                 this.onComplete();
             }
         }
     }
 
-    private animate(): void {
-        this.startTime = performance.now();
-        this.id = requestAnimationFrame(this.onAnimate);
-    }
-
-    public cancel(): void {
+    public stop(): void {
         if (Shared.isDefined(this.id)) {
             cancelAnimationFrame(this.id as number);
-
             this.id = undefined;
             this.startTime = undefined;
             this.pausedTime = undefined;
         }
     }
 
-    public togglePaused(): void {
-        if (Shared.isDefined(this.pausedTime)) {
-            this.startTime = performance.now() - ((this.pausedTime as number) - (this.startTime as number) || (this.pausedTime as number));
-            this.pausedTime = undefined;
-            this.id = requestAnimationFrame(this.onAnimate);
-        } else if (Shared.isDefined(this.id)) {
-            cancelAnimationFrame(this.id as number);
-            this.id = undefined;
-            this.pausedTime = performance.now();
-        }
+    public pause(): void {
+        this.stop();
+        this.pausedTime = performance.now();
+    }
+
+    public start(): void {
+        this.startTime = performance.now() - (Shared.isDefined(this.pausedTime) ? (this.pausedTime as number) - (this.startTime as number) : 0);
+        this.pausedTime = undefined;
+        this.id = requestAnimationFrame(this.onAnimate);
     }
 
     public constructor(private duration: number,
                        private draw: (progress: number) => void,
-                       private onComplete: () => void,
+                       private onComplete: (passThrough?: () => void) => void,
                        animationTiming: AnimationTiming = AnimationTiming.linear) {
         this.duration = Math.max(Math.abs(duration), 1);
         this.timingFunction = Animator.timingFunctions[Shared.isDefined(AnimationTiming[animationTiming]) ? animationTiming : AnimationTiming.linear];
-        this.animate();
     }
 }

@@ -2,8 +2,7 @@ import * as React from 'react';
 import { Animator } from '../classes/animator';
 import { ComboState } from '../classes/comboState';
 import { IComboProps } from '../interfaces/iComboProps';
-import { ICssStyle } from '../interfaces/iCssStyle';
-import { AnimationTiming } from '../utilities/enum';
+import { GameMode } from '../utilities/enum';
 import * as Shared from '../utilities/shared';
 
 import '../styles/combo.scss';
@@ -12,22 +11,24 @@ export class Combo extends React.PureComponent<IComboProps, ComboState> {
     private static readonly cssClassThresholdModifier: number = 3;
     private static readonly minimumViableCombo: number = 2;
 
-    private adjustOverlay(timeFraction: number): void {
+    private onDrawAnimationFrame: (timeFraction: number) => void = this.drawAnimationFrame.bind(this);
+    private onAnimationComplete: () => void = this.completeAnimation.bind(this);
+
+    private drawAnimationFrame(timeFraction: number): void {
         this.setState({
             overlayClass: `combo-${Math.ceil(timeFraction * Combo.cssClassThresholdModifier)}`,
             overlayWidthPercentage: ((1 - timeFraction) * Shared.totalPercentage)
         });
     }
 
-    private onAnimationComplete(): void {
+    private completeAnimation(): void {
         this.setState({
+            animator: undefined,
             overlayClass: '',
             overlayWidthPercentage: 0
-        });
-
-        this.props.onUpdate({
+        }, () => this.props.onUpdate({
             dropCombo: true
-        });
+        }));
     }
 
     private getDuration(): number {
@@ -36,13 +37,13 @@ export class Combo extends React.PureComponent<IComboProps, ComboState> {
 
     private generateNewAnimator(): void {
         this.setState({
-            animator: new Animator(this.getDuration(), this.adjustOverlay.bind(this), this.onAnimationComplete.bind(this), AnimationTiming.linear)
-        });
+            animator: new Animator(this.getDuration(), this.onDrawAnimationFrame, this.onAnimationComplete)
+        }, (this.state.animator as Animator).start);
     }
 
-    private destroyAnimator(): void {
+    private stopAnimator(): void {
         if (Shared.isDefined(this.state.animator)) {
-            (this.state.animator as Animator).cancel();
+            (this.state.animator as Animator).stop();
         }
     }
 
@@ -50,11 +51,11 @@ export class Combo extends React.PureComponent<IComboProps, ComboState> {
 
     public componentDidUpdate(previousProps: IComboProps): void {
         if (Shared.isDefined(this.state.animator) && this.props.gameMode !== previousProps.gameMode) {
-            (this.state.animator as Animator).togglePaused();
-        }
+            const animator: Animator = (this.state.animator as Animator);
 
-        if (this.props.combo >= Combo.minimumViableCombo && this.props.combo !== previousProps.combo) {
-            this.destroyAnimator();
+            this.props.gameMode === GameMode.paused ? animator.pause() : animator.start();
+        } else if (this.props.combo >= Combo.minimumViableCombo && this.props.combo !== previousProps.combo) {
+            this.stopAnimator();
             this.generateNewAnimator();
         }
     }
@@ -64,11 +65,11 @@ export class Combo extends React.PureComponent<IComboProps, ComboState> {
     }
 
     public componentWillUnmount(): void {
-        this.destroyAnimator();
+        this.stopAnimator();
     }
 
     public render(): JSX.Element {
-        const style: ICssStyle = {
+        const style: React.CSSProperties = {
             width: `${ this.state.overlayWidthPercentage.toFixed(Shared.percentageDecimalPlaceCutoff)}%`
         };
 

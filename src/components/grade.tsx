@@ -1,21 +1,23 @@
 import * as React from 'react';
 import { Animator } from '../classes/animator';
 import { GradeState } from '../classes/gradeState';
-import { ICssStyle } from '../interfaces/iCssStyle';
 import { IGradeProps } from '../interfaces/iGradeProps';
-import { LetterGrade } from '../utilities/enum';
+import { GameMode, LetterGrade } from '../utilities/enum';
 import * as Shared from '../utilities/shared';
 
 import '../styles/grade.scss';
 
 export class Grade extends React.PureComponent<IGradeProps, GradeState> {
-    private expandGradeFill(timeFraction: number): void {
+    private onDrawAnimationFrame: (timeFraction: number) => void = this.drawAnimationFrame.bind(this);
+    private onAnimationComplete: () => void = this.completeAnimation.bind(this);
+
+    private drawAnimationFrame(timeFraction: number): void {
         this.setState({
             fillRadiusPercentage: `${((1 - timeFraction) * Shared.totalPercentage).toFixed(Shared.percentageDecimalPlaceCutoff)}%`
         });
     }
 
-    private onAnimationComplete(): void {
+    private completeAnimation(): void {
         this.setState({
             animator: undefined
         }, () => this.props.onUpdate({
@@ -29,25 +31,28 @@ export class Grade extends React.PureComponent<IGradeProps, GradeState> {
 
     private generateNewAnimator(): void {
         this.setState({
-            animator: new Animator(this.getDuration(), this.expandGradeFill.bind(this), this.onAnimationComplete.bind(this))
-        });
+            animator: new Animator(this.getDuration(), this.onDrawAnimationFrame, this.onAnimationComplete)
+        }, (this.state.animator as Animator).start);
     }
 
-    private destroyAnimator(): void {
+    private stopAnimator(): void {
         if (Shared.isDefined(this.state.animator)) {
-            (this.state.animator as Animator).cancel();
+            (this.state.animator as Animator).stop();
         }
     }
 
     public readonly state: GradeState = new  GradeState();
 
     public componentDidUpdate(previousProps: IGradeProps): void {
-        if (Shared.isDefined(this.state.animator) && this.props.gameMode !== previousProps.gameMode) {
-            (this.state.animator as Animator).togglePaused();
-        }
+        if (Shared.isDefined(this.state.animator)) {
+            const animator: Animator = (this.state.animator as Animator);
 
-        if (!Shared.isDefined(this.state.animator) && this.props.letterGrade !== LetterGrade.f) {
-            this.generateNewAnimator();
+            if (this.props.gameMode !== previousProps.gameMode) {
+                this.props.gameMode === GameMode.paused ? animator.pause() : animator.start();
+            } else if (this.props.letterGrade > previousProps.letterGrade && this.props.letterGrade < LetterGrade.f) {
+                this.stopAnimator();
+                this.generateNewAnimator();
+            }
         }
     }
 
@@ -56,11 +61,11 @@ export class Grade extends React.PureComponent<IGradeProps, GradeState> {
     }
 
     public componentWillUnmount(): void {
-        this.destroyAnimator();
+        this.stopAnimator();
     }
 
     public render(): JSX.Element {
-        const style: ICssStyle = {
+        const style: React.CSSProperties = {
             height: this.state.fillRadiusPercentage,
             width: this.state.fillRadiusPercentage
         };

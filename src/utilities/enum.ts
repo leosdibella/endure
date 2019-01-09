@@ -1,7 +1,6 @@
 enum AnimationTiming {
     linear = 0,
-    accelerate,
-    bounceEaseOut
+    accelerate
 }
 
 enum Boundary {
@@ -67,6 +66,13 @@ enum GameMode {
     setTheme
 }
 
+enum GridMode {
+    ready = 0,
+    rotating,
+    collapsing,
+    cascading
+}
+
 enum LetterGrade {
     aPlus = 0,
     a,
@@ -108,6 +114,7 @@ export {
     Difficulty,
     DomEvent,
     GameMode,
+    GridMode,
     LetterGrade,
     Orientation,
     Theme,

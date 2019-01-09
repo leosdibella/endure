@@ -22,10 +22,10 @@ export class TileContainer {
         Boundary.left
     ];
 
-    public static readonly numberOfColors: number = Shared.getNumericEnumKeys(Color).length - 1;
+    public static readonly numberOfColors: number = Shared.getNumericEnumKeys(Color).length;
 
     public static getRandomColor(hasDetonationRange: boolean = false): number {
-        return hasDetonationRange ? Color.transparent : (Math.floor(Math.random() * TileContainer.numberOfColors) + 1);
+        return hasDetonationRange ? Color.transparent : (Math.floor(Math.random() * (TileContainer.numberOfColors - 1)) + 1);
     }
 
     public static reverseBoundaryDirection(boundaryIndex: Boundary): Boundary {
@@ -45,10 +45,6 @@ export class TileContainer {
 
     public cloneWith(color: Color, detonationRange: DetonationRange, boundary?: Boundary,): TileContainer {
         return new TileContainer(this.row, this.column, this.index, color, detonationRange, Shared.castSafeOr(boundary, Boundary.none));
-    }
-
-    public clone(): TileContainer {
-        return new TileContainer(this.row, this.column, this.index, this.color, this.detonationRange, this.boundary);
     }
 
     public constructor(public readonly row: number,

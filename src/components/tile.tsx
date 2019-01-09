@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { ICssStyle } from '../interfaces/iCssStyle';
 import { IDictionary } from '../interfaces/iDictionary';
 import { ITileProps } from '../interfaces/iTileProps';
-import { Boundary, Color, DetonationRange, GameMode, TileType } from '../utilities/enum';
+import { Boundary, Color, DetonationRange, GameMode, GridMode, TileType } from '../utilities/enum';
 import { centralRotationMap } from '../utilities/rotation';
 import * as Shared from '../utilities/shared';
 
@@ -15,7 +14,6 @@ export class Tile extends React.PureComponent<ITileProps, object> {
     private static readonly highlightedPadding: number = 5;
     private static readonly highlightedNeighborMargin: number = 1;
     private static readonly highlightedNeighborPadding: number = 1;
-    private static readonly dimensionWithMargin: number = Tile.dimension + Tile.highlightedMargin;
     private static readonly boundaryClasses: string[] = Shared.getNumericEnumKeys(Boundary).map(b => `tile-boundary-${Shared.formatCamelCaseString(Boundary[b])}`);
     private static readonly tileTypes: string[] = Shared.getNumericEnumKeys(TileType).map(tt => `tile-${Shared.formatCamelCaseString(TileType[tt])}`);
 
@@ -26,18 +24,24 @@ export class Tile extends React.PureComponent<ITileProps, object> {
         [TileType.highlightedNeighbor]: Tile.highlightedNeighborMargin + Tile.highlightedNeighborPadding
     };
 
+    public static readonly dimensionWithMargin: number = Tile.dimension + Tile.highlightedMargin;
+
     private readonly onClick: () => void = this.handleClick.bind(this);
 
     private getTileType(): TileType {
         let tileType: TileType = TileType.obscured;
 
         if (this.props.gameMode === GameMode.inGame) {
-            if (this.props.selectedColumn === this.props.container.column && this.props.selectedRow === this.props.container.row) {
-                tileType = TileType.highlighted;
+            if (this.props.gridMode === GridMode.ready) {
+                if (this.props.selectedColumn === this.props.container.column && this.props.selectedRow === this.props.container.row) {
+                    tileType = TileType.highlighted;
+                } else {
+                    tileType = centralRotationMap.filter(coordinates => {
+                        return coordinates[0] + this.props.selectedRow === this.props.container.row && coordinates[1] + this.props.selectedColumn === this.props.container.column;
+                    }).length > 0 ? TileType.highlightedNeighbor : TileType.standard;
+                }
             } else {
-                tileType = centralRotationMap.filter(coordinates => {
-                    return coordinates[0] + this.props.selectedRow === this.props.container.row && coordinates[1] + this.props.selectedColumn === this.props.container.column;
-                }).length > 0 ? TileType.highlightedNeighbor : TileType.standard;
+                tileType = TileType.standard;
             }
         }
 
@@ -48,7 +52,8 @@ export class Tile extends React.PureComponent<ITileProps, object> {
         return `tile-${Color[this.props.container.color]} ${Tile.tileTypes[tileType]} ${Tile.boundaryClasses[this.props.container.boundary]}`;
     }
 
-    private getStyle(tileType: TileType): ICssStyle {
+    private getStyle(tileType: TileType): React.CSSProperties {
+        // TODO: Use this.props.styleOverrides
         const placementModifier: number = Tile.layoutModifiers[tileType],
               dimension: string = `${Tile.dimension + (Tile.dimensionMultiplier * placementModifier)}px`;
 
@@ -61,7 +66,6 @@ export class Tile extends React.PureComponent<ITileProps, object> {
     }
 
     private handleClick(): void {
-
         this.props.onUpdate(this.props.container.row, this.props.container.column);
     }
 

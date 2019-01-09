@@ -1,23 +1,33 @@
 import * as React from 'react';
+import { Animator } from '../classes/animator';
 import { GridState } from '../classes/gridState';
 import { TileContainer } from '../classes/tileContainer';
-import { ICssStyle } from '../interfaces/iCssStyle';
 import { IDictionary } from '../interfaces/iDictionary';
 import { IGridProps } from '../interfaces/iGridProps';
 import { IGridReduction } from '../interfaces/iGridReduction';
-import { Boundary, DetonationRange, DomEvent, GameMode, Orientation, Theme } from '../utilities/enum';
+import { AnimationTiming, Boundary, DetonationRange, DomEvent, GameMode, GridMode, Theme } from '../utilities/enum';
 import * as Shared from '../utilities/shared';
 import { Tile } from './tile';
 
 import '../styles/grid.scss';
 
 export class Grid extends React.PureComponent<IGridProps, GridState> {
+    private static readonly animationDurations: IDictionary<number> = {
+        [GridMode.rotating]: 333,
+        [GridMode.collapsing]: 500,
+        [GridMode.cascading]: 500
+    };
+
     private readonly onKeyDown: (keyboardEvent: KeyboardEvent) => void = this.handleKeyDown.bind(this);
     private readonly onUpdate: (row: number, column: number) => void = this.handleUpdate.bind(this);
-    private readonly onMoveLeft: () => void = this.moveLeft.bind(this);
-    private readonly onMoveRight: () => void = this.moveRight.bind(this);
-    private readonly onMoveUp: () => void = this.moveUp.bind(this);
-    private readonly onMoveDown: () => void = this.moveDown.bind(this);
+    private readonly onMoveLeft: () => void = this.move(Boundary.left).bind(this);
+    private readonly onMoveRight: () => void = this.move(Boundary.right).bind(this);
+    private readonly onMoveUp: () => void = this.move(Boundary.top).bind(this);
+    private readonly onMoveDown: () => void = this.move(Boundary.bottom).bind(this);
+
+    private readonly onInitializeAnimator: () => void = this.initializeAnimator.bind(this);
+    private readonly onAnimationComplete: () => void = this.completeAnimation.bind(this);
+    private readonly onDrawAnimationFrame: (timeFraction: number) => void = this.drawAnimationFrame.bind(this);
 
     private readonly keyDownEventActionMap: IDictionary<() => void> = {
         ' ': this.handleUpdate.bind(this),
@@ -31,92 +41,127 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
         w: this.onMoveUp
     };
 
-    private removeReducedTiles(reduction: IGridReduction): void {
-         // TODO: Add Reduction Animations
+    private readonly gridModeHandlerMap: IDictionary<(transpose: boolean) => void> = {
+        [GridMode.ready]: () => {
+            this.setState(GridState.transpose(this.props, this.state));
+        },
+        [GridMode.rotating]: this.maybeCascadeTiles.bind(this),
+        [GridMode.collapsing]: (transpose: boolean) => {
+            const nextState: GridState = this.getNextState(transpose);
 
-         // TODO ---- BELOW
-        if (reduction.collapsingTiles.reduce((accumulator, currentValue) => accumulator + currentValue) > 0) {
-            // TODO --- CASCADE TILES
-            this.setState({
-                processingInput: false
+            nextState.gridMode = GridMode.cascading;
+            nextState.updatedTiles = GridState.cascadeTiles(this.props, nextState);
+            nextState.animator = this.generateAnimator(Grid.animationDurations[nextState.gridMode]);
+            nextState.animationTimeFraction = 0;
+
+            this.setState(nextState, this.onInitializeAnimator);
+        },
+        [GridMode.cascading]: this.maybeCascadeTiles.bind(this)
+    };
+
+    private readonly tileTransformationMap: IDictionary<() => TileContainer[]> = {
+        [GridMode.rotating]: () => {
+            const tiles: TileContainer[] = this.state.tiles.slice();
+
+            this.state.updatedTiles.forEach((value, index, array) => {
+                const nexTile: TileContainer = this.state.tiles[index === array.length - 1 ? 0 : index + 1];
+
+                tiles[nexTile.index] = nexTile.cloneWith(value.color, value.detonationRange);
             });
-        } else {
-            this.setState({
-                processingInput: false
+
+            return tiles;
+        },
+        [GridMode.collapsing]: () => this.state.tiles,
+        [GridMode.cascading]: () => this.state.updatedTiles
+    };
+
+    private maybeCascadeTiles(transpose: boolean): void {
+        const nextState: GridState = this.getNextState(transpose),
+              reduction: IGridReduction = GridState.reduceTiles(this.props, nextState);
+
+        nextState.tiles = reduction.tiles;
+
+        if (reduction.numberOfCollapsingTiles > 0) {
+            nextState.gridMode = GridMode.collapsing;
+            nextState.updatedTiles = reduction.collapsingTiles;
+            nextState.animator = this.generateAnimator(Grid.animationDurations[nextState.gridMode]);
+            nextState.animationTimeFraction = 0;
+
+            this.props.onUpdate({
+                points: reduction.numberOfCollapsingTiles
             });
         }
-        // TODO ---- ABOVE
+
+        this.setState(nextState, this.onInitializeAnimator);
     }
 
-    private reduceTiles = (): void => {
-        const reduction: IGridReduction = GridState.reduceTiles(this.props, this.state);
+    private getNextState(transpose: boolean): GridState {
+        const tiles: TileContainer[] = this.tileTransformationMap[this.state.gridMode]();
 
+        return transpose ? new GridState(this.props, tiles, this.state.graph) : GridState.transpose(this.props, this.state, tiles);
+    }
+
+    private drawAnimationFrame(timeFraction: number): void {
         this.setState({
-            processingInput: true,
-            tiles: reduction.tiles
-        }, () => this.removeReducedTiles(reduction));
+            animationTimeFraction: timeFraction
+        });
     }
 
-    private detonateTile(): void {
-        const tiles: TileContainer[] = GridState.detonateTile(this.state);
-
-        // TODO: Add Detonation Animations
+    private completeAnimation(): void {
         this.setState({
-            tiles
-        }, this.reduceTiles);
+            animationTimeFraction: undefined,
+            animator: undefined
+        });
     }
 
-    private rotateTile(): void {
-        const rotatedTiles: IDictionary<TileContainer> = GridState.rotateTiles(this.state);
-
-        // TODO: Add Rotation Animations
-        this.setState({
-            tiles: this.state.tiles.map(t => Shared.castSafeOr(rotatedTiles[t.index], t))
-        }, this.reduceTiles);
-    }
-
-    private takeAction() {
-        const tile: TileContainer = this.state.tiles[this.state.gridDefinition.getTileIndexFromCoordinates(this.state.row, this.state.column)];
-
-        tile.detonationRange === DetonationRange.none ? this.rotateTile() : this.detonateTile();
-    }
-
-    private handleUpdate(row?: number, column?: number): void {
-        if (!this.state.processingInput) {
-            this.setState({
-                column: Shared.castSafeOr(column, this.state.column),
-                processingInput: true,
-                row: Shared.castSafeOr(row, this.state.row)
-            }, this.takeAction);
+    private stopAnimator(): void {
+        if (Shared.isDefined(this.state.animator)) {
+            (this.state.animator as Animator).stop();
         }
     }
 
-    private moveRight(): void {
-        this.setState({
-            column: GridState.moves[Boundary.right](this.state)
-        });
+    private initializeAnimator(): void {
+        if (Shared.isDefined(this.state.animator)) {
+            (this.state.animator as Animator).start();
+        }
     }
 
-    private moveLeft(): void {
-        this.setState({
-            column: GridState.moves[Boundary.left](this.state)
-        });
+    private generateAnimator(duration: number): Animator {
+        return new Animator(duration, this.onDrawAnimationFrame, this.onAnimationComplete, AnimationTiming.accelerate);
     }
 
-    private moveUp(): void {
-        this.setState({
-            row: GridState.moves[Boundary.top](this.state)
-        });
+    private handleUpdate(row: number = this.state.row, column: number = this.state.column): void {
+        if (this.state.gridMode === GridMode.ready) {
+            const tile: TileContainer = this.state.tiles[this.state.gridDefinition.getTileIndexFromCoordinates(this.state.row, this.state.column)],
+                  isRotation: boolean = tile.detonationRange === DetonationRange.none,
+                  gridMode: GridMode = isRotation ? GridMode.collapsing : GridMode.rotating;
+
+            this.setState({
+                animator: this.generateAnimator(Grid.animationDurations[gridMode]),
+                column,
+                gridMode,
+                row,
+                updatedTiles: isRotation ? GridState.rotateTiles(this.state, tile): GridState.detonateTile(this.state, tile)
+            }, this.onInitializeAnimator);
+        }
     }
 
-    private moveDown(): void {
-        this.setState({
-            row: GridState.moves[Boundary.bottom](this.state)
-        });
+    private move(boundary: Boundary): () => void {
+        return (): void => {
+            if (this.state.gridMode === GridMode.ready) {
+                const row: number = (Boundary.topBottom & boundary) === 0 ? this.state.row : GridState.moves[boundary](this.state),
+                      column: number = (Boundary.rightLeft & boundary) === 0 ? this.state.column : GridState.moves[boundary](this.state);
+
+                this.setState({
+                    column,
+                    row
+                });
+            }
+        };
     }
 
     private handleKeyDown(keyboardEvent: KeyboardEvent): void {
-        if (this.props.gameMode === GameMode.inGame) {
+        if (this.props.gameMode === GameMode.inGame && this.state.gridMode === GridMode.ready) {
             const handler: (() => void) | undefined = this.keyDownEventActionMap[keyboardEvent.key.toLocaleLowerCase()];
 
             if (Shared.isDefined(handler)) {
@@ -125,50 +170,54 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
         }
     }
 
-    public readonly state: GridState = new GridState(this.props, true);
+    private getTileElements(): JSX.Element[] {
+        // TODO: Add in overrride styles based on the GridMode
+        // Use opacity and animationTimingFraction
+
+        return this.state.tiles.map(tile => <Tile key={tile.index}
+                                                  selectedColumn={this.state.column}
+                                                  selectedRow={this.state.row}
+                                                  gridMode={this.state.gridMode}
+                                                  gridDefinition={this.state.gridDefinition}
+                                                  gameMode={this.props.gameMode}
+                                                  container={tile}
+                                                  onUpdate={this.onUpdate}/>);
+    }
+
+    public readonly state: GridState = new GridState(this.props);
 
     public componentDidMount(): void {
         document.addEventListener(DomEvent.keyDown, this.onKeyDown);
 
-        const reduction: IGridReduction = GridState.reduceTiles(this.props, this.state);
-
-         // TODO: Animate reduction
         this.setState({
-            tiles: reduction.tiles
-        }, () => this.removeReducedTiles(reduction));
+            tiles: this.state.gridDefinition.generateTiles()
+        });
     }
 
     public componentWillUnmount(): void {
         document.removeEventListener(DomEvent.keyDown, this.onKeyDown);
+        this.stopAnimator();
     }
 
     public componentDidUpdate(previousProps: IGridProps): void {
         if (previousProps.orientation !== this.props.orientation) {
-            const nextState = GridState.transpose(this.props, this.state);
-            const reduction: IGridReduction = GridState.reduceTiles(this.props, nextState);
-            nextState.tiles = reduction.tiles;
+            this.stopAnimator();
 
-            // TODO: Animate reduction
-            this.setState(nextState, () => this.removeReducedTiles(reduction));
+            this.gridModeHandlerMap[this.state.gridMode](true);
+        } else if (this.state.gridMode !== GridMode.ready && !Shared.isDefined(this.state.animator)) {
+            this.gridModeHandlerMap[this.state.gridMode](false);
         }
     }
 
     public render(): JSX.Element {
-        const tiles: JSX.Element[] = this.state.tiles.map(tile => <Tile key={tile.index}
-                                                                        selectedColumn={this.state.column}
-                                                                        selectedRow={this.state.row}
-                                                                        gridDefinition={this.state.gridDefinition}
-                                                                        gameMode={this.props.gameMode}
-                                                                        container={tile}
-                                                                        onUpdate={this.onUpdate}/>),
-              style: ICssStyle = {
-                  height: this.props.orientation === Orientation.portrait ? '685px' : '500px',
-                  width: this.props.orientation === Orientation.portrait ? '475px' : '700px'
-              };
+        const style: React.CSSProperties = {
+            height: `${this.state.gridDefinition.numberOfRows * Tile.dimensionWithMargin}px`,
+            width: `${this.state.gridDefinition.numberOfColumns * Tile.dimensionWithMargin}px`
+        };
 
         return <div className={`grid ${Theme[this.props.theme]}`}
                     style={style}>
-                    {tiles}
+                    {this.getTileElements()}
                </div>;
     }
 }
