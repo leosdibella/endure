@@ -8,12 +8,13 @@ import * as Shared from '../utilities/shared';
 import '../styles/grade.scss';
 
 export class Grade extends React.PureComponent<IGradeProps, GradeState> {
+    private onStartAnimator: () => void = this.startAnimator.bind(this);
     private onDrawAnimationFrame: (timeFraction: number) => void = this.drawAnimationFrame.bind(this);
     private onAnimationComplete: () => void = this.completeAnimation.bind(this);
 
     private drawAnimationFrame(timeFraction: number): void {
         this.setState({
-            fillRadiusPercentage: `${((1 - timeFraction) * Shared.totalPercentage).toFixed(Shared.percentageDecimalPlaceCutoff)}%`
+            fillRadiusPercentage: ((1 - timeFraction) * Shared.totalPercentage)
         });
     }
 
@@ -32,12 +33,18 @@ export class Grade extends React.PureComponent<IGradeProps, GradeState> {
     private generateNewAnimator(): void {
         this.setState({
             animator: new Animator(this.getDuration(), this.onDrawAnimationFrame, this.onAnimationComplete)
-        }, (this.state.animator as Animator).start);
+        }, this.onStartAnimator);
     }
 
     private stopAnimator(): void {
         if (Shared.isDefined(this.state.animator)) {
             (this.state.animator as Animator).stop();
+        }
+    }
+
+    private startAnimator(): void {
+        if (Shared.isDefined(this.state.animator)) {
+            (this.state.animator as Animator).start();
         }
     }
 
@@ -65,10 +72,11 @@ export class Grade extends React.PureComponent<IGradeProps, GradeState> {
     }
 
     public render(): JSX.Element {
-        const style: React.CSSProperties = {
-            height: this.state.fillRadiusPercentage,
-            width: this.state.fillRadiusPercentage
-        };
+        const fillRadiusPercentage: string = `${this.state.fillRadiusPercentage.toFixed(Shared.percentageDecimalPlaceCutoff)}%`,
+              style: React.CSSProperties = {
+                  height: fillRadiusPercentage,
+                  width: fillRadiusPercentage
+              };
 
         return <div className='grade-container'>
                     <div className='grade-letter-grade'>

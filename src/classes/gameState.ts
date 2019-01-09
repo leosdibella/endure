@@ -91,6 +91,7 @@ export class GameState {
                              letterGrade);
     }
 
+    // TODO: Add animator for the score to have a +10,000 points or whatever whenever the score goes up.
     public constructor(public gameMode: GameMode,
                        public difficulty: Difficulty,
                        public highScores: IHighScore[][],

@@ -3,7 +3,7 @@ import { AnimationTiming } from '../utilities/enum';
 import * as Shared from '../utilities/shared';
 
 export class Animator {
-    private static readonly accelerationExponent: number = 4;
+    private static readonly accelerationExponent: number = 3;
 
     private static readonly timingFunctions: IDictionary<(timeFraction: number) => number> = {
         [AnimationTiming.linear]: (timeFraction: number) => timeFraction,

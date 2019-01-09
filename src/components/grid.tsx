@@ -13,7 +13,9 @@ import { Tile } from './tile';
 import '../styles/grid.scss';
 
 export class Grid extends React.PureComponent<IGridProps, GridState> {
-    private static readonly styles: IDictionary<React.CSSProperties> = {
+    private static readonly animationDuration: number = 333;
+
+    private static readonly orientationStyles: IDictionary<React.CSSProperties> = {
         [Orientation.landscape]: {
             height: `${GridDefinition.orientedDefinitions[Orientation.landscape].numberOfRows * Tile.dimensionWithMargin}px`,
             width: `${GridDefinition.orientedDefinitions[Orientation.landscape].numberOfColumns * Tile.dimensionWithMargin}px`
@@ -24,20 +26,13 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
         }
     };
 
-    private static readonly animationDurations: IDictionary<number> = {
-        [GridMode.rotating]: 333,
-        [GridMode.collapsing]: 500,
-        [GridMode.cascading]: 500
-    };
-
     private readonly onKeyDown: (keyboardEvent: KeyboardEvent) => void = this.handleKeyDown.bind(this);
     private readonly onUpdate: (row: number, column: number) => void = this.handleUpdate.bind(this);
     private readonly onMoveLeft: () => void = this.move(Boundary.left).bind(this);
     private readonly onMoveRight: () => void = this.move(Boundary.right).bind(this);
     private readonly onMoveUp: () => void = this.move(Boundary.top).bind(this);
     private readonly onMoveDown: () => void = this.move(Boundary.bottom).bind(this);
-    private readonly onCollapseTiles: (transposeTiles: boolean) => void = this.collapseTiles.bind(this);
-    private readonly onInitializeAnimator: () => void = this.initializeAnimator.bind(this);
+    private readonly onStartAnimator: () => void = this.startAnimator.bind(this);
     private readonly onAnimationComplete: () => void = this.completeAnimation.bind(this);
     private readonly onDrawAnimationFrame: (timeFraction: number) => void = this.drawAnimationFrame.bind(this);
 
@@ -54,21 +49,9 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     };
 
     private readonly gridModeHandlerMap: IDictionary<(transposeTiles: boolean) => void> = {
-        [GridMode.ready]: () => {
-            this.setState(GridState.transpose(this.props, this.state));
-        },
-        [GridMode.rotating]: this.onCollapseTiles,
-        [GridMode.collapsing]: (transposeTiles: boolean) => {
-            const nextState: GridState = this.getNextState(transposeTiles);
-
-            nextState.gridMode = GridMode.cascading;
-            nextState.updatedTiles = GridState.cascadeTiles(this.props, nextState);
-            nextState.animator = this.generateAnimator(Grid.animationDurations[nextState.gridMode]);
-            nextState.animationTimeFraction = 0;
-
-            this.setState(nextState, this.onInitializeAnimator);
-        },
-        [GridMode.cascading]: this.onCollapseTiles
+        [GridMode.ready]: () => this.setState(GridState.transpose(this.props, this.state)),
+        [GridMode.collapsing]: this.cascadeTiles.bind(this),
+        [GridMode.cascading]: this.collapseTiles.bind(this)
     };
 
     private readonly movements: IDictionary<() => number> = {
@@ -77,6 +60,17 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
         [Boundary.right]: () => this.state.column < this.state.gridDefinition.numberOfColumns - 1 ? this.state.column + 1 : 0,
         [Boundary.left]: () => this.state.column > 0 ? this.state.column - 1 : this.state.gridDefinition.numberOfColumns - 1
     };
+
+    private cascadeTiles(transposeTiles: boolean = false): void {
+        const nextState: GridState = this.getNextState(transposeTiles);
+
+        nextState.gridMode = GridMode.cascading;
+        nextState.updatedTiles = GridState.cascadeTiles(this.props, nextState);
+        nextState.animator = this.generateAnimator();
+        nextState.animationTimeFraction = 0;
+
+        this.setState(nextState, this.onStartAnimator);
+    }
 
     private collapseTiles(transposeTiles: boolean = false): void {
         const nextState: GridState = this.getNextState(transposeTiles),
@@ -87,7 +81,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
         if (reduction.numberOfCollapsingTiles > 0) {
             nextState.gridMode = GridMode.collapsing;
             nextState.updatedTiles = reduction.collapsingTiles;
-            nextState.animator = this.generateAnimator(Grid.animationDurations[nextState.gridMode]);
+            nextState.animator = this.generateAnimator();
             nextState.animationTimeFraction = 0;
 
             this.props.onUpdate({
@@ -95,7 +89,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
             });
         }
 
-        this.setState(nextState, this.onInitializeAnimator);
+        this.setState(nextState, this.onStartAnimator);
     }
 
     private getNextState(transposeTiles: boolean): GridState {
@@ -121,29 +115,30 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
         }
     }
 
-    private initializeAnimator(): void {
+    private startAnimator(): void {
         if (Shared.isDefined(this.state.animator)) {
             (this.state.animator as Animator).start();
         }
     }
 
-    private generateAnimator(duration: number): Animator {
-        return new Animator(duration, this.onDrawAnimationFrame, this.onAnimationComplete, AnimationTiming.accelerate);
+    private generateAnimator(): Animator {
+        return new Animator(Grid.animationDuration, this.onDrawAnimationFrame, this.onAnimationComplete, AnimationTiming.accelerate);
     }
 
     private handleUpdate(row: number = this.state.row, column: number = this.state.column): void {
         if (this.state.gridMode === GridMode.ready) {
             const tile: TileContainer = this.state.tiles[this.state.gridDefinition.getTileIndexFromCoordinates(this.state.row, this.state.column)],
                   isRotation: boolean = tile.detonationRange === DetonationRange.none,
-                  gridMode: GridMode = isRotation ? GridMode.collapsing : GridMode.rotating;
+                  gridMode: GridMode = isRotation ? GridMode.cascading : GridMode.collapsing;
 
             this.setState({
-                animator: this.generateAnimator(Grid.animationDurations[gridMode]),
+                animationTimeFraction: isRotation ? 0 : undefined,
+                animator: isRotation ? this.generateAnimator() : undefined,
                 column,
                 gridMode,
                 row,
                 updatedTiles: isRotation ? GridState.rotateTiles(this.state, tile): GridState.detonateTile(this.state, tile)
-            }, this.onInitializeAnimator);
+            }, this.onStartAnimator);
         }
     }
 
@@ -174,6 +169,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     private getTileElements(): JSX.Element[] {
         // TODO: Add in overrride styles based on the GridMode
         // Use opacity and animationTimingFraction
+        // Use Shared.fillArray on the size of the tiles and compare, tiles to updatedTiles when this.props.gridMode !== GridMode.ready
         const additionalStyles: React.CSSProperties = {
             opacity: 1
         };
@@ -220,7 +216,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
 
     public render(): JSX.Element {
         return <div className={`grid ${Theme[this.props.theme]}`}
-                    style={Grid.styles[this.props.orientation]}>
+                    style={Grid.orientationStyles[this.props.orientation]}>
                     {this.getTileElements()}
                </div>;
     }

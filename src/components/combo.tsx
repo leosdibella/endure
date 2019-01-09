@@ -11,6 +11,7 @@ export class Combo extends React.PureComponent<IComboProps, ComboState> {
     private static readonly cssClassThresholdModifier: number = 3;
     private static readonly minimumViableCombo: number = 2;
 
+    private onStartAnimator: () => void = this.startAnimator.bind(this);
     private onDrawAnimationFrame: (timeFraction: number) => void = this.drawAnimationFrame.bind(this);
     private onAnimationComplete: () => void = this.completeAnimation.bind(this);
 
@@ -38,7 +39,13 @@ export class Combo extends React.PureComponent<IComboProps, ComboState> {
     private generateNewAnimator(): void {
         this.setState({
             animator: new Animator(this.getDuration(), this.onDrawAnimationFrame, this.onAnimationComplete)
-        }, (this.state.animator as Animator).start);
+        }, this.onStartAnimator);
+    }
+
+    private startAnimator(): void {
+        if (Shared.isDefined(this.state.animator)) {
+            (this.state.animator as Animator).start();
+        }
     }
 
     private stopAnimator(): void {

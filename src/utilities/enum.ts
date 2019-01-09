@@ -68,7 +68,6 @@ enum GameMode {
 
 enum GridMode {
     ready = 0,
-    rotating,
     collapsing,
     cascading
 }

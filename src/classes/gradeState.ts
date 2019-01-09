@@ -25,6 +25,6 @@ export class GradeState {
 
     public animator?: Animator;
 
-    public constructor(public fillRadiusPercentage: string = '0%') {
+    public constructor(public fillRadiusPercentage: number = 0) {
     }
 }

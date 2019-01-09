@@ -97,11 +97,11 @@ export class OverlayMenu {
 
     public getDefaultOptionIndex(props: IOverlayProps): number {
         if (props.gameMode === GameMode.selectDifficulty) {
-            return props.difficulty;
+            return props.difficulty as number;
         }
 
         if (props.gameMode === GameMode.setTheme) {
-            return props.theme === Theme.light ? 0 : 1;
+            return props.theme as number;
         }
 
         const menuOption: IOverlayMenuOption | undefined = this.menuOptions[props.gameMode];
