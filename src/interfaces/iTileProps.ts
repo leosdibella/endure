@@ -9,6 +9,6 @@ export interface ITileProps {
     gridMode: GridMode;
     selectedRow: number;
     selectedColumn: number;
-    styleOverrides?: React.CSSProperties;
+    additionalStyles: React.CSSProperties;
     onUpdate(row: number, column: number): void;
 }

@@ -53,13 +53,13 @@ export class Tile extends React.PureComponent<ITileProps, object> {
     }
 
     private getStyle(tileType: TileType): React.CSSProperties {
-        // TODO: Use this.props.styleOverrides
         const placementModifier: number = Tile.layoutModifiers[tileType],
               dimension: string = `${Tile.dimension + (Tile.dimensionMultiplier * placementModifier)}px`;
 
         return {
             height: dimension,
             left: `${(this.props.container.column * Tile.dimensionWithMargin) - placementModifier}px`,
+            opacity: this.props.additionalStyles.opacity,
             top: `${(this.props.container.row * Tile.dimensionWithMargin) - placementModifier}px`,
             width: dimension
         };

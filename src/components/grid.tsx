@@ -24,7 +24,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     private readonly onMoveRight: () => void = this.move(Boundary.right).bind(this);
     private readonly onMoveUp: () => void = this.move(Boundary.top).bind(this);
     private readonly onMoveDown: () => void = this.move(Boundary.bottom).bind(this);
-
+    private readonly onCascadeTiles: (transpose: boolean) => void = this.cascadeTiles.bind(this);
     private readonly onInitializeAnimator: () => void = this.initializeAnimator.bind(this);
     private readonly onAnimationComplete: () => void = this.completeAnimation.bind(this);
     private readonly onDrawAnimationFrame: (timeFraction: number) => void = this.drawAnimationFrame.bind(this);
@@ -45,7 +45,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
         [GridMode.ready]: () => {
             this.setState(GridState.transpose(this.props, this.state));
         },
-        [GridMode.rotating]: this.maybeCascadeTiles.bind(this),
+        [GridMode.rotating]: this.onCascadeTiles,
         [GridMode.collapsing]: (transpose: boolean) => {
             const nextState: GridState = this.getNextState(transpose);
 
@@ -56,7 +56,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
 
             this.setState(nextState, this.onInitializeAnimator);
         },
-        [GridMode.cascading]: this.maybeCascadeTiles.bind(this)
+        [GridMode.cascading]: this.onCascadeTiles
     };
 
     private readonly tileTransformationMap: IDictionary<() => TileContainer[]> = {
@@ -75,7 +75,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
         [GridMode.cascading]: () => this.state.updatedTiles
     };
 
-    private maybeCascadeTiles(transpose: boolean): void {
+    private cascadeTiles(transpose: boolean): void {
         const nextState: GridState = this.getNextState(transpose),
               reduction: IGridReduction = GridState.reduceTiles(this.props, nextState);
 
@@ -173,15 +173,21 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     private getTileElements(): JSX.Element[] {
         // TODO: Add in overrride styles based on the GridMode
         // Use opacity and animationTimingFraction
+        const additionalStyles: React.CSSProperties = {
+            opacity: 1
+        };
 
-        return this.state.tiles.map(tile => <Tile key={tile.index}
-                                                  selectedColumn={this.state.column}
-                                                  selectedRow={this.state.row}
-                                                  gridMode={this.state.gridMode}
-                                                  gridDefinition={this.state.gridDefinition}
-                                                  gameMode={this.props.gameMode}
-                                                  container={tile}
-                                                  onUpdate={this.onUpdate}/>);
+        return this.state.tiles.map(tile => {
+            return <Tile key={tile.index}
+                         selectedColumn={this.state.column}
+                         selectedRow={this.state.row}
+                         gridMode={this.state.gridMode}
+                         gridDefinition={this.state.gridDefinition}
+                         gameMode={this.props.gameMode}
+                         additionalStyles={additionalStyles}
+                         container={tile}
+                         onUpdate={this.onUpdate}/>;
+        });
     }
 
     public readonly state: GridState = new GridState(this.props);

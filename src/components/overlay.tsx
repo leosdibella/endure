@@ -32,7 +32,7 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
                         <span>
                             {highScore.value}
                         </span>
-                     </div>
+                    </div>
                </div>;
     }
 
@@ -126,7 +126,7 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
                             Nothing yet ...
                         </div>
                     </div>
-                </div>;
+               </div>;
     }
 
     private getOverlayExtras(): JSX.Element | boolean {
