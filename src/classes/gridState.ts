@@ -79,21 +79,22 @@ export class GridState {
         return group;
     }
 
-    public static readonly moves: IDictionary<(state: GridState) => number> = {
-        [Boundary.top]: (state) => state.row > 0 ? state.row - 1 : state.gridDefinition.numberOfRows - 1,
-        [Boundary.bottom]: (state) => state.row < state.gridDefinition.numberOfRows - 1 ? state.row + 1 : 0,
-        [Boundary.right]: (state) => state.column < state.gridDefinition.numberOfColumns - 1 ? state.column + 1 : 0,
-        [Boundary.left]: (state) => state.column > 0 ? state.column - 1 : state.gridDefinition.numberOfColumns - 1
-    };
-
     public static rotateTiles(state: GridState, centerTile: TileContainer): TileContainer[] {
+        const tiles: TileContainer[] = state.tiles.slice();
+
         let key: Boundary = centerTile.row === 0 ? Boundary.top : Boundary.none;
 
         key |= centerTile.row === state.gridDefinition.numberOfRows - 1 ? Boundary.bottom : Boundary.none;
         key |= centerTile.column === 0 ? Boundary.left : Boundary.none;
         key |= centerTile.column === state.gridDefinition.numberOfColumns - 1 ? Boundary.right : Boundary.none;
 
-        return GridState.rotateTilesFromRotationMap(state, centerTile, rotationMaps[key]);
+        GridState.rotateTilesFromRotationMap(state, centerTile, rotationMaps[key]).forEach((value, index, array) => {
+            const nexTile: TileContainer = tiles[index === array.length - 1 ? 0 : index + 1];
+
+            tiles[nexTile.index] = nexTile.cloneWith(value.color, value.detonationRange);
+        });
+
+        return tiles;
     }
 
     public static reduceTiles(props: IGridProps, state: GridState): IGridReduction {
@@ -278,11 +279,11 @@ export class GridState {
 
     public constructor(props: IGridProps, tiles?: TileContainer[], graph?: IDictionary<number>[], row?: number, column?: number) {
         this.gridDefinition = GridDefinition.orientedDefinitions[props.orientation];
-        this.tiles = Shared.castSafeOr(tiles, []);
+        this.tiles = Shared.castSafeOr(tiles, this.gridDefinition.generateTiles());
         this.graph = Shared.castSafeOr(graph, this.initializeGraph());
         this.row = Shared.castSafeOr(row, this.gridDefinition.initialRow);
         this.column = Shared.castSafeOr(column, this.gridDefinition.initialColumn);
         this.gridMode = GridMode.ready;
-        this.updatedTiles = [];
+        this.updatedTiles = this.tiles.slice();
     }
 }
