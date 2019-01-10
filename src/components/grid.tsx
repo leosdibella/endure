@@ -14,6 +14,12 @@ import '../styles/grid.scss';
 
 export class Grid extends React.PureComponent<IGridProps, GridState> {
     private static readonly animationDuration: number = 333;
+    private static readonly homeomorphismSlope: number = 2;
+    private static readonly styleOverrideThreshold: number = 0.5;
+
+    private static readonly standardTileAdditionalStyles: React.CSSProperties = {
+        opacity: 1
+    };
 
     private static readonly orientationStyles: IDictionary<React.CSSProperties> = {
         [Orientation.landscape]: {
@@ -25,6 +31,12 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
             width: `${GridDefinition.orientedDefinitions[Orientation.portrait].numberOfColumns * Tile.dimensionWithMargin}px`
         }
     };
+
+    private static symetrizeAndNormalizeTimingCurve(timeFraction: number): number {
+        const reductedTimeFraction: number = timeFraction < Grid.styleOverrideThreshold ? 1 - timeFraction : timeFraction;
+
+        return (Grid.homeomorphismSlope * reductedTimeFraction) - 1;
+    }
 
     private readonly onKeyDown: (keyboardEvent: KeyboardEvent) => void = this.handleKeyDown.bind(this);
     private readonly onUpdate: (row: number, column: number) => void = this.handleUpdate.bind(this);
@@ -122,7 +134,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     }
 
     private generateAnimator(): Animator {
-        return new Animator(Grid.animationDuration, this.onDrawAnimationFrame, this.onAnimationComplete, AnimationTiming.accelerate);
+        return new Animator(Grid.animationDuration, this.onDrawAnimationFrame, this.onAnimationComplete, AnimationTiming.easeInOut);
     }
 
     private handleUpdate(row: number = this.state.row, column: number = this.state.column): void {
@@ -167,21 +179,33 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     }
 
     private getTileElements(): JSX.Element[] {
-        // TODO: Add in overrride styles based on the GridMode
-        // Use opacity and animationTimingFraction
-        // Use Shared.fillArray on the size of the tiles and compare, tiles to updatedTiles when this.props.gridMode !== GridMode.ready
         const additionalStyles: React.CSSProperties = {
-            opacity: 1
-        };
+                  opacity: Grid.symetrizeAndNormalizeTimingCurve(Shared.isDefined(this.state.animationTimeFraction) ? (this.state.animationTimeFraction as number) : 0)
+              };
 
-        return this.state.tiles.map(tile => {
+        return Shared.fillArray(this.state.tiles.length, index => {
+            let tile: TileContainer = this.state.tiles[index],
+                useOverrides: boolean = false;
+
+            if (Shared.isDefined(this.state.animationTimeFraction)) {
+                const updatedTile: TileContainer = this.state.updatedTiles[index];
+
+                if (updatedTile.color !== tile.color || updatedTile.detonationRange !== tile.detonationRange) {
+                    useOverrides = true;
+
+                    if ((this.state.animationTimeFraction as number) > Grid.styleOverrideThreshold) {
+                        tile = updatedTile;
+                    }
+                }
+            }
+
             return <Tile key={tile.index}
                          selectedColumn={this.state.column}
                          selectedRow={this.state.row}
                          gridMode={this.state.gridMode}
                          gridDefinition={this.state.gridDefinition}
                          gameMode={this.props.gameMode}
-                         additionalStyles={additionalStyles}
+                         additionalStyles={useOverrides ? additionalStyles : Grid.standardTileAdditionalStyles}
                          container={tile}
                          onUpdate={this.onUpdate}/>;
         });

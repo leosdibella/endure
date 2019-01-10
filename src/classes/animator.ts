@@ -3,11 +3,14 @@ import { AnimationTiming } from '../utilities/enum';
 import * as Shared from '../utilities/shared';
 
 export class Animator {
-    private static readonly accelerationExponent: number = 3;
-
     private static readonly timingFunctions: IDictionary<(timeFraction: number) => number> = {
-        [AnimationTiming.linear]: (timeFraction: number) => timeFraction,
-        [AnimationTiming.accelerate]: (timeFraction: number) => Math.pow(timeFraction, Animator.accelerationExponent)
+        [AnimationTiming.linear]: (x: number) => x,
+        [AnimationTiming.easeInOut]: (pValue: number) => {
+            const pSquared: number = pValue * pValue,
+                  qValue: number = 1 - pValue;
+
+            return pSquared / (pSquared + (qValue * qValue));
+        }
     };
 
     private pausedTime?: number;

@@ -1,6 +1,6 @@
 enum AnimationTiming {
     linear = 0,
-    accelerate
+    easeInOut
 }
 
 enum Boundary {
