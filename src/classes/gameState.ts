@@ -13,9 +13,7 @@ export class GameState {
     private static readonly numberOfHighScoresToPersist: number = 10;
 
     private static getStage(score: number): number {
-        const stage: number = Math.log(score);
-
-        return Math.floor(stage * stage);
+        return Math.floor(Math.log(score));
     }
 
     private static isValidPlayerName(playerName: string): boolean {
@@ -44,7 +42,7 @@ export class GameState {
               difficulty: Difficulty =  Shared.castSafeOr(update.difficulty, state.difficulty),
               highScores: IHighScore[][] = state.highScores;
 
-        let stage: number = state.score,
+        let stage: number = state.stage,
             score: number = state.score,
             gameMode: GameMode =  Shared.castSafeOr(update.gameMode, state.gameMode),
             letterGrade: number =  Shared.castSafeOr(update.letterGrade, state.letterGrade),

@@ -51,15 +51,15 @@ export class Grade extends React.PureComponent<IGradeProps, GradeState> {
     public readonly state: GradeState = new  GradeState();
 
     public componentDidUpdate(previousProps: IGradeProps): void {
-        if (Shared.isDefined(this.state.animator)) {
+        if (Shared.isDefined(this.state.animator) && this.props.gameMode !== previousProps.gameMode) {
             const animator: Animator = (this.state.animator as Animator);
 
-            if (this.props.gameMode !== previousProps.gameMode) {
-                this.props.gameMode === GameMode.paused ? animator.pause() : animator.start();
-            } else if (this.props.letterGrade > previousProps.letterGrade && this.props.letterGrade < LetterGrade.f) {
-                this.stopAnimator();
-                this.generateNewAnimator();
-            }
+            this.props.gameMode === GameMode.paused ? animator.pause() : animator.start();
+        }
+
+        if (this.props.letterGrade !== previousProps.letterGrade && this.props.letterGrade < LetterGrade.f) {
+            this.stopAnimator();
+            this.generateNewAnimator();
         }
     }
 

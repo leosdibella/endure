@@ -13,7 +13,7 @@ import { Tile } from './tile';
 import '../styles/grid.scss';
 
 export class Grid extends React.PureComponent<IGridProps, GridState> {
-    private static readonly animationDuration: number = 333;
+    private static readonly animationDuration: number = 250;
     private static readonly homeomorphismSlope: number = 2;
     private static readonly styleOverrideThreshold: number = 0.5;
 
@@ -47,6 +47,8 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     private readonly onStartAnimator: () => void = this.startAnimator.bind(this);
     private readonly onAnimationComplete: () => void = this.completeAnimation.bind(this);
     private readonly onDrawAnimationFrame: (timeFraction: number) => void = this.drawAnimationFrame.bind(this);
+    private readonly onCollapseTiles: (transposeTiles: boolean) => void = this.collapseTiles.bind(this);
+    private readonly onCascadeTiles: (transposeTiles: boolean) => void = this.cascadeTiles.bind(this);
 
     private readonly keyDownEventActionMap: IDictionary<() => void> = {
         ' ': this.handleUpdate.bind(this),
@@ -61,9 +63,9 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     };
 
     private readonly gridModeHandlerMap: IDictionary<(transposeTiles: boolean) => void> = {
-        [GridMode.ready]: () => this.setState(GridState.transpose(this.props, this.state)),
-        [GridMode.collapsing]: this.cascadeTiles.bind(this),
-        [GridMode.cascading]: this.collapseTiles.bind(this)
+        [GridMode.ready]: this.onCollapseTiles,
+        [GridMode.collapsing]: this.onCascadeTiles,
+        [GridMode.cascading]: this.onCollapseTiles
     };
 
     private readonly movements: IDictionary<() => number> = {
@@ -105,7 +107,9 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     }
 
     private getNextState(transposeTiles: boolean): GridState {
-        return transposeTiles ? new GridState(this.props, this.state.updatedTiles, this.state.graph) : GridState.transpose(this.props, this.state, this.state.updatedTiles);
+        return transposeTiles
+                ? GridState.transpose(this.props, this.state, this.state.updatedTiles)
+                : new GridState(this.props, this.state.updatedTiles, this.state.graph, this.state.row, this.state.column);
     }
 
     private drawAnimationFrame(timeFraction: number): void {

@@ -30,6 +30,8 @@ export class Animator {
                 this.id = requestAnimationFrame(this.onAnimate);
             } else {
                 this.stop();
+                this.pausedTime = undefined;
+                this.startTime = undefined;
                 this.onComplete();
             }
         }
@@ -39,8 +41,6 @@ export class Animator {
         if (Shared.isDefined(this.id)) {
             cancelAnimationFrame(this.id as number);
             this.id = undefined;
-            this.startTime = undefined;
-            this.pausedTime = undefined;
         }
     }
 

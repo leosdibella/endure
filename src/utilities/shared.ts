@@ -60,12 +60,11 @@ function iterate(length: number, f: (index: number) => void) {
     }
 }
 
-function fillArray<T>(length: number, f: (index: number) => T, backwards?: boolean): T[] {
-    const array: T[] = [],
-          inReverse: boolean = !!backwards;
+function fillArray<T>(length: number, f: (index: number) => T): T[] {
+    const array: T[] = [];
 
     for (let i: number = 0; i < length; ++i) {
-        array.push(f(inReverse ? length - 1 - i : i));
+        array.push(f(i));
     }
 
     return array;

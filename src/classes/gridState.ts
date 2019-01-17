@@ -89,7 +89,7 @@ export class GridState {
         key |= centerTile.column === state.gridDefinition.numberOfColumns - 1 ? Boundary.right : Boundary.none;
 
         GridState.rotateTilesFromRotationMap(state, centerTile, rotationMaps[key]).forEach((value, index, array) => {
-            const nexTile: TileContainer = tiles[index === array.length - 1 ? 0 : index + 1];
+            const nexTile: TileContainer = tiles[array[index === array.length - 1 ? 0 : index + 1].index];
 
             tiles[nexTile.index] = nexTile.cloneWith(value.color, value.detonationRange);
         });
@@ -125,6 +125,9 @@ export class GridState {
                         collapsingTiles[index] = state.tiles[index].cloneWith(Color.transparent, DetonationRange.none);
                     });
                 }
+            } else {
+                ++numberOfCollapsingTiles;
+                tiles[tile.index] = tile;
             }
         });
 
@@ -148,7 +151,7 @@ export class GridState {
                       column: number = props.orientation === Orientation.portrait ? majorIndex : minorIndex;
 
                 return state.tiles[state.gridDefinition.getTileIndexFromCoordinates(row, column)];
-            }, true).filter(t => t.color !== Color.transparent),
+            }).filter(t => t.color !== Color.transparent),
                  minorExtensionDimension: number = minorDimension - minorVector.length;
 
             Shared.fillArray(minorExtensionDimension, minorIndex => {
@@ -163,18 +166,13 @@ export class GridState {
                                          state.gridDefinition.getTileIndexFromCoordinates(row, column),
                                          TileContainer.getRandomColor(hasDetonationTile),
                                          detonationRange);
-            }).concat(minorVector).map((tile, minorIndex) => {
-                if (minorIndex > minorExtensionDimension) {
-                    const row: number = props.orientation === Orientation.portrait ? minorIndex : majorIndex,
-                          column: number = props.orientation === Orientation.portrait ? majorIndex : minorIndex;
+            }).concat(minorVector.map((tile, minorIndex) => {
+                const modifiedMinorIndex: number = minorExtensionDimension + minorIndex,
+                      row: number = props.orientation === Orientation.portrait ? modifiedMinorIndex : majorIndex,
+                      column: number = props.orientation === Orientation.portrait ? majorIndex : modifiedMinorIndex;
 
-                    return  new TileContainer(row, column, state.gridDefinition.getTileIndexFromCoordinates(row, column), tile.color, tile.detonationRange);
-                }
-
-                return tile;
-            }).forEach(tile => {
-                tiles[tile.index] = tile;
-            });
+                return  new TileContainer(row, column, state.gridDefinition.getTileIndexFromCoordinates(row, column), tile.color, tile.detonationRange);
+            })).forEach(tile => tiles[tile.index] = tile);
         });
 
         return tiles;
