@@ -1,22 +1,9 @@
-import { IDictionary } from '../interfaces/iDictionary';
-import { AnimationTiming } from '../utilities/enum';
 import * as Shared from '../utilities/shared';
 
 export class Animator {
-    private static readonly timingFunctions: IDictionary<(timeFraction: number) => number> = {
-        [AnimationTiming.linear]: (x: number) => x,
-        [AnimationTiming.easeInOut]: (pValue: number) => {
-            const pSquared: number = pValue * pValue,
-                  qValue: number = 1 - pValue;
-
-            return pSquared / (pSquared + (qValue * qValue));
-        }
-    };
-
     private pausedTime?: number;
     private startTime?: number;
     private id?: number;
-    private timingFunction: (timeFraction: number) => number;
     private onAnimate = this.loopAnimation.bind(this);
 
     private loopAnimation(time: number): void {
@@ -26,7 +13,7 @@ export class Animator {
             timeFraction = Math.min(timeFraction, 1);
 
             if (timeFraction < 1) {
-                this.draw(this.timingFunction(timeFraction));
+                this.draw(timeFraction);
                 this.id = requestAnimationFrame(this.onAnimate);
             } else {
                 this.stop();
@@ -57,9 +44,7 @@ export class Animator {
 
     public constructor(private duration: number,
                        private draw: (progress: number) => void,
-                       private onComplete: (passThrough?: () => void) => void,
-                       animationTiming: AnimationTiming = AnimationTiming.linear) {
+                       private onComplete: (passThrough?: () => void) => void) {
         this.duration = Math.max(Math.abs(duration), 1);
-        this.timingFunction = Animator.timingFunctions[Shared.isDefined(AnimationTiming[animationTiming]) ? animationTiming : AnimationTiming.linear];
     }
 }

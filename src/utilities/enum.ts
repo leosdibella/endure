@@ -1,8 +1,3 @@
-enum AnimationTiming {
-    linear = 0,
-    easeInOut
-}
-
 enum Boundary {
     none = 0,
     top = 1,
@@ -106,7 +101,6 @@ enum TileType {
 }
 
 export {
-    AnimationTiming,
     Boundary,
     Color,
     DetonationRange,

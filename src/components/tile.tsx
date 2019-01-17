@@ -57,6 +57,7 @@ export class Tile extends React.PureComponent<ITileProps, object> {
               dimension: string = `${Tile.dimension + (Tile.dimensionMultiplier * placementModifier)}px`;
 
         return {
+            borderRadius: this.props.additionalStyles.borderRadius,
             height: dimension,
             left: `${(this.props.container.column * Tile.dimensionWithMargin) - placementModifier}px`,
             opacity: this.props.additionalStyles.opacity,

@@ -1,6 +1,6 @@
 .header.dark {
     .header-combo-container {
-        .combo-3 {
+        .combo-1 {
             color: map-get($dark-colors, green);
         }
         
@@ -8,7 +8,7 @@
             color: map-get($dark-colors, orange);
         }
         
-        .combo-1 {
+        .combo-3 {
             color: map-get($dark-colors, red);
         }
     }
@@ -16,20 +16,36 @@
 
 .header.light {
     .header-combo-container {
-        .healthy-combo {
+        .combo-1 {
             color: map-get($light-colors, green);
         }
         
-        .warning-combo {
+        .combo-2 {
             color: map-get($light-colors, orange);
         }
         
-        .danger-combo {
+        .combo-3 {
             color: map-get($light-colors, red);
         }
     }
 }
 
-.header-combo-container {
-    margin-top: 45px;
+.light {
+    .header-combo-container .combo-bar-base {
+        color: map-get($light-colors, foreground);
+    }
+}
+
+.dark {
+    .header-combo-container .combo-bar-base {
+        color: map-get($dark-colors, foreground);
+    }
+}
+
+.combo-bar-overlay {
+    text-overflow: clip;
+    overflow: hidden;
+    white-space: nowrap;
+    font-weight: 800;
+    margin-top: -46px;
 }

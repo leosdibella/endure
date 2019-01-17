@@ -38,3 +38,8 @@ $header-side-margin-width: $global-side-bar-width + 10;
         color: map-get($dark-colors, foreground);
     }
 }
+
+.header-left-hud {
+    display: flex;
+    flex-direction: column;
+}

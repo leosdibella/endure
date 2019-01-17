@@ -80,7 +80,7 @@ export class Combo extends React.PureComponent<IComboProps, ComboState> {
             width: `${ this.state.overlayWidthPercentage.toFixed(Shared.percentageDecimalPlaceCutoff)}%`
         };
 
-        return <span className={`header-combo-container ${this.props.combo < Combo.minimumViableCombo ? ' hide' : ''}`}>
+        return <div className={`header-combo-container ${this.props.combo < Combo.minimumViableCombo ? ' hide' : ''}`}>
                     <div className='header-combo combo-bar-base'>
                         Combo: x{this.props.combo}
                     </div>
@@ -88,6 +88,6 @@ export class Combo extends React.PureComponent<IComboProps, ComboState> {
                          style={style}>
                         Combo: x{this.props.combo}
                     </div>
-               </span>;
+               </div>;
     }
 }

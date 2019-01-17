@@ -6,7 +6,7 @@ import { TileContainer } from '../classes/tileContainer';
 import { IDictionary } from '../interfaces/iDictionary';
 import { IGridProps } from '../interfaces/iGridProps';
 import { IGridReduction } from '../interfaces/iGridReduction';
-import { AnimationTiming, Boundary, DetonationRange, DomEvent, GameMode, GridMode, Orientation, Theme } from '../utilities/enum';
+import { Boundary, DetonationRange, DomEvent, GameMode, GridMode, Orientation, Theme } from '../utilities/enum';
 import * as Shared from '../utilities/shared';
 import { Tile } from './tile';
 
@@ -14,7 +14,7 @@ import '../styles/grid.scss';
 
 export class Grid extends React.PureComponent<IGridProps, GridState> {
     private static readonly animationDuration: number = 250;
-    private static readonly homeomorphismSlope: number = 2;
+    private static readonly radialModifier: number = 50;
     private static readonly styleOverrideThreshold: number = 0.5;
 
     private static readonly standardTileAdditionalStyles: React.CSSProperties = {
@@ -33,9 +33,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     };
 
     private static symetrizeAndNormalizeTimingCurve(timeFraction: number): number {
-        const reductedTimeFraction: number = timeFraction < Grid.styleOverrideThreshold ? 1 - timeFraction : timeFraction;
-
-        return (Grid.homeomorphismSlope * reductedTimeFraction) - 1;
+        return timeFraction < Grid.styleOverrideThreshold ? 1 - timeFraction : timeFraction;
     }
 
     private readonly onKeyDown: (keyboardEvent: KeyboardEvent) => void = this.handleKeyDown.bind(this);
@@ -138,7 +136,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     }
 
     private generateAnimator(): Animator {
-        return new Animator(Grid.animationDuration, this.onDrawAnimationFrame, this.onAnimationComplete, AnimationTiming.easeInOut);
+        return new Animator(Grid.animationDuration, this.onDrawAnimationFrame, this.onAnimationComplete);
     }
 
     private handleUpdate(row: number = this.state.row, column: number = this.state.column): void {
@@ -183,8 +181,10 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     }
 
     private getTileElements(): JSX.Element[] {
-        const additionalStyles: React.CSSProperties = {
-                  opacity: Grid.symetrizeAndNormalizeTimingCurve(Shared.isDefined(this.state.animationTimeFraction) ? (this.state.animationTimeFraction as number) : 0)
+        const fraction: number = Grid.symetrizeAndNormalizeTimingCurve(Shared.isDefined(this.state.animationTimeFraction) ? (this.state.animationTimeFraction as number) : 0),
+              additionalStyles: React.CSSProperties = {
+                  borderRadius: `${fraction * Shared.totalPercentage - Grid.radialModifier}%`,
+                  opacity: fraction
               };
 
         return Shared.fillArray(this.state.tiles.length, index => {
