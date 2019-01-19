@@ -9,8 +9,8 @@ import '../styles/backdrop.scss';
 export class Backdrop extends React.PureComponent<IBackdropProps, BackdropState> {
     private static readonly binderHoles: JSX.Element[] = Shared.fillArray(BackdropState.numberOfBinderHoles, i => {
         return <div key={i}
-            className='backdrop-binder-hole'>
-        </div>;
+                    className='backdrop-binder-hole'>
+               </div>;
     });
 
     public readonly state: BackdropState = new BackdropState();
@@ -27,16 +27,16 @@ export class Backdrop extends React.PureComponent<IBackdropProps, BackdropState>
         });
 
         return <div className={`backdrop ${Theme[this.props.theme]}`}>
-            <div className='backdrop-left-margin'>
-                <div className='backdrop-binder-holes'>
-                    {Backdrop.binderHoles}
-                </div>
-            </div>
-            <div className='backdrop-right-margin'>
-            </div>
-            <div className='backdrop-lines'>
-                {lines}
-            </div>
-        </div>;
+                   <div className='backdrop-left-margin'>
+                        <div className='backdrop-binder-holes'>
+                           {Backdrop.binderHoles}
+                       </div>
+                   </div>
+                   <div className='backdrop-right-margin'>
+                   </div>
+                   <div className='backdrop-lines'>
+                       {lines}
+                   </div>
+               </div>;
     }
 }

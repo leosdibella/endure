@@ -4,7 +4,7 @@ export class Animator {
     private pausedTime?: number;
     private startTime?: number;
     private id?: number;
-    private onAnimate = this.loopAnimation.bind(this);
+    private onAnimate: (time: number) => void = this.loopAnimation.bind(this);
 
     private loopAnimation(time: number): void {
         if (Shared.isDefined(this.id)) {

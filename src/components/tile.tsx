@@ -77,10 +77,10 @@ export class Tile extends React.PureComponent<ITileProps, object> {
         return <div className={this.getClassName(tileType, canBeDetonated)}
                     style={this.getStyle(tileType)}
                     onClick={this.onClick}>
-                    {canBeDetonated ? <span className='tile-detonation-value'>
+                   {canBeDetonated ? <span className='tile-detonation-value'>
                                         {this.props.container.detonationRange}
-                                      </span>
-                                    : undefined}
+                                     </span>
+                                   : undefined}
                </div>;
     }
 }

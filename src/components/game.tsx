@@ -140,7 +140,7 @@ export class Game extends React.PureComponent<IGameProps, GameState> {
 
     public render(): JSX.Element {
         return <div className={`game ${Theme[this.props.theme]}`}>
-            {this.getLayout()}
-        </div>;
+                    {this.getLayout()}
+                </div>;
     }
 }

@@ -46,13 +46,13 @@ export class App extends React.PureComponent<object, AppState> {
 
     public render(): JSX.Element {
         return <div className={`app ${Theme[this.state.theme]}`}>
-            <Backdrop theme={this.state.theme}
-                      orientation={this.state.orientation}>
-            </Backdrop>
-            <Game theme={this.state.theme}
-                  orientation={this.state.orientation}
-                  onUpdate={this.onUpdate}>
-            </Game>
-        </div>;
+                   <Backdrop theme={this.state.theme}
+                             orientation={this.state.orientation}>
+                   </Backdrop>
+                   <Game theme={this.state.theme}
+                         orientation={this.state.orientation}
+                         onUpdate={this.onUpdate}>
+                   </Game>
+               </div>;
     }
 }
