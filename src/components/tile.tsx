@@ -48,8 +48,8 @@ export class Tile extends React.PureComponent<ITileProps, object> {
         return tileType;
     }
 
-    private getClassName(tileType: TileType): string {
-        return `tile-${Color[this.props.container.color]} ${Tile.tileTypes[tileType]} ${Tile.boundaryClasses[this.props.container.boundary]}`;
+    private getClassName(tileType: TileType, canBeDetonated: boolean): string {
+        return `tile-${Color[this.props.container.color]} ${Tile.tileTypes[tileType]} ${Tile.boundaryClasses[this.props.container.boundary]}${canBeDetonated ? ' tile-detonation' : ''}`;
     }
 
     private getStyle(tileType: TileType): React.CSSProperties {
@@ -71,12 +71,16 @@ export class Tile extends React.PureComponent<ITileProps, object> {
     }
 
     public render(): JSX.Element {
-        const tileType: TileType = this.getTileType();
+        const tileType: TileType = this.getTileType(),
+              canBeDetonated: boolean = this.props.container.detonationRange !== DetonationRange.none && tileType !== TileType.obscured;
 
-        return <div className={this.getClassName(tileType)}
+        return <div className={this.getClassName(tileType, canBeDetonated)}
                     style={this.getStyle(tileType)}
                     onClick={this.onClick}>
-                    {this.props.container.detonationRange !== DetonationRange.none ? this.props.container.detonationRange : ''}
+                    {canBeDetonated ? <span className='tile-detonation-value'>
+                                        {this.props.container.detonationRange}
+                                      </span>
+                                    : undefined}
                </div>;
     }
 }

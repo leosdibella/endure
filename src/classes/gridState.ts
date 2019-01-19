@@ -1,7 +1,7 @@
 import { IDictionary } from '../interfaces/iDictionary';
 import { IGridProps } from '../interfaces/iGridProps';
 import { IGridReduction } from '../interfaces/iGridReduction';
-import { Boundary, Color, DetonationRange, Difficulty, GridMode, Orientation } from '../utilities/enum';
+import { Boundary, Color, DetonationRange, GridMode, Orientation } from '../utilities/enum';
 import { rotationMaps } from '../utilities/rotation';
 import * as Shared from '../utilities/shared';
 import { Animator } from './animator';
@@ -9,13 +9,7 @@ import { GridDefinition } from './gridDefinition';
 import { TileContainer } from './tileContainer';
 
 export class GridState {
-    private static readonly minimumTileChainLengths: IDictionary<number> = {
-        [Difficulty.beginner]: 4,
-        [Difficulty.low]: 5,
-        [Difficulty.medium]: 6,
-        [Difficulty.hard]: 7,
-        [Difficulty.expert]: 8
-    };
+    private static readonly minimumTileChainLength: number = 5;
 
     private static iterateThroughStack(state: GridState,
                                        stack: TileContainer[],
@@ -97,9 +91,8 @@ export class GridState {
         return tiles;
     }
 
-    public static reduceTiles(props: IGridProps, state: GridState): IGridReduction {
+    public static reduceTiles(state: GridState): IGridReduction {
         const visited: IDictionary<boolean> = {},
-              minimumTileChainLength: number = GridState.minimumTileChainLengths[props.difficulty],
               collapsingTiles: TileContainer[] = state.tiles.slice(),
               tiles: TileContainer[] = [];
 
@@ -116,7 +109,7 @@ export class GridState {
                     tiles[index] = state.tiles[index].cloneWith(tile.color, tile.detonationRange, group[key]);
                 });
 
-                if (keys.length >= minimumTileChainLength) {
+                if (keys.length >= GridState.minimumTileChainLength) {
                     numberOfCollapsingTiles += keys.length;
 
                     keys.forEach(key => {
@@ -126,7 +119,10 @@ export class GridState {
                     });
                 }
             } else {
-                ++numberOfCollapsingTiles;
+                if (tile.detonationRange === DetonationRange.none) {
+                    ++numberOfCollapsingTiles;
+                }
+
                 tiles[tile.index] = tile;
             }
         });
@@ -151,20 +147,20 @@ export class GridState {
                       column: number = props.orientation === Orientation.portrait ? majorIndex : minorIndex;
 
                 return state.tiles[state.gridDefinition.getTileIndexFromCoordinates(row, column)];
-            }).filter(t => t.color !== Color.transparent),
+            }).filter(t => t.color !== Color.transparent || t.detonationRange !== DetonationRange.none),
                  minorExtensionDimension: number = minorDimension - minorVector.length;
 
             Shared.fillArray(minorExtensionDimension, minorIndex => {
                 const row: number = props.orientation === Orientation.portrait ? minorIndex : majorIndex,
                       column: number = props.orientation === Orientation.portrait ? majorIndex : minorIndex,
-                      detonationRange = TileContainer.generateRandomDetonationRange(!hasDetonationTile);
+                      detonationRange: DetonationRange = TileContainer.generateRandomDetonationRange(!hasDetonationTile);
 
                 hasDetonationTile = hasDetonationTile || (detonationRange !== DetonationRange.none);
 
                 return new TileContainer(row,
                                          column,
                                          state.gridDefinition.getTileIndexFromCoordinates(row, column),
-                                         TileContainer.getRandomColor(hasDetonationTile),
+                                         TileContainer.getRandomColor(detonationRange !== DetonationRange.none),
                                          detonationRange);
             }).concat(minorVector.map((tile, minorIndex) => {
                 const modifiedMinorIndex: number = minorExtensionDimension + minorIndex,

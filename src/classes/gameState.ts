@@ -52,10 +52,7 @@ export class GameState {
             score += ((update.points as number) * Math.max(combo, 1));
             ++combo;
             stage = GameState.getStage(score);
-
-            if (stage > state.stage) {
-                letterGrade = LetterGrade.aPlus;
-            }
+            letterGrade = stage > state.stage ? LetterGrade.aPlus : Math.max(LetterGrade.aPlus, letterGrade - 1);
         }
 
         if (letterGrade === LetterGrade.f) {

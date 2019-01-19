@@ -32,7 +32,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
         }
     };
 
-    private static symetrizeAndNormalizeTimingCurve(timeFraction: number): number {
+    private static symmetrizeTimingCurve(timeFraction: number): number {
         return timeFraction < Grid.styleOverrideThreshold ? 1 - timeFraction : timeFraction;
     }
 
@@ -86,7 +86,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
 
     private collapseTiles(transposeTiles: boolean = false): void {
         const nextState: GridState = this.getNextState(transposeTiles),
-              reduction: IGridReduction = GridState.reduceTiles(this.props, nextState);
+              reduction: IGridReduction = GridState.reduceTiles(nextState);
 
         nextState.tiles = reduction.tiles;
 
@@ -141,17 +141,15 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
 
     private handleUpdate(row: number = this.state.row, column: number = this.state.column): void {
         if (this.state.gridMode === GridMode.ready) {
-            const tile: TileContainer = this.state.tiles[this.state.gridDefinition.getTileIndexFromCoordinates(this.state.row, this.state.column)],
-                  isRotation: boolean = tile.detonationRange === DetonationRange.none,
-                  gridMode: GridMode = isRotation ? GridMode.cascading : GridMode.collapsing;
+            const tile: TileContainer = this.state.tiles[this.state.gridDefinition.getTileIndexFromCoordinates(this.state.row, this.state.column)];
 
             this.setState({
-                animationTimeFraction: isRotation ? 0 : undefined,
-                animator: isRotation ? this.generateAnimator() : undefined,
+                animationTimeFraction: 0,
+                animator: this.generateAnimator(),
                 column,
-                gridMode,
+                gridMode: GridMode.cascading,
                 row,
-                updatedTiles: isRotation ? GridState.rotateTiles(this.state, tile): GridState.detonateTile(this.state, tile)
+                updatedTiles: tile.detonationRange === DetonationRange.none ? GridState.rotateTiles(this.state, tile): GridState.detonateTile(this.state, tile)
             }, this.onStartAnimator);
         }
     }
@@ -181,7 +179,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     }
 
     private getTileElements(): JSX.Element[] {
-        const fraction: number = Grid.symetrizeAndNormalizeTimingCurve(Shared.isDefined(this.state.animationTimeFraction) ? (this.state.animationTimeFraction as number) : 0),
+        const fraction: number = Grid.symmetrizeTimingCurve(Shared.isDefined(this.state.animationTimeFraction) ? (this.state.animationTimeFraction as number) : 0),
               additionalStyles: React.CSSProperties = {
                   borderRadius: `${fraction * Shared.totalPercentage - Grid.radialModifier}%`,
                   opacity: fraction
@@ -229,6 +227,16 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
 
     public componentDidUpdate(previousProps: IGridProps): void {
         let transposeTiles: boolean | undefined;
+
+        if (Shared.isDefined(this.state.animator) && this.props.gameMode !== previousProps.gameMode) {
+            const animator: Animator = this.state.animator as Animator;
+
+            if (this.props.gameMode === GameMode.paused) {
+                animator.pause();
+            } else {
+                animator.start();
+            }
+        }
 
         if (previousProps.orientation !== this.props.orientation) {
             this.stopAnimator();

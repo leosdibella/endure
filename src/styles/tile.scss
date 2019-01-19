@@ -1,9 +1,12 @@
 %tile {
     position: absolute;
+    cursor: pointer;
 }
 
 %tile-highlighted {
+    position: absolute;
     z-index: 2;
+    cursor: pointer;
 }
 
 @each $theme, $color-map in $color-maps {
@@ -26,10 +29,36 @@
     background-color: transparent;
 }
 
+%tile-detonation {
+    font-size: 35px;
+    text-align: center;
+    border-radius: 0px;
+    transform: rotate(45deg);
+    border: 1px solid;
+    z-index: 5;
+}
+
+.tile-detonation-value {
+    transform: rotate(-45deg);
+    position: absolute;
+    top: 2px;
+    left: 15px;
+}
+
+.tile-standard {
+    @extend %tile;
+}
+
 .light {
     .tile-obscured {
         @extend %tile;
         background-color: map-get($light-colors, midground);
+    }
+
+    .tile-detonation {
+        @extend %tile-detonation;
+        color: map-get($light-colors, foreground);
+        background-color: map-get($light-colors, background);
     }
 
     .tile-highlighted {
@@ -49,6 +78,12 @@
         background-color: map-get($dark-colors, midground);
     }
 
+    .tile-detonation {
+        @extend %tile-detonation;
+        color: map-get($dark-colors, foreground);
+        background-color: map-get($dark-colors, background);
+    }
+
     .tile-highlighted {
         @extend %tile-highlighted;
         box-shadow: 0px 1px 10px 4px rgba(255, 255, 255, 0.75);
@@ -56,6 +91,15 @@
 
     .tile-highlighted-neighbor {
         @extend %tile;
+    }
+}
+
+.tile-highlighted.tile-detonation {
+    font-size: 47px;
+
+    .tile-detonation-value {
+        top: 1px;
+        left: 20px;
     }
 }
 
