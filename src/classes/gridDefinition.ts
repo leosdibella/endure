@@ -4,8 +4,8 @@ import * as Shared from '../utilities/shared';
 import { TileContainer } from './tileContainer';
 
 export class GridDefinition {
-    private static readonly dimensionMinor: number = 9;
-    private static readonly dimensionMajor: number = 13;
+    private static readonly dimensionMinor: number = 7;
+    private static readonly dimensionMajor: number = 11;
     private static readonly midpointDenominator: number = 2;
     private static readonly intiailMinor: number = (GridDefinition.dimensionMinor - 1) / GridDefinition.midpointDenominator;
     private static readonly intialMajor: number = (GridDefinition.dimensionMajor - 1) / GridDefinition.midpointDenominator;

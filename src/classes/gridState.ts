@@ -180,25 +180,26 @@ export class GridState {
               tiles: TileContainer[] = state.tiles.slice();
 
         Shared.iterate(detonationCenter.detonationRange, i => {
-            let index: number = detonationCenter.row + i;
+            const step: number = i + 1;
+            let index: number = detonationCenter.row + step;
 
             if (index < state.gridDefinition.numberOfRows) {
                 stack.push(state.tiles[state.gridDefinition.getTileIndexFromCoordinates(index, detonationCenter.column)]);
             }
 
-            index = detonationCenter.row - i;
+            index = detonationCenter.row - step;
 
             if (index >= 0) {
                 stack.push(state.tiles[state.gridDefinition.getTileIndexFromCoordinates(index, detonationCenter.column)]);
             }
 
-            index = detonationCenter.column + i;
+            index = detonationCenter.column + step;
 
             if (index < state.gridDefinition.numberOfColumns) {
                 stack.push(state.tiles[state.gridDefinition.getTileIndexFromCoordinates(detonationCenter.row, index)]);
             }
 
-            index = detonationCenter.column - i;
+            index = detonationCenter.column - step;
 
             if (index >= 0) {
                 stack.push(state.tiles[state.gridDefinition.getTileIndexFromCoordinates(detonationCenter.row, index)]);

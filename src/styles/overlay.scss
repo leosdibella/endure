@@ -133,6 +133,9 @@
     }
 
     .overlay-high-scores-listing {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
         flex-basis: 50%;
 
         .overlay-no-high-scores {
@@ -150,10 +153,18 @@
             padding-bottom: 8px;
         }
 
+        .overlay-high-scores {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            min-height: 0px;
+        }
+
         .overlay-high-score {
             border-bottom: 1px dashed;
             margin-bottom: 5px;
             font-size: 30px;
+            min-height: min-content;
+            display: flex;
         }
 
         .overlay-high-score div {

@@ -9,6 +9,15 @@
     cursor: pointer;
 }
 
+%tile-detonation {
+    font-size: 35px;
+    text-align: center;
+    border-radius: 0px;
+    transform: rotate(45deg);
+    border: 1px solid;
+    z-index: 5;
+}
+
 @each $theme, $color-map in $color-maps {
     @each $key, $color in $color-map {
         @if $key == 'foreground' {
@@ -27,15 +36,6 @@
 
 .tile-transparent {
     background-color: transparent;
-}
-
-%tile-detonation {
-    font-size: 35px;
-    text-align: center;
-    border-radius: 0px;
-    transform: rotate(45deg);
-    border: 1px solid;
-    z-index: 5;
 }
 
 .tile-detonation-value {

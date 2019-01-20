@@ -141,7 +141,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
 
     private handleUpdate(row: number = this.state.row, column: number = this.state.column): void {
         if (this.state.gridMode === GridMode.ready) {
-            const tile: TileContainer = this.state.tiles[this.state.gridDefinition.getTileIndexFromCoordinates(this.state.row, this.state.column)];
+            const tile: TileContainer = this.state.tiles[this.state.gridDefinition.getTileIndexFromCoordinates(row, column)];
 
             this.setState({
                 animationTimeFraction: 0,

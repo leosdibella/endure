@@ -35,7 +35,7 @@
 
     .grade-fill {
         @extend %grade-fill;
-        background-color: map-get($light-colors, foreground);
+        background-color: map-get($light-colors, midground);
     }
 }
 
@@ -48,7 +48,7 @@
 
     .grade-fill {
         @extend %grade-fill;
-        background-color: map-get($dark-colors, foreground);
+        background-color: map-get($dark-colors, midground);
     }
 }
 

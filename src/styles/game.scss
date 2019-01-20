@@ -6,8 +6,6 @@
     justify-content: space-around;
 }
 
-$header-side-margin-width: $global-side-bar-width + 10;
-
 .header {
     @extend %global-flex-row;
     width: 100%;
@@ -17,29 +15,46 @@ $header-side-margin-width: $global-side-bar-width + 10;
     padding: 10px 0px 10px 0px;
     justify-content: space-between;
     flex: 1;
-    margin-left: $header-side-margin-width;
-    margin-right: $header-side-margin-width;
+    margin-right: $global-side-bar-width + 10;
     flex-wrap: nowrap;
     max-height: 100px;
 }
 
-.header-score {
-    margin-right: $header-side-margin-width + 90;
+.header-pause, .header-theme {
+    cursor: pointer;
+    width: $global-side-bar-width;
+    z-index: 5;
+    text-align: center;
+    padding-top: 7px;
+    font-size: 50px;
+}
+
+.header-pause {
+    margin-right: 10px;
+}
+
+.header-theme {
+    margin-left: 10px;
 }
 
 .light {
-    .header-name, .header-score, .header-stage {
+    .header-name, .header-score, .header-stage, .header-pause, .header-theme {
         color: map-get($light-colors, foreground);
     }
 }
 
 .dark {
-    .header-name, .header-score, .header-stage {
+    .header-name, .header-score, .header-stage, .header-pause, .header-theme {
         color: map-get($dark-colors, foreground);
     }
 }
 
-.header-left-hud {
+.header-left-hud, .header-right-hud {
+    display: flex;
+    flex-direction: row;
+}
+
+.header-left-sub-hud, .header-right-sub-hud  {
     display: flex;
     flex-direction: column;
 }

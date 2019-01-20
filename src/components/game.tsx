@@ -19,11 +19,13 @@ export class Game extends React.PureComponent<IGameProps, GameState> {
 
     private readonly onKeyDown: (keyboardEvent: KeyboardEvent) => void = this.handleKeyDown.bind(this);
     private readonly onUpdate: (update: IGameUpdate) => void = this.handleUpdate.bind(this);
+    private readonly onPause: () => void = this.togglePaused.bind(this);
+    private readonly onToggleTheme: () => void = this.toggleTheme.bind(this);
 
     private readonly keyDownEventActionMap: IDictionary<() => void> = {
-        p: this.togglePaused.bind(this),
+        p: this.onPause,
         q: this.quit.bind(this),
-        v: this.toggleTheme.bind(this)
+        v: this.onToggleTheme
     };
 
     private toggleTheme(): void {
@@ -86,19 +88,26 @@ export class Game extends React.PureComponent<IGameProps, GameState> {
         }
 
         if (GameState.isInProgress(this.state.gameMode)) {
+            // TODO: Need a pause button (maybe in grade component) and a maybe a view mode component as well...
             elements.push(<div key={Game.headerKey}
                                className={`header ${Theme[this.props.theme]}`}>
                               <div className='header-left-hud'>
-                                   <div className='header-name'>
-                                       {this.state.playerName}
+                                   <div className='header-pause'
+                                        onClick={this.onPause}>
+                                       {this.state.gameMode === GameMode.paused ? '\u25B6' : '\u2759\u2759'}
                                    </div>
-                                   <Combo combo={this.state.combo}
-                                          stage={this.state.stage}
-                                          difficulty={this.state.difficulty}
-                                          onUpdate={this.onUpdate}
-                                          letterGrade={this.state.letterGrade}
-                                          gameMode={this.state.gameMode}>
-                                  </Combo>
+                                   <div className='header-left-sub-hud'>
+                                       <div className='header-name'>
+                                            {this.state.playerName}
+                                       </div>
+                                       <Combo combo={this.state.combo}
+                                              stage={this.state.stage}
+                                              difficulty={this.state.difficulty}
+                                              onUpdate={this.onUpdate}
+                                              letterGrade={this.state.letterGrade}
+                                              gameMode={this.state.gameMode}>
+                                       </Combo>
+                                   </div>
                               </div>
                               <Grade letterGrade={this.state.letterGrade}
                                      difficulty={this.state.difficulty}
@@ -107,11 +116,17 @@ export class Game extends React.PureComponent<IGameProps, GameState> {
                                      onUpdate={this.onUpdate}>
                               </Grade>
                               <div className='header-right-hud'>
-                                  <div className='header-score'>
-                                      Score: {this.state.score}
+                                  <div className='header-right-sub-hud'>
+                                      <div className='header-score'>
+                                         Score: {this.state.score}
+                                      </div>
+                                      <div className='header-stage'>
+                                         Stage: {this.state.stage}
+                                      </div>
                                   </div>
-                                  <div className='header-stage'>
-                                      Stage: {this.state.stage}
+                                  <div className='header-theme'
+                                       onClick={this.onToggleTheme}>
+                                      {this.props.theme === Theme.dark ? '\u2600' : '\u263e'}
                                   </div>
                               </div>
                           </div>);

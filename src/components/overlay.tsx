@@ -110,7 +110,9 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
                         <div className='overlay-high-scores-listing-title'>
                             You
                         </div>
-                        {localHighScores}
+                        <div className={`overlay-high-scores ${localHighScores.length === 0 ? ' hide' : ''}`}>
+                            {localHighScores}
+                        </div>
                         <div className={`overlay-no-high-scores ${localHighScores.length > 0 ? ' hide' : ''}`}>
                             Nothing yet ...
                         </div>
@@ -121,7 +123,9 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
                         <div className='overlay-high-scores-listing-title'>
                             The Entire Class
                         </div>
-                        {globalHighScores}
+                        <div className={`overlay-high-scores ${globalHighScores.length === 0 ? ' hide' : ''}`}>
+                            {globalHighScores}
+                        </div>
                         <div className={`overlay-no-high-scores ${globalHighScores.length > 0 ? ' hide' : ''}`}>
                             Nothing yet ...
                         </div>

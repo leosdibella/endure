@@ -1,13 +1,7 @@
-$spacePixelDimension: 25px;
-$numberOfSpacesWide: 10;
-$numberOfSpacesHigh: 20;
-
 .grid {
     position: relative;
     margin: auto;
     z-index: 2;
-    height: 900px;
-    width: 700px;
 }
 
 .grid-line {

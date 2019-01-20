@@ -6,7 +6,7 @@ export class TileContainer {
     private static readonly detonationRangeThreshold: number = 101;
     private static readonly largeDetonantionRangeThreshold: number = 98;
     private static readonly mediumDetonationRangeThreshold: number = 94;
-    private static readonly smallDetonationRangeThreshold: number = 79;
+    private static readonly smallDetonationRangeThreshold: number = 86;
 
     private static readonly reverseBoundaryRelations: IDictionary<Boundary> = {
         [Boundary.top]: Boundary.bottom,

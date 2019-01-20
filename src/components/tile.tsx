@@ -29,23 +29,21 @@ export class Tile extends React.PureComponent<ITileProps, object> {
     private readonly onClick: () => void = this.handleClick.bind(this);
 
     private getTileType(): TileType {
-        let tileType: TileType = TileType.obscured;
-
         if (this.props.gameMode === GameMode.inGame) {
             if (this.props.gridMode === GridMode.ready) {
                 if (this.props.selectedColumn === this.props.container.column && this.props.selectedRow === this.props.container.row) {
-                    tileType = TileType.highlighted;
-                } else {
-                    tileType = centralRotationMap.filter(coordinates => {
-                        return coordinates[0] + this.props.selectedRow === this.props.container.row && coordinates[1] + this.props.selectedColumn === this.props.container.column;
-                    }).length > 0 ? TileType.highlightedNeighbor : TileType.standard;
+                    return TileType.highlighted;
                 }
+
+                return centralRotationMap.filter(coordinates => {
+                    return coordinates[0] + this.props.selectedRow === this.props.container.row && coordinates[1] + this.props.selectedColumn === this.props.container.column;
+                }).length > 0 ? TileType.highlightedNeighbor : TileType.standard;
             } else {
-                tileType = TileType.standard;
+                return TileType.standard;
             }
         }
 
-        return tileType;
+        return TileType.obscured;
     }
 
     private getClassName(tileType: TileType, canBeDetonated: boolean): string {
