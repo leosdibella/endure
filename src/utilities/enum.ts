@@ -96,7 +96,6 @@ enum Theme {
 enum TileType {
     standard = 0,
     highlighted,
-    highlightedNeighbor,
     obscured
 }
 

@@ -1,12 +1,11 @@
 import * as React from 'react';
 import { Animator } from '../classes/animator';
-import { GridDefinition } from '../classes/gridDefinition';
 import { GridState } from '../classes/gridState';
 import { TileContainer } from '../classes/tileContainer';
 import { IDictionary } from '../interfaces/iDictionary';
 import { IGridProps } from '../interfaces/iGridProps';
 import { IGridReduction } from '../interfaces/iGridReduction';
-import { Boundary, DetonationRange, DomEvent, GameMode, GridMode, Orientation, Theme } from '../utilities/enum';
+import { Boundary, DetonationRange, DomEvent, GameMode, GridMode, Theme } from '../utilities/enum';
 import * as Shared from '../utilities/shared';
 import { Tile } from './tile';
 
@@ -19,17 +18,6 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
 
     private static readonly standardTileAdditionalStyles: React.CSSProperties = {
         opacity: 1
-    };
-
-    private static readonly orientationStyles: IDictionary<React.CSSProperties> = {
-        [Orientation.landscape]: {
-            height: `${GridDefinition.orientedDefinitions[Orientation.landscape].numberOfRows * Tile.dimensionWithMargin}px`,
-            width: `${GridDefinition.orientedDefinitions[Orientation.landscape].numberOfColumns * Tile.dimensionWithMargin}px`
-        },
-        [Orientation.portrait]: {
-            height: `${GridDefinition.orientedDefinitions[Orientation.portrait].numberOfRows * Tile.dimensionWithMargin}px`,
-            width: `${GridDefinition.orientedDefinitions[Orientation.portrait].numberOfColumns * Tile.dimensionWithMargin}px`
-        }
     };
 
     private static symmetrizeTimingCurve(timeFraction: number): number {
@@ -107,7 +95,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     private getNextState(transposeTiles: boolean): GridState {
         return transposeTiles
                 ? GridState.transpose(this.props, this.state, this.state.updatedTiles)
-                : new GridState(this.props, this.state.updatedTiles, this.state.graph, this.state.row, this.state.column);
+                : new GridState(this.props, this.state.updatedTiles, this.state.neighborGraph, this.state.row, this.state.column);
     }
 
     private drawAnimationFrame(timeFraction: number): void {
@@ -141,7 +129,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
 
     private handleUpdate(row: number = this.state.row, column: number = this.state.column): void {
         if (this.state.gridMode === GridMode.ready) {
-            const tile: TileContainer = this.state.tiles[this.state.gridDefinition.getTileIndexFromCoordinates(row, column)];
+            const tile: TileContainer = this.state.gridDefinition.getTile(this.state.tiles, row, column);
 
             this.setState({
                 animationTimeFraction: 0,
@@ -185,31 +173,40 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
                   opacity: fraction
               };
 
-        return Shared.fillArray(this.state.tiles.length, index => {
-            let tile: TileContainer = this.state.tiles[index],
-                useOverrides: boolean = false;
+        return Shared.fillArray(this.state.gridDefinition.numberOfRows, row => {
+            const tileRow: JSX.Element[] = Shared.fillArray(this.state.gridDefinition.numberOfColumns, column => {
+                const index: number = this.state.gridDefinition.getTileIndexFromCoordinates(row, column);
 
-            if (Shared.isDefined(this.state.animationTimeFraction)) {
-                const updatedTile: TileContainer = this.state.updatedTiles[index];
+                let tile: TileContainer = this.state.tiles[index],
+                    useOverrides: boolean = false;
 
-                if (updatedTile.color !== tile.color || updatedTile.detonationRange !== tile.detonationRange) {
-                    useOverrides = true;
+                if (Shared.isDefined(this.state.animationTimeFraction)) {
+                    const updatedTile: TileContainer = this.state.updatedTiles[index];
 
-                    if ((this.state.animationTimeFraction as number) > Grid.styleOverrideThreshold) {
-                        tile = updatedTile;
+                    if (updatedTile.color !== tile.color || updatedTile.detonationRange !== tile.detonationRange) {
+                        useOverrides = true;
+
+                        if ((this.state.animationTimeFraction as number) > Grid.styleOverrideThreshold) {
+                            tile = updatedTile;
+                        }
                     }
                 }
-            }
 
-            return <Tile key={tile.index}
-                         selectedColumn={this.state.column}
-                         selectedRow={this.state.row}
-                         gridMode={this.state.gridMode}
-                         gridDefinition={this.state.gridDefinition}
-                         gameMode={this.props.gameMode}
-                         additionalStyles={useOverrides ? additionalStyles : Grid.standardTileAdditionalStyles}
-                         container={tile}
-                         onUpdate={this.onUpdate}/>;
+                return <Tile key={tile.index}
+                             selectedColumn={this.state.column}
+                             selectedRow={this.state.row}
+                             gridMode={this.state.gridMode}
+                             gridDefinition={this.state.gridDefinition}
+                             gameMode={this.props.gameMode}
+                             additionalStyles={useOverrides ? additionalStyles : Grid.standardTileAdditionalStyles}
+                             container={tile}
+                             onUpdate={this.onUpdate}/>;
+            });
+
+            return <div className='grid-row'
+                        key={`row-${row}`}>
+                        {tileRow}
+                   </div>;
         });
     }
 
@@ -251,8 +248,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     }
 
     public render(): JSX.Element {
-        return <div className={`grid ${Theme[this.props.theme]}`}
-                    style={Grid.orientationStyles[this.props.orientation]}>
+        return <div className={`grid ${Theme[this.props.theme]}`}>
                     {this.getTileElements()}
                </div>;
     }

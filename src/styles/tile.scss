@@ -1,33 +1,19 @@
+$standard-tile-dimension: 54px;
+$highlighted-tile-dimension: $standard-tile-dimension + 10;
+
 %tile {
-    position: absolute;
     cursor: pointer;
-}
-
-%tile-highlighted {
-    position: absolute;
-    z-index: 2;
-    cursor: pointer;
-}
-
-%tile-detonation {
-    font-size: 35px;
-    text-align: center;
-    border-radius: 0px;
-    transform: rotate(45deg);
-    border: 1px solid;
-    z-index: 5;
+    position: relative;
 }
 
 @each $theme, $color-map in $color-maps {
     @each $key, $color in $color-map {
         @if $key == 'foreground' {
             .#{$theme} .tile-grey {
-                @extend %tile;
                 background-color: $color;
             }
         } @else if ($key != 'background' && $key != 'midground') {
             .#{$theme} .tile-#{$key} {
-                @extend %tile;
                 background-color: $color;
             }
         }
@@ -45,61 +31,68 @@
     left: 15px;
 }
 
-.tile-standard {
+.tile-standard, .tile-obscured {
     @extend %tile;
+    width: $standard-tile-dimension;
+    height: $standard-tile-dimension;
+}
+
+.tile-highlighted {
+    @extend %tile;
+    z-index: 2;
+    width: $highlighted-tile-dimension;
+    height: $highlighted-tile-dimension;
+    margin: -5px;
+}
+
+.tile-detonation {
+    font-size: 35px;
+    text-align: center;
+    border-radius: 0px !important;
+    transform: rotate(45deg);
+    border: 1px solid;
+    z-index: 5;
+    margin: -1px;
 }
 
 .light {
     .tile-obscured {
-        @extend %tile;
         background-color: map-get($light-colors, midground);
     }
 
     .tile-detonation {
-        @extend %tile-detonation;
         color: map-get($light-colors, foreground);
         background-color: map-get($light-colors, background);
     }
 
     .tile-highlighted {
-        @extend %tile-highlighted;
         box-shadow: 0px 1px 10px 4px rgba(0, 0, 0, 0.75);
-    }
-
-    .tile-highlighted-neighbor {
-        @extend %tile;
     }
 }
 
 
 .dark {
     .tile-obscured {
-        @extend %tile;
         background-color: map-get($dark-colors, midground);
     }
 
     .tile-detonation {
-        @extend %tile-detonation;
         color: map-get($dark-colors, foreground);
         background-color: map-get($dark-colors, background);
     }
 
     .tile-highlighted {
-        @extend %tile-highlighted;
         box-shadow: 0px 1px 10px 4px rgba(255, 255, 255, 0.75);
-    }
-
-    .tile-highlighted-neighbor {
-        @extend %tile;
     }
 }
 
 .tile-highlighted.tile-detonation {
     font-size: 47px;
+    margin: -6px;
 
     .tile-detonation-value {
-        top: 1px;
-        left: 20px;
+        top: 0px;
+        left: 18px;
     }
 }
 

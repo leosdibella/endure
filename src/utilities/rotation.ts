@@ -101,6 +101,5 @@ const rotationMaps: IDictionary<number[][]> = {
 };
 
 export {
-    rotationMaps,
-    centralRotationMap
+    rotationMaps
 };

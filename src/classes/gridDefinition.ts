@@ -19,6 +19,10 @@ export class GridDefinition {
         return row * this.numberOfColumns + column;
     }
 
+    public getTile(tiles: TileContainer[], row: number, column: number): TileContainer {
+        return tiles[this.getTileIndexFromCoordinates(row, column)];
+    }
+
     public getTileCoordinatesFromIndex(index: number): number[] {
         const column = index % this.numberOfColumns;
 
