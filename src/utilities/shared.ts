@@ -86,6 +86,14 @@ function getNumericEnumKeys(collection: IEnum): number[] {
     return numericKeys;
 }
 
+function blurActiveElement(): void {
+    if (isDefined(document.activeElement)
+            && document.activeElement instanceof HTMLInputElement
+            && document.activeElement.type !== 'text') {
+        document.activeElement.blur();
+    }
+}
+
 export {
     totalPercentage,
     percentageDecimalPlaceCutoff,
@@ -101,5 +109,6 @@ export {
     formatCamelCaseString,
     iterate,
     fillArray,
-    getNumericEnumKeys
+    getNumericEnumKeys,
+    blurActiveElement
 };

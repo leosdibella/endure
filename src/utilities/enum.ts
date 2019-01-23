@@ -67,6 +67,11 @@ enum GridMode {
     cascading
 }
 
+enum HighScoreListing {
+    local = 0,
+    global
+}
+
 enum LetterGrade {
     aPlus = 0,
     a,
@@ -107,6 +112,7 @@ export {
     DomEvent,
     GameMode,
     GridMode,
+    HighScoreListing,
     LetterGrade,
     Orientation,
     Theme,

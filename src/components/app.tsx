@@ -35,13 +35,13 @@ export class App extends React.PureComponent<object, AppState> {
     public componentDidMount(): void {
         window.addEventListener(DomEvent.resize, this.onOrientationChange);
         window.addEventListener(DomEvent.orientationChange, this.onOrientationChange);
-        window.addEventListener(DomEvent.click, AppState.removeElementFocus);
+        window.addEventListener(DomEvent.click, Shared.blurActiveElement);
     }
 
     public componentWillUnmount(): void {
         window.removeEventListener(DomEvent.resize, this.onOrientationChange);
         window.removeEventListener(DomEvent.orientationChange, this.onOrientationChange);
-        window.removeEventListener(DomEvent.click, AppState.removeElementFocus);
+        window.removeEventListener(DomEvent.click, Shared.blurActiveElement);
     }
 
     public render(): JSX.Element {

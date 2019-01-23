@@ -116,6 +116,23 @@
     align-items: center;
 }
 
+.overlay-high-score-selection {
+    display: flex;
+}
+
+.overlay-high-score-select {
+    margin-left: 10px;
+    border: 2px solid;
+    background-color: transparent;
+    outline: none;
+    padding: 0px 10px;
+}
+
+.overlay-high-score-select:focus, .overlay-high-score-select:active {
+    outline: none;
+    border-style: dashed;
+}
+
 .overlay-high-scores-listings {
     @extend %global-flex-row;
     flex: 1;
@@ -124,19 +141,12 @@
     justify-content: space-between;
     align-items: start;
 
-    .overlay-high-scores-listing:first-child {
-        padding: 0px 20px 0px $global-side-bar-width + 5;
-    }
-
-    .overlay-high-scores-listing:last-child {
-        padding: 0px $global-side-bar-width + 5 0px 20px;
-    }
-
     .overlay-high-scores-listing {
         display: flex;
         flex-direction: column;
         height: 100%;
-        flex-basis: 50%;
+        flex-basis: 100%;
+        padding: 0px $global-side-bar-width + 5;
 
         .overlay-no-high-scores {
             text-align: center;
@@ -145,12 +155,19 @@
         }
 
         .overlay-high-scores-listing-title {
-            text-align: center;
             border-bottom: 2px solid;
             margin-bottom: 10px;
             font-weight: bold;
             font-size: 40px;
             padding-bottom: 8px;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+
+            select {
+                flex-basis: 50%;
+                display: flex;
+            }
         }
 
         .overlay-high-scores {
@@ -177,28 +194,33 @@
     }
 
     .dark.overlay-high-scores-listing {
+        .overlay-high-score-select {
+            color: map-get($dark-colors, foreground);
+            border-color: map-get($dark-colors, foreground);
+        }
+
+        .overlay-high-score-select-option {
+            background-color: map-get($dark-colors, background);
+        }
+
         .overlay-high-scores-listing-title, .overlay-high-score, .overlay-no-high-scores {
             color: map-get($dark-colors, foreground);
         }        
     }
 
     .light.overlay-high-scores-listing {
+        .overlay-high-score-select {
+            color: map-get($light-colors, foreground);
+            border-color: map-get($light-colors, foreground);
+        }
+
         .overlay-high-scores-listing-title, .overlay-high-score, .overlay-no-high-scores {
             color: map-get($light-colors, foreground);
         }
-    }
 
-    .overlay-high-scores-listing-separator {
-        flex-basis: 2px;
-        height: 100%;
-    }
-
-    .dark.overlay-high-scores-listing-separator {
-        background-color: map-get($dark-colors, foreground);
-    }
-
-    .light.overlay-high-scores-listing-separator {
-        background-color: map-get($light-colors, foreground);
+        .overlay-high-score-select-option {
+            background-color: map-get($light-colors, background);
+        }
     }
 }
 

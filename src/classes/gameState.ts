@@ -27,7 +27,7 @@ export class GameState {
     public static getPersistedState(): GameState {
         return new GameState(GameMode.newGame,
                              Persistence.fetchStorableEnumValue(GameState.difficultyLocalStorageKey, Difficulty, GameState.defaultDifficulty) as Difficulty,
-                             Persistence.fetchHighScores(GameState.highScoresLocalStorageKey),
+                             Persistence.fetchLocalHighScores(GameState.highScoresLocalStorageKey),
                              Shared.castSafeOr(Persistence.fetchString(GameState.playerNameLocalStorageKey), GameState.defaultPlayerName));
     }
 
@@ -42,7 +42,8 @@ export class GameState {
               difficulty: Difficulty =  Shared.castSafeOr(update.difficulty, state.difficulty),
               highScores: IHighScore[][] = state.highScores;
 
-        let stage: number = state.stage,
+        let maxCombo: number = state.maxCombo,
+            stage: number = state.stage,
             score: number = state.score,
             gameMode: GameMode =  Shared.castSafeOr(update.gameMode, state.gameMode),
             letterGrade: number =  Shared.castSafeOr(update.letterGrade, state.letterGrade),
@@ -53,6 +54,10 @@ export class GameState {
             ++combo;
             stage = GameState.getStage(score);
             letterGrade = stage > state.stage ? LetterGrade.aPlus : Math.max(LetterGrade.aPlus, letterGrade - 1);
+
+            if (combo > maxCombo) {
+                maxCombo = combo;
+            }
         }
 
         if (letterGrade === LetterGrade.f) {
@@ -60,13 +65,16 @@ export class GameState {
         }
 
         if (gameMode === GameMode.gameOver && score > 0) {
-            highScores[difficulty] = highScores[difficulty].concat({
-                                                                dateStamp: Shared.getDateStamp(new Date()),
-                                                                difficulty,
-                                                                name: state.playerName,
-                                                                value: score
-                                                            }).sort((a, b) => b.value - a.value)
-                                                              .slice(0, GameState.numberOfHighScoresToPersist);
+            const newHighScore: IHighScore = {
+                dateStamp: Shared.getDateStamp(new Date()),
+                difficulty,
+                maxCombo,
+                name: state.playerName,
+                value: score
+            };
+
+            highScores[difficulty] = highScores[difficulty].concat(newHighScore).sort((a, b) => b.value - a.value).slice(0, GameState.numberOfHighScoresToPersist);
+            // TODO: Persistence.persistGlobalHighScore(newHighScore, difficulty);
         }
 
         if (!GameState.isInProgress(gameMode)) {
@@ -83,6 +91,7 @@ export class GameState {
                              combo,
                              score,
                              stage,
+                             maxCombo,
                              letterGrade);
     }
 
@@ -94,6 +103,7 @@ export class GameState {
                        public combo: number = 0,
                        public score: number = 0,
                        public stage: number = 0,
+                       public maxCombo: number = 0,
                        public letterGrade: LetterGrade = LetterGrade.aPlus) {
         this.playerName = GameState.isValidPlayerName(playerName) ? playerName : GameState.defaultPlayerName;
     }

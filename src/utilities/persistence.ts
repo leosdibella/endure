@@ -1,3 +1,4 @@
+import axios, { AxiosPromise } from 'axios';
 import { IEnum } from '../interfaces/iEnum';
 import { IHighScore } from '../interfaces/iHighScore';
 import { Difficulty, Theme } from './enum';
@@ -56,6 +57,18 @@ function fetchStorableEnumValue(key: string, collection: IEnum, defaultValue: St
     return defaultValue;
 }
 
+function isValidHighScore(highScore: IHighScore): boolean {
+    return Shared.isObject(highScore)
+        && Shared.isString(highScore.name)
+        && highScore.name.length > 0
+        && Shared.isString(highScore.dateStamp)
+        && highScore.dateStamp.length === Shared.dateStampLength
+        && Shared.isInteger(highScore.value)
+        && highScore.value > 0
+        && Shared.isInteger(highScore.difficulty)
+        && Shared.isDefined(Difficulty[highScore.difficulty]);
+}
+
 function mapHHighScores(highScores: IHighScore[][]): IHighScore[][] {
     const highScoreArray: IHighScore[][] = Shared.fillArray(Shared.getNumericEnumKeys(Difficulty).length, () => []);
 
@@ -63,15 +76,7 @@ function mapHHighScores(highScores: IHighScore[][]): IHighScore[][] {
         highScores.forEach((hsd, difficulty) => {
             if (Array.isArray(hsd) && Shared.isDefined(Difficulty[difficulty])) {
                 hsd.forEach(hs => {
-                    if (Shared.isObject(hs)
-                            && Shared.isString(hs.name)
-                            && hs.name.length > 0
-                            && Shared.isString(hs.dateStamp)
-                            && hs.dateStamp.length === Shared.dateStampLength
-                            && Shared.isInteger(hs.value)
-                            && hs.value > 0
-                            && Shared.isInteger(hs.difficulty)
-                            && Shared.isDefined(Difficulty[hs.difficulty])) {
+                    if (isValidHighScore(hs)) {
                         highScoreArray[difficulty].push(hs);
                     }
                 });
@@ -82,13 +87,32 @@ function mapHHighScores(highScores: IHighScore[][]): IHighScore[][] {
     return highScoreArray;
 }
 
-function fetchHighScores(key: string): IHighScore[][] {
+function fetchLocalHighScores(key: string): IHighScore[][] {
     return mapHHighScores(fetchData<Storable>(key) as IHighScore[][]);
+}
+
+function fetchGlobalHighScores(difficulty: Difficulty): AxiosPromise {
+    return axios.get('place-holder-url-for-firebase-functional-endpoint', {
+        params: {
+            difficulty
+        }
+    });
+}
+
+function persistGlobalHighScore(highScore: IHighScore, difficulty: Difficulty): AxiosPromise {
+    return axios.post('place-holder-url-for-firebase-functional-endpoint', highScore, {
+        params: {
+            difficulty
+        }
+    });
 }
 
 export {
     persistData,
     fetchString,
     fetchStorableEnumValue,
-    fetchHighScores
+    fetchLocalHighScores,
+    fetchGlobalHighScores,
+    persistGlobalHighScore,
+    isValidHighScore
 };

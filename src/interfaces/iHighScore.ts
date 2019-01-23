@@ -5,4 +5,5 @@ export interface IHighScore {
     readonly value: number;
     readonly dateStamp: string;
     readonly difficulty: Difficulty;
+    readonly maxCombo: number;
 }

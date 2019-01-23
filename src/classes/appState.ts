@@ -14,14 +14,6 @@ export class AppState {
         return new AppState(Persistence.fetchStorableEnumValue(AppState.themeLocalStorageKey, Theme, AppState.defaultTheme) as Theme, AppState.getOrientation());
     }
 
-    public static removeElementFocus(): void {
-        if (Shared.isDefined(document.activeElement)
-                && document.activeElement instanceof HTMLInputElement
-                && document.activeElement.type !== 'text') {
-            document.activeElement.blur();
-        }
-    }
-
     public static persistState(state: AppState): void {
         Persistence.persistData(AppState.themeLocalStorageKey, state.theme);
     }
