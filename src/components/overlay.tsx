@@ -238,7 +238,7 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
         if (Shared.isDefined(menuOption)) {
             const buttons: JSX.Element[] = (menuOption as IOverlayMenuOption).options.map((option, index) => {
                 return <button key={index}
-                               ref={this.state.buttonReferences[this.props.gameMode][index]}
+                               ref={this.state.menu.buttonReferences[this.props.gameMode][index]}
                                className={`overlay-button ${this.state.selectedOptionIndex === index ? 'overlay-selected-option' : ''}`}
                                onClick={(menuOption as IOverlayMenuOption).actions[index]}>
                             {option}
@@ -263,7 +263,7 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
     }
 
     private focusSelectedOption(selectedOptionIndex: number): void {
-        const buttonReferences: React.RefObject<HTMLButtonElement>[] = this.state.buttonReferences[this.props.gameMode];
+        const buttonReferences: React.RefObject<HTMLButtonElement>[] = this.state.menu.buttonReferences[this.props.gameMode];
 
         if (selectedOptionIndex > 0 && selectedOptionIndex < buttonReferences.length) {
             const buttonReference: React.RefObject<HTMLButtonElement> = buttonReferences[selectedOptionIndex];

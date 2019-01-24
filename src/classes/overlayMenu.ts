@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { IGameUpdate } from '../interfaces/iGameUpdate';
 import { IOverlayMenuOption } from '../interfaces/iOverlayMenuOption';
 import { IOverlayProps } from '../interfaces/iOverlayProps';
@@ -94,6 +95,7 @@ export class OverlayMenu {
         }];
 
     public readonly menuOptions: (IOverlayMenuOption | undefined)[];
+    public readonly buttonReferences: React.RefObject<HTMLButtonElement>[][];
 
     public getDefaultOptionIndex(props: IOverlayProps): number {
         if (props.gameMode === GameMode.selectDifficulty) {
@@ -116,6 +118,18 @@ export class OverlayMenu {
     public constructor(callback: (update: IGameUpdate) => void, onNameChange: () => void) {
         this.menuOptions = OverlayMenu.menuOptionInitializers.map(moi => {
             return moi(callback, onNameChange);
+        });
+
+        this.buttonReferences = Shared.fillArray(this.menuOptions.length, i => {
+            if (Shared.isDefined(this.menuOptions[i])) {
+                const menuOption: IOverlayMenuOption = this.menuOptions[i] as IOverlayMenuOption;
+
+                return Shared.fillArray(menuOption.actions.length, j => {
+                    return React.createRef();
+                });
+            }
+
+            return [];
         });
     }
 }
