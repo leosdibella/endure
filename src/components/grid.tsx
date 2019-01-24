@@ -24,7 +24,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
         return timeFraction < Grid.styleOverrideThreshold ? 1 - timeFraction : timeFraction;
     }
 
-    private readonly onKeyDown: (keyboardEvent: KeyboardEvent) => void = this.handleKeyDown.bind(this);
+    private readonly onKeyDown: (event: KeyboardEvent) => void = this.handleKeyDown.bind(this);
     private readonly onUpdate: (row: number, column: number) => void = this.handleUpdate.bind(this);
     private readonly onMoveLeft: () => void = this.move(Boundary.left).bind(this);
     private readonly onMoveRight: () => void = this.move(Boundary.right).bind(this);
@@ -156,11 +156,13 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
         };
     }
 
-    private handleKeyDown(keyboardEvent: KeyboardEvent): void {
+    private handleKeyDown(event: KeyboardEvent): void {
         if (this.props.gameMode === GameMode.inGame && this.state.gridMode === GridMode.ready) {
-            const handler: (() => void) | undefined = this.keyDownEventActionMap[keyboardEvent.key.toLocaleLowerCase()];
+            const handler: (() => void) | undefined = this.keyDownEventActionMap[event.key.toLocaleLowerCase()];
 
             if (Shared.isDefined(handler)) {
+                event.preventDefault();
+                event.stopPropagation();
                 handler();
             }
         }

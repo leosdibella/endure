@@ -17,7 +17,7 @@ export class Game extends React.PureComponent<IGameProps, GameState> {
     private static readonly headerKey: number = 2;
     private static readonly gridKey: number = 3;
 
-    private readonly onKeyDown: (keyboardEvent: KeyboardEvent) => void = this.handleKeyDown.bind(this);
+    private readonly onKeyDown: (event: KeyboardEvent) => void = this.handleKeyDown.bind(this);
     private readonly onUpdate: (update: IGameUpdate) => void = this.handleUpdate.bind(this);
     private readonly onPause: () => void = this.togglePaused.bind(this);
     private readonly onToggleTheme: () => void = this.toggleTheme.bind(this);
@@ -65,10 +65,12 @@ export class Game extends React.PureComponent<IGameProps, GameState> {
         }
     }
 
-    private handleKeyDown(keyboardEvent: KeyboardEvent): void {
-        const handler: (() => void) | undefined = this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()];
+    private handleKeyDown(event: KeyboardEvent): void {
+        const handler: (() => void) | undefined = this.keyDownEventActionMap[event.key.toLowerCase()];
 
         if (Shared.isDefined(handler)) {
+            event.preventDefault();
+            event.stopPropagation();
             handler();
         }
     }

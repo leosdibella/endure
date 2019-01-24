@@ -59,7 +59,7 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
                </div>;
     }
 
-    private readonly onKeyDown: (keyboardEvent: KeyboardEvent) => void = this.handleKeyDown.bind(this);
+    private readonly onKeyDown: (event: KeyboardEvent) => void = this.handleKeyDown.bind(this);
     private readonly onNameChange: (event: React.ChangeEvent<HTMLInputElement>) => void = this.handleNameChange.bind(this);
     private readonly onHighScoreListingChange: (event: React.ChangeEvent<HTMLSelectElement>) => void = this.handleHighScoreListingChange.bind(this);
     private readonly onHighScoreDifficultyChange: (event: React.ChangeEvent<HTMLSelectElement>) => void = this.handleHighScoreDifficultyChange.bind(this);
@@ -138,11 +138,13 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
         }, waiting ? this.onLoadGlobalHighScores : undefined);
     }
 
-    private handleKeyDown(keyboardEvent: KeyboardEvent): void {
-        const handler: (() => void) | undefined = this.keyDownEventActionMap[keyboardEvent.key.toLowerCase()];
+    private handleKeyDown(event: KeyboardEvent): void {
+        const handler: ((event: KeyboardEvent) => void) | undefined = this.keyDownEventActionMap[event.key.toLowerCase()];
 
         if (Shared.isDefined(handler)) {
-            handler();
+            event.preventDefault();
+            event.stopPropagation();
+            handler(event);
         }
     }
 
@@ -233,10 +235,10 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
     private getOverlayButtonPanel(): JSX.Element | boolean {
         const menuOption: IOverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
 
-        // TODO: We need to focus the element on keyboard inputs so that using the keyboard shortcuts don't break after clicking.
         if (Shared.isDefined(menuOption)) {
             const buttons: JSX.Element[] = (menuOption as IOverlayMenuOption).options.map((option, index) => {
                 return <button key={index}
+                               ref={this.state.buttonReferences[this.props.gameMode][index]}
                                className={`overlay-button ${this.state.selectedOptionIndex === index ? 'overlay-selected-option' : ''}`}
                                onClick={(menuOption as IOverlayMenuOption).actions[index]}>
                             {option}
@@ -260,15 +262,28 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
         ].filter(e => !!e) as JSX.Element[];
     }
 
+    private focusSelectedOption(selectedOptionIndex: number): void {
+        const buttonReferences: React.RefObject<HTMLButtonElement>[] = this.state.buttonReferences[this.props.gameMode];
+
+        if (selectedOptionIndex > 0 && selectedOptionIndex < buttonReferences.length) {
+            const buttonReference: React.RefObject<HTMLButtonElement> = buttonReferences[selectedOptionIndex];
+
+            if (Shared.isDefined(buttonReference.current)) {
+                (buttonReference.current as HTMLButtonElement).focus();
+            }
+        }
+    }
+
     private incrementOrDecrementOptionsIndex(direction: number): void {
         const menuOption: IOverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
 
         if (Shared.isDefined(menuOption)) {
-            const optionIndex = this.state.selectedOptionIndex + direction;
+            const optionIndex: number = this.state.selectedOptionIndex + direction,
+                  selectedOptionIndex: number = optionIndex >= 0 ? (optionIndex % (menuOption as IOverlayMenuOption).options.length) : ((menuOption as IOverlayMenuOption).options.length - 1);
 
             this.setState({
-                selectedOptionIndex: optionIndex >= 0 ? (optionIndex % (menuOption as IOverlayMenuOption).options.length) : ((menuOption as IOverlayMenuOption).options.length - 1)
-            });
+                selectedOptionIndex
+            }, () => this.focusSelectedOption(selectedOptionIndex));
         }
     }
 
