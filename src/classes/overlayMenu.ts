@@ -1,6 +1,5 @@
-import * as React from 'react';
+import { OverlayMenuOption } from '../classes/overlayMenuOption';
 import { IGameUpdate } from '../interfaces/iGameUpdate';
-import { IOverlayMenuOption } from '../interfaces/iOverlayMenuOption';
 import { IOverlayProps } from '../interfaces/iOverlayProps';
 import { Difficulty, GameMode, Theme } from '../utilities/enum';
 import * as Shared from '../utilities/shared';
@@ -8,94 +7,73 @@ import * as Shared from '../utilities/shared';
 export class OverlayMenu {
     private static readonly defaultDefaultOptionsIndex: number = 0;
 
-    public static readonly menuOptionInitializers: ((callback: (update: IGameUpdate) => void, onNameChange: () => void) => (IOverlayMenuOption | undefined))[] = [
-        (callback: (update: IGameUpdate) => void): IOverlayMenuOption => {
-            return {
-                actions: [
-                    GameMode.inGame,
-                    GameMode.specifyName,
-                    GameMode.selectDifficulty,
-                    GameMode.highScores,
-                    GameMode.setTheme
-                ].map(gm => () => callback({
-                    gameMode: gm
-                })),
-                className: 'new-game',
-                defaultOptionsIndex: 0,
-                options: ['New Game', 'Set Name', 'Difficulty', 'High Scores', 'Settings'],
-                title: 'Endure'
-            };
+    public static readonly menuOptionInitializers: ((callback: (update: IGameUpdate) => void, onNameChange: () => void) => (OverlayMenuOption | undefined))[] = [
+        (callback: (update: IGameUpdate) => void): OverlayMenuOption => {
+            return new OverlayMenuOption('Endure',
+                                         'new-game',
+                                         ['New Game', 'Set Name', 'Difficulty', 'High Scores', 'Settings'],
+                                         [GameMode.inGame, GameMode.specifyName, GameMode.selectDifficulty, GameMode.highScores, GameMode.setTheme].map(gm => () => callback({
+                                             gameMode: gm
+                                         })),
+                                         0);
         },
-        (callback: (update: IGameUpdate) => void, onNameChange: () => void): IOverlayMenuOption => {
-            return {
-                actions: [onNameChange, () => callback({
-                    gameMode: GameMode.newGame
-                })],
-                className: 'player-name',
-                defaultOptionsIndex: 0,
-                options: ['Remember it!', 'Forget it.'],
-                title: 'Name?'
-            };
+        (callback: (update: IGameUpdate) => void, onNameChange: () => void): OverlayMenuOption => {
+            return new OverlayMenuOption('Name?',
+                                         'player-name',
+                                         ['Remember it!', 'Forget it.'],
+                                         [onNameChange, () => callback({
+                                             gameMode: GameMode.newGame
+                                         })],
+                                         0);
         },
-        (callback: (update: IGameUpdate) => void): IOverlayMenuOption => {
-            return {
-                actions: Shared.getNumericEnumKeys(Difficulty).map(k => () => callback({
-                    difficulty: k as Difficulty,
-                    gameMode: GameMode.newGame
-                })),
-                className: 'select-difficulty',
-                options: ['[ Pre-K ] I made poop.',  '[ K - 5 ] No I don\'t wanna!', '[ 6 - 8 ] Remove the training wheels!', '[ 9 - 12 ] Test me sensei!', '[ 12+ ] I know kung fu.'],
-                title: 'Grade Level'
-            };
+        (callback: (update: IGameUpdate) => void): OverlayMenuOption => {
+            return new OverlayMenuOption('Grade Level',
+                                         'select-difficulty',
+                                         ['[ Pre-K ] I made poop.',  '[ K - 5 ] No I don\'t wanna!', '[ 6 - 8 ] Remove the training wheels!', '[ 9 - 12 ] Test me sensei!', '[ 12+ ] I know kung fu.'],
+                                         Shared.getNumericEnumKeys(Difficulty).map(k => () => callback({
+                                            difficulty: k as Difficulty,
+                                            gameMode: GameMode.newGame
+                                        })));
         },
         (): undefined => undefined,
-        (callback: (update: IGameUpdate) => void): IOverlayMenuOption => {
-            return {
-                actions: [GameMode.inGame, GameMode.newGame].map(gm => () => callback({
-                    gameMode: gm
-                })),
-                className: 'game-over',
-                defaultOptionsIndex: 0,
-                options: ['Put me in coach!', 'I Quit.'],
-                title: 'Game Over'
-            };
+        (callback: (update: IGameUpdate) => void): OverlayMenuOption => {
+            return new OverlayMenuOption('Game Over',
+                                         'game-over',
+                                         ['Put me in coach!', 'I Quit.'],
+                                         [GameMode.inGame, GameMode.newGame].map(gm => () => callback({
+                                            gameMode: gm
+                                         })),
+                                         0);
         },
-        (callback: (update: IGameUpdate) => void): IOverlayMenuOption => {
-            return {
-                actions: [GameMode.inGame, GameMode.newGame].map(gm => () => callback({
-                    gameMode: gm
-                })),
-                className: 'paused',
-                defaultOptionsIndex: 0,
-                options: ['Put me in coach!', 'I Quit.'],
-                title:'Timeout'
-            };
+        (callback: (update: IGameUpdate) => void): OverlayMenuOption => {
+            return new OverlayMenuOption('Timeout',
+                                         'paused',
+                                         ['Put me in coach!', 'I Quit.'],
+                                         [GameMode.inGame, GameMode.newGame].map(gm => () => callback({
+                                            gameMode: gm
+                                         })),
+                                         0);
         },
-        (callback: (update: IGameUpdate) => void): IOverlayMenuOption => {
-            return {
-                actions: [() => callback({
-                    gameMode: GameMode.newGame
-                })],
-                className: 'high-scores',
-                defaultOptionsIndex: 0,
-                options: ['Leave'],
-                title: 'Honor Roll',
-            };
+        (callback: (update: IGameUpdate) => void): OverlayMenuOption => {
+            return new OverlayMenuOption('Honor Roll',
+                                         'high-scores',
+                                         ['Leave'],
+                                         [() => callback({
+                                            gameMode: GameMode.newGame
+                                         })],
+                                         0);
         },
-        (callback: (update: IGameUpdate) => void): IOverlayMenuOption => {
-            return {
-                actions: Shared.getNumericEnumKeys(Theme).map(t => () => callback({
-                    gameMode: GameMode.newGame,
-                    theme: t as Theme
-                })),
-                className: 'theme',
-                options: ['Yep', 'Nope'],
-                title: 'Lights On?'
-            };
+        (callback: (update: IGameUpdate) => void): OverlayMenuOption => {
+            return new OverlayMenuOption('Lights On?',
+                                         'theme',
+                                         ['Yep', 'Nope'],
+                                         Shared.getNumericEnumKeys(Theme).map(t => () => callback({
+                                            gameMode: GameMode.newGame,
+                                            theme: t as Theme
+                                        })));
         }];
 
-    public readonly menuOptions: (IOverlayMenuOption | undefined)[];
-    public readonly buttonReferences: React.RefObject<HTMLButtonElement>[][];
+    public readonly menuOptions: (OverlayMenuOption | undefined)[];
 
     public getDefaultOptionIndex(props: IOverlayProps): number {
         if (props.gameMode === GameMode.selectDifficulty) {
@@ -106,10 +84,10 @@ export class OverlayMenu {
             return props.theme as number;
         }
 
-        const menuOption: IOverlayMenuOption | undefined = this.menuOptions[props.gameMode];
+        const menuOption: OverlayMenuOption | undefined = this.menuOptions[props.gameMode];
 
         if (Shared.isDefined(menuOption)) {
-            return Shared.castSafeOr((menuOption as IOverlayMenuOption).defaultOptionsIndex, OverlayMenu.defaultDefaultOptionsIndex);
+            return Shared.castSafeOr((menuOption as OverlayMenuOption).defaultOptionsIndex, OverlayMenu.defaultDefaultOptionsIndex);
         } else {
             return OverlayMenu.defaultDefaultOptionsIndex;
         }
@@ -118,18 +96,6 @@ export class OverlayMenu {
     public constructor(callback: (update: IGameUpdate) => void, onNameChange: () => void) {
         this.menuOptions = OverlayMenu.menuOptionInitializers.map(moi => {
             return moi(callback, onNameChange);
-        });
-
-        this.buttonReferences = Shared.fillArray(this.menuOptions.length, i => {
-            if (Shared.isDefined(this.menuOptions[i])) {
-                const menuOption: IOverlayMenuOption = this.menuOptions[i] as IOverlayMenuOption;
-
-                return Shared.fillArray(menuOption.actions.length, j => {
-                    return React.createRef();
-                });
-            }
-
-            return [];
         });
     }
 }

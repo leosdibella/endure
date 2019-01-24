@@ -1,8 +1,8 @@
 import * as React from 'react';
+import { OverlayMenuOption } from '../classes/overlayMenuOption';
 import { OverlayState } from '../classes/overlayState';
 import { IDictionary } from '../interfaces/iDictionary';
 import { IHighScore } from '../interfaces/iHighScore';
-import { IOverlayMenuOption } from '../interfaces/iOverlayMenuOption';
 import { IOverlayProps } from '../interfaces/iOverlayProps';
 import { Difficulty, DomEvent, GameMode, HighScoreListing, Theme } from '../utilities/enum';
 import * as Persistence from '../utilities/persistence';
@@ -28,6 +28,14 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
                 className='overlay-high-score-select-option'>
             {Shared.formatCamelCaseString(Difficulty[d], ' ', true)}
         </option>);
+
+    private static focusSelectedOption(menuOption: OverlayMenuOption, selectedOptionIndex: number): void {
+        const buttonReference: React.RefObject<HTMLButtonElement> = menuOption.buttonReferences[selectedOptionIndex];
+
+        if (Shared.isDefined(buttonReference) && Shared.isDefined(buttonReference.current)) {
+            (buttonReference.current as HTMLButtonElement).focus();
+        }
+    }
 
     private static formatHighScore(highScore: IHighScore, index: number): JSX.Element {
         return <div key={index}
@@ -80,10 +88,10 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
     }
 
     private onEnter(): void {
-        const menuOption: IOverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
+        const menuOption: OverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
 
         if (Shared.isDefined(menuOption)) {
-            (menuOption as IOverlayMenuOption).actions[this.state.selectedOptionIndex]();
+            (menuOption as OverlayMenuOption).actions[this.state.selectedOptionIndex]();
         }
     }
 
@@ -162,16 +170,16 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
     }
 
     private getOverlayTitle(): JSX.Element | boolean {
-        const menuOption: IOverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
+        const menuOption: OverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
 
         if (Shared.isDefined(menuOption)) {
             const overlayTile: JSX.Element = <div className={`overlay-tile ${Theme[this.props.theme]}`}>
                                              </div>;
 
             return <div key={Overlay.firstPositionKey}
-                        className={`overlay-${(menuOption as IOverlayMenuOption).className}-text`}>
+                        className={`overlay-${(menuOption as OverlayMenuOption).className}-text`}>
                         {overlayTile}
-                        {(menuOption as IOverlayMenuOption).title}
+                        {(menuOption as OverlayMenuOption).title}
                         {overlayTile}
                     </div>;
         }
@@ -233,14 +241,14 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
     }
 
     private getOverlayButtonPanel(): JSX.Element | boolean {
-        const menuOption: IOverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
+        const menuOption: OverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
 
         if (Shared.isDefined(menuOption)) {
-            const buttons: JSX.Element[] = (menuOption as IOverlayMenuOption).options.map((option, index) => {
+            const buttons: JSX.Element[] = (menuOption as OverlayMenuOption).options.map((option, index) => {
                 return <button key={index}
-                               ref={this.state.menu.buttonReferences[this.props.gameMode][index]}
+                               ref={(menuOption as OverlayMenuOption).buttonReferences[index]}
                                className={`overlay-button ${this.state.selectedOptionIndex === index ? 'overlay-selected-option' : ''}`}
-                               onClick={(menuOption as IOverlayMenuOption).actions[index]}>
+                               onClick={(menuOption as OverlayMenuOption).actions[index]}>
                             {option}
                         </button>;
             });
@@ -262,28 +270,16 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
         ].filter(e => !!e) as JSX.Element[];
     }
 
-    private focusSelectedOption(selectedOptionIndex: number): void {
-        const buttonReferences: React.RefObject<HTMLButtonElement>[] = this.state.menu.buttonReferences[this.props.gameMode];
-
-        if (selectedOptionIndex > 0 && selectedOptionIndex < buttonReferences.length) {
-            const buttonReference: React.RefObject<HTMLButtonElement> = buttonReferences[selectedOptionIndex];
-
-            if (Shared.isDefined(buttonReference.current)) {
-                (buttonReference.current as HTMLButtonElement).focus();
-            }
-        }
-    }
-
     private incrementOrDecrementOptionsIndex(direction: number): void {
-        const menuOption: IOverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
+        const menuOption: OverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
 
         if (Shared.isDefined(menuOption)) {
             const optionIndex: number = this.state.selectedOptionIndex + direction,
-                  selectedOptionIndex: number = optionIndex >= 0 ? (optionIndex % (menuOption as IOverlayMenuOption).options.length) : ((menuOption as IOverlayMenuOption).options.length - 1);
+                  selectedOptionIndex: number = optionIndex >= 0 ? (optionIndex % (menuOption as OverlayMenuOption).options.length) : ((menuOption as OverlayMenuOption).options.length - 1);
 
             this.setState({
                 selectedOptionIndex
-            }, () => this.focusSelectedOption(selectedOptionIndex));
+            }, () => Overlay.focusSelectedOption(menuOption as OverlayMenuOption, selectedOptionIndex));
         }
     }
 
