@@ -48,7 +48,7 @@ $highlighted-tile-dimension: $standard-tile-dimension + 10;
 .tile-detonation {
     font-size: 35px;
     text-align: center;
-    border-radius: 0px !important;
+    border-radius: 0px;
     transform: rotate(45deg);
     border: 1px solid;
     z-index: 5;

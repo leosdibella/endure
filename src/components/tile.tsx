@@ -25,7 +25,7 @@ export class Tile extends React.PureComponent<ITileProps, object> {
     }
 
     private getClassName(tileType: TileType, canBeDetonated: boolean): string {
-        return `tile-${Color[this.props.container.color]} ${Tile.tileTypes[tileType]} ${Tile.boundaryClasses[this.props.container.boundary]}${canBeDetonated ? ' tile-detonation' : ''}`;
+        return `tile-${Color[this.props.container.color]} ${Tile.tileTypes[tileType]} ${Tile.boundaryClasses[canBeDetonated ? Boundary.all : this.props.container.boundary]}${canBeDetonated ? ' tile-detonation' : ''}`;
     }
 
     private handleClick(): void {
