@@ -1,4 +1,3 @@
 node_modules
-dist
 config/dist
 config/secrets.production.config.ts

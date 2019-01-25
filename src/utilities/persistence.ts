@@ -3,30 +3,31 @@ import { IEnum } from '../interfaces/iEnum';
 import { IFirebaseDependencies } from '../interfaces/iFirebaseDependencies';
 import { IHighScore } from '../interfaces/iHighScore';
 import { Difficulty, Theme } from './enum';
+import { loadFirebaseDependenciesAsync } from './secrets';
 import { fillArray, getNumericEnumKeys, isDefined, isInteger, isNotNull, isString } from './shared';
-import { areValidFirebaseDependencies, isValidHighScore } from './validation';
+import { isValidHighScore } from './validation';
 
 type Storable = string | number | Difficulty | Theme | IHighScore[][];
 type StorableEnumValue = Difficulty | Theme;
 
-const defaultFirebaseDependencies: IFirebaseDependencies = {
-    baseUrl: 'YOU_NEED_A_SECRETS_FILE',
-    getEndpointSuffix: 'NO_GET_ENDPOINT_CONFIGURED',
-    postEndpointSuffix: 'NO_POST_ENDPOINT_CONFIGURED'
-};
+async function fetchGlobalHighScoresAsync(difficulty: Difficulty): Promise<AxiosResponse> {
+    const firebaseDependencies: IFirebaseDependencies = await loadFirebaseDependenciesAsync();
 
-let secretFirebaseDependencies: IFirebaseDependencies | undefined;
-
-async function loadFirebaseDependenciesAsync(): Promise<IFirebaseDependencies> {
-    if (!isDefined(secretFirebaseDependencies)) {
-        const importedFirebaseDependencies: IFirebaseDependencies | undefined = await import(`../../config/secrets.${'production'}.config`);
-
-        if (isDefined(importedFirebaseDependencies)) {
-            secretFirebaseDependencies = importedFirebaseDependencies;
+    return axios.get(`${firebaseDependencies.baseUrl}/${firebaseDependencies.getEndpointSuffix}`, {
+        params: {
+            difficulty
         }
-    }
+    });
+}
 
-    return areValidFirebaseDependencies(secretFirebaseDependencies as IFirebaseDependencies) ? secretFirebaseDependencies as IFirebaseDependencies : defaultFirebaseDependencies;
+async function persistGlobalHighScoreAsync(highScore: IHighScore, difficulty: Difficulty): Promise<AxiosResponse> {
+    const firebaseDependencies: IFirebaseDependencies = await loadFirebaseDependenciesAsync();
+
+    return axios.post(`${firebaseDependencies.baseUrl}/${firebaseDependencies.postEndpointSuffix}`, highScore, {
+        params: {
+            difficulty
+        }
+    });
 }
 
 function isLocalStorageSupported(): boolean {
@@ -101,31 +102,11 @@ function fetchLocalHighScores(key: string): IHighScore[][] {
     return mapHHighScores(fetchData<Storable>(key) as IHighScore[][]);
 }
 
-async function fetchGlobalHighScoresAsync(difficulty: Difficulty): Promise<AxiosResponse> {
-    const firebaseDependencies: IFirebaseDependencies = await loadFirebaseDependenciesAsync();
-
-    return axios.get(`${firebaseDependencies.baseUrl}/${firebaseDependencies.getEndpointSuffix}`, {
-        params: {
-            difficulty
-        }
-    });
-}
-
-async function persistGlobalHighScoreAsync(highScore: IHighScore, difficulty: Difficulty): Promise<AxiosResponse> {
-    const firebaseDependencies: IFirebaseDependencies = await loadFirebaseDependenciesAsync();
-
-    return axios.post(`${firebaseDependencies.baseUrl}/${firebaseDependencies.postEndpointSuffix}`, highScore, {
-        params: {
-            difficulty
-        }
-    });
-}
-
 export {
+    fetchGlobalHighScoresAsync,
+    persistGlobalHighScoreAsync,
     persistLocalData,
     fetchString,
     fetchStorableEnumValue,
-    fetchLocalHighScores,
-    fetchGlobalHighScoresAsync,
-    persistGlobalHighScoreAsync
+    fetchLocalHighScores
 };
