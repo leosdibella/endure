@@ -1,6 +1,5 @@
 import { Orientation, Theme } from '../utilities/enum';
-import * as Persistence from '../utilities/persistence';
-import * as Shared from '../utilities/shared';
+import { fetchStorableEnumValue, persistLocalData } from '../utilities/persistence';
 
 export class AppState {
     private static readonly themeLocalStorageKey: string = 'ENDURE_THEME';
@@ -11,11 +10,11 @@ export class AppState {
     }
 
     public static getPersistedState(): AppState {
-        return new AppState(Persistence.fetchStorableEnumValue(AppState.themeLocalStorageKey, Theme, AppState.defaultTheme) as Theme, AppState.getOrientation());
+        return new AppState(fetchStorableEnumValue(AppState.themeLocalStorageKey, Theme, AppState.defaultTheme) as Theme, AppState.getOrientation());
     }
 
     public static persistState(state: AppState): void {
-        Persistence.persistData(AppState.themeLocalStorageKey, state.theme);
+        persistLocalData(AppState.themeLocalStorageKey, state.theme);
     }
 
     public constructor(public theme: Theme, public orientation: Orientation) {

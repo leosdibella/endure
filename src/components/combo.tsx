@@ -1,13 +1,13 @@
-import * as React from 'react';
+import React, { PureComponent } from 'react';
 import { Animator } from '../classes/animator';
 import { ComboState } from '../classes/comboState';
 import { IComboProps } from '../interfaces/iComboProps';
 import { GameMode } from '../utilities/enum';
-import * as Shared from '../utilities/shared';
+import { isDefined, percentageDecimalPlaceCutoff, totalPercentage } from '../utilities/shared';
 
 import '../styles/combo.scss';
 
-export class Combo extends React.PureComponent<IComboProps, ComboState> {
+export class Combo extends PureComponent<IComboProps, ComboState> {
     private static readonly cssClassThresholdModifier: number = 3;
     private static readonly minimumViableCombo: number = 2;
 
@@ -18,7 +18,7 @@ export class Combo extends React.PureComponent<IComboProps, ComboState> {
     private drawAnimationFrame(timeFraction: number): void {
         this.setState({
             overlayClass: `combo-${Math.ceil(timeFraction * Combo.cssClassThresholdModifier)}`,
-            overlayWidthPercentage: ((1 - timeFraction) * Shared.totalPercentage)
+            overlayWidthPercentage: ((1 - timeFraction) * totalPercentage)
         });
     }
 
@@ -43,13 +43,13 @@ export class Combo extends React.PureComponent<IComboProps, ComboState> {
     }
 
     private startAnimator(): void {
-        if (Shared.isDefined(this.state.animator)) {
+        if (isDefined(this.state.animator)) {
             (this.state.animator as Animator).start();
         }
     }
 
     private stopAnimator(): void {
-        if (Shared.isDefined(this.state.animator)) {
+        if (isDefined(this.state.animator)) {
             (this.state.animator as Animator).stop();
         }
     }
@@ -57,7 +57,7 @@ export class Combo extends React.PureComponent<IComboProps, ComboState> {
     public readonly state: ComboState = new  ComboState();
 
     public componentDidUpdate(previousProps: IComboProps): void {
-        if (Shared.isDefined(this.state.animator) && this.props.gameMode !== previousProps.gameMode) {
+        if (isDefined(this.state.animator) && this.props.gameMode !== previousProps.gameMode) {
             const animator: Animator = (this.state.animator as Animator);
 
             this.props.gameMode === GameMode.paused ? animator.pause() : animator.start();
@@ -77,7 +77,7 @@ export class Combo extends React.PureComponent<IComboProps, ComboState> {
 
     public render(): JSX.Element {
         const style: React.CSSProperties = {
-            width: `${ this.state.overlayWidthPercentage.toFixed(Shared.percentageDecimalPlaceCutoff)}%`
+            width: `${ this.state.overlayWidthPercentage.toFixed(percentageDecimalPlaceCutoff)}%`
         };
 
         return <div className={`header-combo-container ${this.props.combo < Combo.minimumViableCombo ? ' hide' : ''}`}>

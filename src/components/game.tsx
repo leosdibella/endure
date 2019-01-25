@@ -1,10 +1,10 @@
-import * as React from 'react';
+import React, { PureComponent } from 'react';
 import { GameState } from '../classes/gameState';
 import { IDictionary } from '../interfaces/iDictionary';
 import { IGameProps } from '../interfaces/iGameProps';
 import { IGameUpdate } from '../interfaces/iGameUpdate';
 import { DomEvent, GameMode, Theme } from '../utilities/enum';
-import * as Shared from '../utilities/shared';
+import { isDefined, isInteger } from '../utilities/shared';
 import { Combo } from './combo';
 import { Grade } from './grade';
 import { Grid } from './grid';
@@ -12,7 +12,7 @@ import { Overlay } from './overlay';
 
 import '../styles/game.scss';
 
-export class Game extends React.PureComponent<IGameProps, GameState> {
+export class Game extends PureComponent<IGameProps, GameState> {
     private static readonly overlayKey: number = 1;
     private static readonly headerKey: number = 2;
     private static readonly gridKey: number = 3;
@@ -51,7 +51,7 @@ export class Game extends React.PureComponent<IGameProps, GameState> {
     }
 
     private handleUpdate(update: IGameUpdate): void {
-        if (Shared.isInteger(update.theme)) {
+        if (isInteger(update.theme)) {
             this.props.onUpdate({
                 theme: update.theme
             });
@@ -68,7 +68,7 @@ export class Game extends React.PureComponent<IGameProps, GameState> {
     private handleKeyDown(event: KeyboardEvent): void {
         const handler: (() => void) | undefined = this.keyDownEventActionMap[event.key.toLowerCase()];
 
-        if (Shared.isDefined(handler)) {
+        if (isDefined(handler)) {
             event.preventDefault();
             event.stopPropagation();
             handler();

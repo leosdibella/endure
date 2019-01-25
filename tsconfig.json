@@ -10,7 +10,12 @@
         "module": "commonjs",
         "target": "es5",
         "jsx": "react",
-        "jsxFactory": "React.createElement"
+        "jsxFactory": "React.createElement",
+        "lib": [
+            "dom",
+            "es5",
+            "es6"
+        ]
     },
     "include": [
         "./src/**/*"

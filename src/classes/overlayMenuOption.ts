@@ -1,9 +1,9 @@
-import * as React from 'react';
-import * as Shared from '../utilities/shared';
+import React from 'react';
+import { fillArray } from '../utilities/shared';
 
 export class OverlayMenuOption {
     private static generateButtonReferences(numberOfButtons: number): React.RefObject<HTMLButtonElement>[] {
-        return Shared.fillArray(numberOfButtons, () => {
+        return fillArray(numberOfButtons, () => {
             return React.createRef();
         });
     }

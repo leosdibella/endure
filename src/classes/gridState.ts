@@ -3,7 +3,7 @@ import { IGridProps } from '../interfaces/iGridProps';
 import { IGridReduction } from '../interfaces/iGridReduction';
 import { Boundary, Color, DetonationRange, GridMode, Orientation } from '../utilities/enum';
 import { rotationMaps } from '../utilities/rotation';
-import * as Shared from '../utilities/shared';
+import { castSafeOr, decimalBase, fillArray, isInteger, iterate } from '../utilities/shared';
 import { Animator } from './animator';
 import { GridDefinition } from './gridDefinition';
 import { TileContainer } from './tileContainer';
@@ -30,7 +30,7 @@ export class GridState {
                 TileContainer.neighborIndices.forEach(linkIndex => {
                     const neighborIndex: number | undefined = neighbors[linkIndex];
 
-                    if (Shared.isInteger(neighborIndex)) {
+                    if (isInteger(neighborIndex)) {
                         const neighbor: TileContainer = state.tiles[neighborIndex];
 
                         if (!visited[neighbor.index] && extend(tile, neighbor, linkIndex)) {
@@ -58,11 +58,11 @@ export class GridState {
         GridState.iterateThroughStack(state,
                                       stack,
                                       visited,
-                                      tile => group[tile.index] = Shared.castSafeOr(group[tile.index], Boundary.none),
+                                      tile => group[tile.index] = castSafeOr(group[tile.index], Boundary.none),
                                       (tile, neighbor, linkIndex) => {
                                           if (tile.color === neighbor.color) {
                                               group[tile.index] |= linkIndex;
-                                              group[neighbor.index] = Shared.castSafeOr(group[neighbor.index], Boundary.none) | TileContainer.reverseBoundaryDirection(linkIndex);
+                                              group[neighbor.index] = castSafeOr(group[neighbor.index], Boundary.none) | TileContainer.reverseBoundaryDirection(linkIndex);
 
                                               return true;
                                           }
@@ -104,7 +104,7 @@ export class GridState {
                       keys = Object.keys(group);
 
                 keys.forEach(key => {
-                    const index: number = parseInt(key, Shared.decimalBase);
+                    const index: number = parseInt(key, decimalBase);
 
                     tiles[index] = state.tiles[index].cloneWith(tile.color, tile.detonationRange, group[key]);
                 });
@@ -113,7 +113,7 @@ export class GridState {
                     numberOfCollapsingTiles += keys.length;
 
                     keys.forEach(key => {
-                        const index: number = parseInt(key, Shared.decimalBase);
+                        const index: number = parseInt(key, decimalBase);
 
                         collapsingTiles[index] = state.tiles[index].cloneWith(Color.transparent, DetonationRange.none);
                     });
@@ -141,8 +141,8 @@ export class GridState {
 
         let hasDetonationTile: boolean = state.tiles.filter(t => t.detonationRange !== DetonationRange.none).length > 0;
 
-        Shared.iterate(majorDimension, majorIndex => {
-            const minorVector: TileContainer[] = Shared.fillArray(minorDimension, minorIndex => {
+        iterate(majorDimension, majorIndex => {
+            const minorVector: TileContainer[] = fillArray(minorDimension, minorIndex => {
                 const row: number = props.orientation === Orientation.portrait ? minorIndex : majorIndex,
                       column: number = props.orientation === Orientation.portrait ? majorIndex : minorIndex;
 
@@ -150,7 +150,7 @@ export class GridState {
             }).filter(t => t.color !== Color.transparent || t.detonationRange !== DetonationRange.none),
                  minorExtensionDimension: number = minorDimension - minorVector.length;
 
-            Shared.fillArray(minorExtensionDimension, minorIndex => {
+            fillArray(minorExtensionDimension, minorIndex => {
                 const row: number = props.orientation === Orientation.portrait ? minorIndex : majorIndex,
                       column: number = props.orientation === Orientation.portrait ? majorIndex : minorIndex,
                       detonationRange: DetonationRange = TileContainer.generateRandomDetonationRange(!hasDetonationTile);
@@ -179,7 +179,7 @@ export class GridState {
               stack: TileContainer[] = [detonationCenter],
               tiles: TileContainer[] = state.tiles.slice();
 
-        Shared.iterate(detonationCenter.detonationRange, i => {
+        iterate(detonationCenter.detonationRange, i => {
             const step: number = i + 1;
             let index: number = detonationCenter.row + step;
 
@@ -220,13 +220,13 @@ export class GridState {
     }
 
     public static transpose(props: IGridProps, state: GridState, tiles?: TileContainer[]): GridState {
-        const transposingTiles: TileContainer[] = Shared.castSafeOr(tiles, state.tiles),
+        const transposingTiles: TileContainer[] = castSafeOr(tiles, state.tiles),
               transposedTiles: TileContainer[] = [];
 
         let index: number = 0;
 
-        Shared.iterate(state.gridDefinition.numberOfColumns, column => {
-            Shared.iterate(state.gridDefinition.numberOfRows, row => {
+        iterate(state.gridDefinition.numberOfColumns, column => {
+            iterate(state.gridDefinition.numberOfRows, row => {
                 const tile: TileContainer = state.gridDefinition.getTile(transposingTiles, row, column);
 
                 transposedTiles.push(new TileContainer(column, row, index, tile.color, tile.detonationRange));
@@ -238,7 +238,7 @@ export class GridState {
     }
 
     private initializeGraph(): IDictionary<number>[] {
-        return Shared.fillArray(this.gridDefinition.numberOfRows * this.gridDefinition.numberOfColumns, index => {
+        return fillArray(this.gridDefinition.numberOfRows * this.gridDefinition.numberOfColumns, index => {
             const neighbors: IDictionary<number> = {},
                   coordinates: number[] = this.gridDefinition.getTileCoordinatesFromIndex(index);
 
@@ -274,10 +274,10 @@ export class GridState {
 
     public constructor(props: IGridProps, tiles?: TileContainer[], neighborGraph?: IDictionary<number>[], row?: number, column?: number) {
         this.gridDefinition = GridDefinition.orientedDefinitions[props.orientation];
-        this.tiles = Shared.castSafeOr(tiles, this.gridDefinition.generateTiles());
-        this.neighborGraph = Shared.castSafeOr(neighborGraph, this.initializeGraph());
-        this.row = Shared.castSafeOr(row, this.gridDefinition.initialRow);
-        this.column = Shared.castSafeOr(column, this.gridDefinition.initialColumn);
+        this.tiles = castSafeOr(tiles, this.gridDefinition.generateTiles());
+        this.neighborGraph = castSafeOr(neighborGraph, this.initializeGraph());
+        this.row = castSafeOr(row, this.gridDefinition.initialRow);
+        this.column = castSafeOr(column, this.gridDefinition.initialColumn);
         this.gridMode = GridMode.ready;
         this.updatedTiles = this.tiles.slice();
     }

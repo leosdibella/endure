@@ -1,17 +1,39 @@
-import axios, { AxiosPromise } from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { IEnum } from '../interfaces/iEnum';
+import { IFirebaseDependencies } from '../interfaces/iFirebaseDependencies';
 import { IHighScore } from '../interfaces/iHighScore';
 import { Difficulty, Theme } from './enum';
-import * as Shared from './shared';
+import { fillArray, getNumericEnumKeys, isDefined, isInteger, isNotNull, isString } from './shared';
+import { areValidFirebaseDependencies, isValidHighScore } from './validation';
 
 type Storable = string | number | Difficulty | Theme | IHighScore[][];
 type StorableEnumValue = Difficulty | Theme;
 
-function isLocalStorageSupported(): boolean {
-    return typeof(Storage) !== 'undefined' && Shared.isDefined(window.localStorage) && Shared.isNotNull(window.localStorage);
+const defaultFirebaseDependencies: IFirebaseDependencies = {
+    baseUrl: 'YOU_NEED_A_SECRETS_FILE',
+    getEndpointSuffix: 'NO_GET_ENDPOINT_CONFIGURED',
+    postEndpointSuffix: 'NO_POST_ENDPOINT_CONFIGURED'
+};
+
+let secretFirebaseDependencies: IFirebaseDependencies | undefined;
+
+async function loadFirebaseDependenciesAsync(): Promise<IFirebaseDependencies> {
+    if (!isDefined(secretFirebaseDependencies)) {
+        const importedFirebaseDependencies: IFirebaseDependencies | undefined = await import(`../../config/secrets.${'production'}.config`);
+
+        if (isDefined(importedFirebaseDependencies)) {
+            secretFirebaseDependencies = importedFirebaseDependencies;
+        }
+    }
+
+    return areValidFirebaseDependencies(secretFirebaseDependencies as IFirebaseDependencies) ? secretFirebaseDependencies as IFirebaseDependencies : defaultFirebaseDependencies;
 }
 
-function persistData(key: string, value: Storable): boolean {
+function isLocalStorageSupported(): boolean {
+    return typeof(Storage) !== 'undefined' && isDefined(window.localStorage) && isNotNull(window.localStorage);
+}
+
+function persistLocalData(key: string, value: Storable): boolean {
     if (isLocalStorageSupported()) {
         try {
             window.localStorage.setItem(key, JSON.stringify(value));
@@ -29,7 +51,7 @@ function fetchData<T>(key: string): T | undefined {
     if (isLocalStorageSupported()) {
         const data: string | null = window.localStorage.getItem(key);
 
-        if (Shared.isNotNull(data)) {
+        if (isNotNull(data)) {
             return JSON.parse(data as string) as T;
         }
 
@@ -40,7 +62,7 @@ function fetchData<T>(key: string): T | undefined {
 function fetchString(key: string): string | undefined {
     const data: string | undefined = fetchData<string>(key);
 
-    if (Shared.isString(data)) {
+    if (isString(data)) {
         return (data as string).length > 0 ? data as string : undefined;
     }
 
@@ -50,31 +72,19 @@ function fetchString(key: string): string | undefined {
 function fetchStorableEnumValue(key: string, collection: IEnum, defaultValue: StorableEnumValue): StorableEnumValue {
     const data: StorableEnumValue | undefined = fetchData<StorableEnumValue>(key);
 
-    if (Shared.isInteger(data) && Shared.isDefined(collection[data as number])) {
+    if (isInteger(data) && isDefined(collection[data as number])) {
         return data as StorableEnumValue;
     }
 
     return defaultValue;
 }
 
-function isValidHighScore(highScore: IHighScore): boolean {
-    return Shared.isObject(highScore)
-        && Shared.isString(highScore.name)
-        && highScore.name.length > 0
-        && Shared.isString(highScore.dateStamp)
-        && highScore.dateStamp.length === Shared.dateStampLength
-        && Shared.isInteger(highScore.value)
-        && highScore.value > 0
-        && Shared.isInteger(highScore.difficulty)
-        && Shared.isDefined(Difficulty[highScore.difficulty]);
-}
-
 function mapHHighScores(highScores: IHighScore[][]): IHighScore[][] {
-    const highScoreArray: IHighScore[][] = Shared.fillArray(Shared.getNumericEnumKeys(Difficulty).length, () => []);
+    const highScoreArray: IHighScore[][] = fillArray(getNumericEnumKeys(Difficulty).length, () => []);
 
     if (Array.isArray(highScores)) {
         highScores.forEach((hsd, difficulty) => {
-            if (Array.isArray(hsd) && Shared.isDefined(Difficulty[difficulty])) {
+            if (Array.isArray(hsd) && isDefined(Difficulty[difficulty])) {
                 hsd.forEach(hs => {
                     if (isValidHighScore(hs)) {
                         highScoreArray[difficulty].push(hs);
@@ -91,16 +101,20 @@ function fetchLocalHighScores(key: string): IHighScore[][] {
     return mapHHighScores(fetchData<Storable>(key) as IHighScore[][]);
 }
 
-function fetchGlobalHighScores(difficulty: Difficulty): AxiosPromise {
-    return axios.get('place-holder-url-for-firebase-functional-endpoint', {
+async function fetchGlobalHighScoresAsync(difficulty: Difficulty): Promise<AxiosResponse> {
+    const firebaseDependencies: IFirebaseDependencies = await loadFirebaseDependenciesAsync();
+
+    return axios.get(`${firebaseDependencies.baseUrl}/${firebaseDependencies.getEndpointSuffix}`, {
         params: {
             difficulty
         }
     });
 }
 
-function persistGlobalHighScore(highScore: IHighScore, difficulty: Difficulty): AxiosPromise {
-    return axios.post('place-holder-url-for-firebase-functional-endpoint', highScore, {
+async function persistGlobalHighScoreAsync(highScore: IHighScore, difficulty: Difficulty): Promise<AxiosResponse> {
+    const firebaseDependencies: IFirebaseDependencies = await loadFirebaseDependenciesAsync();
+
+    return axios.post(`${firebaseDependencies.baseUrl}/${firebaseDependencies.postEndpointSuffix}`, highScore, {
         params: {
             difficulty
         }
@@ -108,11 +122,10 @@ function persistGlobalHighScore(highScore: IHighScore, difficulty: Difficulty): 
 }
 
 export {
-    persistData,
+    persistLocalData,
     fetchString,
     fetchStorableEnumValue,
     fetchLocalHighScores,
-    fetchGlobalHighScores,
-    persistGlobalHighScore,
-    isValidHighScore
+    fetchGlobalHighScoresAsync,
+    persistGlobalHighScoreAsync
 };

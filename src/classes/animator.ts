@@ -1,4 +1,4 @@
-import * as Shared from '../utilities/shared';
+import { isDefined } from '../utilities/shared';
 
 export class Animator {
     private pausedTime?: number;
@@ -7,7 +7,7 @@ export class Animator {
     private onAnimate: (time: number) => void = this.loopAnimation.bind(this);
 
     private loopAnimation(time: number): void {
-        if (Shared.isDefined(this.id)) {
+        if (isDefined(this.id)) {
             let timeFraction: number = (time - (this.startTime as number)) / this.duration;
 
             timeFraction = Math.min(timeFraction, 1);
@@ -25,7 +25,7 @@ export class Animator {
     }
 
     public stop(): void {
-        if (Shared.isDefined(this.id)) {
+        if (isDefined(this.id)) {
             cancelAnimationFrame(this.id as number);
             this.id = undefined;
         }
@@ -37,7 +37,7 @@ export class Animator {
     }
 
     public start(): void {
-        this.startTime = performance.now() - (Shared.isDefined(this.pausedTime) ? (this.pausedTime as number) - (this.startTime as number) : 0);
+        this.startTime = performance.now() - (isDefined(this.pausedTime) ? (this.pausedTime as number) - (this.startTime as number) : 0);
         this.pausedTime = undefined;
         this.id = requestAnimationFrame(this.onAnimate);
     }

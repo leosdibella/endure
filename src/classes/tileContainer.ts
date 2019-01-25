@@ -1,6 +1,6 @@
 import { IDictionary } from '../interfaces/iDictionary';
 import { Boundary, Color, DetonationRange } from '../utilities/enum';
-import * as Shared from '../utilities/shared';
+import { castSafeOr, getNumericEnumKeys } from '../utilities/shared';
 
 export class TileContainer {
     private static readonly detonationRangeThreshold: number = 101;
@@ -22,14 +22,14 @@ export class TileContainer {
         Boundary.left
     ];
 
-    public static readonly numberOfColors: number = Shared.getNumericEnumKeys(Color).length;
+    public static readonly numberOfColors: number = getNumericEnumKeys(Color).length;
 
     public static getRandomColor(hasDetonationRange: boolean = false): number {
         return hasDetonationRange ? Color.transparent : (Math.floor(Math.random() * (TileContainer.numberOfColors - 1)) + 1);
     }
 
     public static reverseBoundaryDirection(boundaryIndex: Boundary): Boundary {
-        return Shared.castSafeOr(TileContainer.reverseBoundaryRelations[boundaryIndex], Boundary.none);
+        return castSafeOr(TileContainer.reverseBoundaryRelations[boundaryIndex], Boundary.none);
     }
 
     public static generateRandomDetonationRange(canDetonate: boolean): DetonationRange {
@@ -44,7 +44,7 @@ export class TileContainer {
     }
 
     public cloneWith(color: Color, detonationRange: DetonationRange, boundary?: Boundary,): TileContainer {
-        return new TileContainer(this.row, this.column, this.index, color, detonationRange, Shared.castSafeOr(boundary, Boundary.none));
+        return new TileContainer(this.row, this.column, this.index, color, detonationRange, castSafeOr(boundary, Boundary.none));
     }
 
     public constructor(public readonly row: number,

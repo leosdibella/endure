@@ -1,4 +1,4 @@
-import { Difficulty, GameMode, Theme} from '../utilities/enum';
+import { Difficulty, GameMode, Theme } from '../utilities/enum';
 import { IGameUpdate } from './iGameUpdate';
 import { IHighScore } from './iHighScore';
 

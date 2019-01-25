@@ -1,13 +1,13 @@
-import * as React from 'react';
+import React, { PureComponent } from 'react';
 import { ITileProps } from '../interfaces/iTileProps';
 import { Boundary, Color, DetonationRange, GameMode, GridMode, TileType } from '../utilities/enum';
-import * as Shared from '../utilities/shared';
+import { formatCamelCaseString, getNumericEnumKeys } from '../utilities/shared';
 
 import '../styles/tile.scss';
 
-export class Tile extends React.PureComponent<ITileProps, object> {
-    private static readonly boundaryClasses: string[] = Shared.getNumericEnumKeys(Boundary).map(b => `tile-boundary-${Shared.formatCamelCaseString(Boundary[b])}`);
-    private static readonly tileTypes: string[] = Shared.getNumericEnumKeys(TileType).map(tt => `tile-${Shared.formatCamelCaseString(TileType[tt])}`);
+export class Tile extends PureComponent<ITileProps, object> {
+    private static readonly boundaryClasses: string[] = getNumericEnumKeys(Boundary).map(b => `tile-boundary-${formatCamelCaseString(Boundary[b])}`);
+    private static readonly tileTypes: string[] = getNumericEnumKeys(TileType).map(tt => `tile-${formatCamelCaseString(TileType[tt])}`);
     private static readonly standardStyles: React.CSSProperties = {};
 
     private readonly onClick: () => void = this.handleClick.bind(this);

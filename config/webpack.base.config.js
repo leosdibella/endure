@@ -1,7 +1,7 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const nodeEnvironment = process.NODE_ENV ? process.NODE_ENV : 'development';
-const devMode = nodeEnvironment !== 'production';
+const developmentMode = nodeEnvironment !== 'production';
 
 const exclusions = [
     '/dist',
@@ -41,7 +41,7 @@ module.exports = {
         }, {
             test: /\.scss$/,
             use: [
-                devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
+                developmentMode ? 'style-loader' : MiniCssExtractPlugin.loader,
                 'css-loader',
                 'sass-loader',
                 {
@@ -60,8 +60,8 @@ module.exports = {
           filename: './index.html' 
         }),
         new MiniCssExtractPlugin({
-            filename: devMode ? '[name].css' : '[name].[hash].css',
-            chunkFilename: devMode ? '[id].css' : '[id].[hash].css'
+            filename: developmentMode ? '[name].css' : '[name].[hash].css',
+            chunkFilename: developmentMode ? '[id].css' : '[id].[hash].css'
         })
     ]
 };

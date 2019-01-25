@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { PureComponent } from 'react';
 import { Animator } from '../classes/animator';
 import { GridState } from '../classes/gridState';
 import { TileContainer } from '../classes/tileContainer';
@@ -6,12 +6,12 @@ import { IDictionary } from '../interfaces/iDictionary';
 import { IGridProps } from '../interfaces/iGridProps';
 import { IGridReduction } from '../interfaces/iGridReduction';
 import { Boundary, DetonationRange, DomEvent, GameMode, GridMode, Theme } from '../utilities/enum';
-import * as Shared from '../utilities/shared';
+import { fillArray, isDefined, totalPercentage } from '../utilities/shared';
 import { Tile } from './tile';
 
 import '../styles/grid.scss';
 
-export class Grid extends React.PureComponent<IGridProps, GridState> {
+export class Grid extends PureComponent<IGridProps, GridState> {
     private static readonly animationDuration: number = 250;
     private static readonly radialModifier: number = 50;
     private static readonly styleOverrideThreshold: number = 0.5;
@@ -112,13 +112,13 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     }
 
     private stopAnimator(): void {
-        if (Shared.isDefined(this.state.animator)) {
+        if (isDefined(this.state.animator)) {
             (this.state.animator as Animator).stop();
         }
     }
 
     private startAnimator(): void {
-        if (Shared.isDefined(this.state.animator)) {
+        if (isDefined(this.state.animator)) {
             (this.state.animator as Animator).start();
         }
     }
@@ -160,7 +160,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
         if (this.props.gameMode === GameMode.inGame && this.state.gridMode === GridMode.ready) {
             const handler: (() => void) | undefined = this.keyDownEventActionMap[event.key.toLocaleLowerCase()];
 
-            if (Shared.isDefined(handler)) {
+            if (isDefined(handler)) {
                 event.preventDefault();
                 event.stopPropagation();
                 handler();
@@ -169,20 +169,20 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     }
 
     private getTileElements(): JSX.Element[] {
-        const fraction: number = Grid.symmetrizeTimingCurve(Shared.isDefined(this.state.animationTimeFraction) ? (this.state.animationTimeFraction as number) : 0),
+        const fraction: number = Grid.symmetrizeTimingCurve(isDefined(this.state.animationTimeFraction) ? (this.state.animationTimeFraction as number) : 0),
               additionalStyles: React.CSSProperties = {
-                  borderRadius: `${fraction * Shared.totalPercentage - Grid.radialModifier}%`,
+                  borderRadius: `${fraction * totalPercentage - Grid.radialModifier}%`,
                   opacity: fraction
               };
 
-        return Shared.fillArray(this.state.gridDefinition.numberOfRows, row => {
-            const tileRow: JSX.Element[] = Shared.fillArray(this.state.gridDefinition.numberOfColumns, column => {
+        return fillArray(this.state.gridDefinition.numberOfRows, row => {
+            const tileRow: JSX.Element[] = fillArray(this.state.gridDefinition.numberOfColumns, column => {
                 const index: number = this.state.gridDefinition.getTileIndexFromCoordinates(row, column);
 
                 let tile: TileContainer = this.state.tiles[index],
                     useOverrides: boolean = false;
 
-                if (Shared.isDefined(this.state.animationTimeFraction)) {
+                if (isDefined(this.state.animationTimeFraction)) {
                     const updatedTile: TileContainer = this.state.updatedTiles[index];
 
                     if (updatedTile.color !== tile.color || updatedTile.detonationRange !== tile.detonationRange) {
@@ -227,7 +227,7 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
     public componentDidUpdate(previousProps: IGridProps): void {
         let transposeTiles: boolean | undefined;
 
-        if (Shared.isDefined(this.state.animator) && this.props.gameMode !== previousProps.gameMode) {
+        if (isDefined(this.state.animator) && this.props.gameMode !== previousProps.gameMode) {
             const animator: Animator = this.state.animator as Animator;
 
             if (this.props.gameMode === GameMode.paused) {
@@ -240,11 +240,11 @@ export class Grid extends React.PureComponent<IGridProps, GridState> {
         if (previousProps.orientation !== this.props.orientation) {
             this.stopAnimator();
             transposeTiles = true;
-        } else if (this.state.gridMode !== GridMode.ready && !Shared.isDefined(this.state.animator)) {
+        } else if (this.state.gridMode !== GridMode.ready && !isDefined(this.state.animator)) {
             transposeTiles = false;
         }
 
-        if (Shared.isDefined(transposeTiles)) {
+        if (isDefined(transposeTiles)) {
             this.gridModeHandlerMap[this.state.gridMode](!!transposeTiles);
         }
     }

@@ -1,6 +1,6 @@
 import { IDictionary } from '../interfaces/iDictionary';
 import { Orientation } from '../utilities/enum';
-import * as Shared from '../utilities/shared';
+import { fillArray } from '../utilities/shared';
 import { TileContainer } from './tileContainer';
 
 export class GridDefinition {
@@ -30,7 +30,7 @@ export class GridDefinition {
     }
 
     public generateTiles(): TileContainer[] {
-        return Shared.fillArray(this.numberOfRows * this.numberOfColumns, index => {
+        return fillArray(this.numberOfRows * this.numberOfColumns, index => {
             const coordinates: number[] = this.getTileCoordinatesFromIndex(index);
 
             return new TileContainer(coordinates[0], coordinates[1], index, TileContainer.getRandomColor());

@@ -1,38 +1,39 @@
-import * as React from 'react';
+import React, { PureComponent } from 'react';
 import { OverlayMenuOption } from '../classes/overlayMenuOption';
 import { OverlayState } from '../classes/overlayState';
 import { IDictionary } from '../interfaces/iDictionary';
 import { IHighScore } from '../interfaces/iHighScore';
 import { IOverlayProps } from '../interfaces/iOverlayProps';
 import { Difficulty, DomEvent, GameMode, HighScoreListing, Theme } from '../utilities/enum';
-import * as Persistence from '../utilities/persistence';
-import * as Shared from '../utilities/shared';
+import { fetchGlobalHighScoresAsync } from '../utilities/persistence';
+import { decimalBase, formatCamelCaseString, getNumericEnumKeys, isDefined } from '../utilities/shared';
+import { isValidHighScore } from '../utilities/validation';
 
 import '../styles/overlay.scss';
 
-export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
+export class Overlay extends PureComponent<IOverlayProps, OverlayState> {
     private static readonly firstPositionKey: number = 1;
     private static readonly secondPositionKey: number = 2;
     private static readonly thirdPositionKey: number = 3;
 
-    private static readonly highScoreListingOptions: JSX.Element[] = Shared.getNumericEnumKeys(HighScoreListing).map(hsl =>
+    private static readonly highScoreListingOptions: JSX.Element[] = getNumericEnumKeys(HighScoreListing).map(hsl =>
         <option value={`${hsl}`}
                 key={hsl}
                 className='overlay-high-score-select-option'>
-            {Shared.formatCamelCaseString(HighScoreListing[hsl], ' ', true)}
+            {formatCamelCaseString(HighScoreListing[hsl], ' ', true)}
         </option>);
 
-    private static readonly difficultyOptions: JSX.Element[] = Shared.getNumericEnumKeys(Difficulty).map(d =>
+    private static readonly difficultyOptions: JSX.Element[] = getNumericEnumKeys(Difficulty).map(d =>
         <option value={`${d}`}
                 key={d}
                 className='overlay-high-score-select-option'>
-            {Shared.formatCamelCaseString(Difficulty[d], ' ', true)}
+            {formatCamelCaseString(Difficulty[d], ' ', true)}
         </option>);
 
     private static focusSelectedOption(menuOption: OverlayMenuOption, selectedOptionIndex: number): void {
         const buttonReference: React.RefObject<HTMLButtonElement> = menuOption.buttonReferences[selectedOptionIndex];
 
-        if (Shared.isDefined(buttonReference) && Shared.isDefined(buttonReference.current)) {
+        if (isDefined(buttonReference) && isDefined(buttonReference.current)) {
             (buttonReference.current as HTMLButtonElement).focus();
         }
     }
@@ -90,7 +91,7 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
     private onEnter(): void {
         const menuOption: OverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
 
-        if (Shared.isDefined(menuOption)) {
+        if (isDefined(menuOption)) {
             (menuOption as OverlayMenuOption).actions[this.state.selectedOptionIndex]();
         }
     }
@@ -98,13 +99,12 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
     private loadGlobalHighScores(): void {
         const globalHighScores: IHighScore[] = [];
 
-        /* TODO
         let noConnectivity: boolean = false;
 
-        Persistence.fetchGlobalHighScores(this.state.highScoreDifficulty).then((response) => {
+        fetchGlobalHighScoresAsync(this.state.highScoreDifficulty).then((response) => {
             if (Array.isArray(response.data)) {
                 response.data.forEach(hs => {
-                    if (Persistence.isValidHighScore(hs)) {
+                    if (isValidHighScore(hs)) {
                         globalHighScores.push(hs);
                     }
                 });
@@ -117,17 +117,11 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
                 noConnectivity,
                 waiting: false
             });
-        }); */
-
-        this.setState({
-            globalHighScores,
-            noConnectivity: false, // TODO
-            waiting: false
         });
     }
 
     private handleHighScoreListingChange(event: React.ChangeEvent<HTMLSelectElement>): void {
-        const highScoreListing: HighScoreListing = parseInt(event.target.value, Shared.decimalBase) as HighScoreListing,
+        const highScoreListing: HighScoreListing = parseInt(event.target.value, decimalBase) as HighScoreListing,
               waiting: boolean = highScoreListing === HighScoreListing.global;
 
         this.setState({
@@ -137,7 +131,7 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
     }
 
     private handleHighScoreDifficultyChange(event: React.ChangeEvent<HTMLSelectElement>): void {
-        const highScoreDifficulty: Difficulty = parseInt(event.target.value, Shared.decimalBase) as Difficulty,
+        const highScoreDifficulty: Difficulty = parseInt(event.target.value, decimalBase) as Difficulty,
               waiting: boolean = this.state.highScoreListing === HighScoreListing.global;
 
         this.setState({
@@ -149,7 +143,7 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
     private handleKeyDown(event: KeyboardEvent): void {
         const handler: ((event: KeyboardEvent) => void) | undefined = this.keyDownEventActionMap[event.key.toLowerCase()];
 
-        if (Shared.isDefined(handler)) {
+        if (isDefined(handler)) {
             event.preventDefault();
             event.stopPropagation();
             handler(event);
@@ -172,7 +166,7 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
     private getOverlayTitle(): JSX.Element | boolean {
         const menuOption: OverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
 
-        if (Shared.isDefined(menuOption)) {
+        if (isDefined(menuOption)) {
             const overlayTile: JSX.Element = <div className={`overlay-tile ${Theme[this.props.theme]}`}>
                                              </div>;
 
@@ -243,7 +237,7 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
     private getOverlayButtonPanel(): JSX.Element | boolean {
         const menuOption: OverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
 
-        if (Shared.isDefined(menuOption)) {
+        if (isDefined(menuOption)) {
             const buttons: JSX.Element[] = (menuOption as OverlayMenuOption).options.map((option, index) => {
                 return <button key={index}
                                ref={(menuOption as OverlayMenuOption).buttonReferences[index]}
@@ -273,7 +267,7 @@ export class Overlay extends React.PureComponent<IOverlayProps, OverlayState> {
     private incrementOrDecrementOptionsIndex(direction: number): void {
         const menuOption: OverlayMenuOption | undefined = this.state.menu.menuOptions[this.props.gameMode];
 
-        if (Shared.isDefined(menuOption)) {
+        if (isDefined(menuOption)) {
             const optionIndex: number = this.state.selectedOptionIndex + direction,
                   selectedOptionIndex: number = optionIndex >= 0 ? (optionIndex % (menuOption as OverlayMenuOption).options.length) : ((menuOption as OverlayMenuOption).options.length - 1);
 

@@ -2,7 +2,7 @@ import { OverlayMenuOption } from '../classes/overlayMenuOption';
 import { IGameUpdate } from '../interfaces/iGameUpdate';
 import { IOverlayProps } from '../interfaces/iOverlayProps';
 import { Difficulty, GameMode, Theme } from '../utilities/enum';
-import * as Shared from '../utilities/shared';
+import { castSafeOr, getNumericEnumKeys, isDefined } from '../utilities/shared';
 
 export class OverlayMenu {
     private static readonly defaultDefaultOptionsIndex: number = 0;
@@ -30,7 +30,7 @@ export class OverlayMenu {
             return new OverlayMenuOption('Grade Level',
                                          'select-difficulty',
                                          ['[ Pre-K ] I made poop.',  '[ K - 5 ] No I don\'t wanna!', '[ 6 - 8 ] Remove the training wheels!', '[ 9 - 12 ] Test me sensei!', '[ 12+ ] I know kung fu.'],
-                                         Shared.getNumericEnumKeys(Difficulty).map(k => () => callback({
+                                         getNumericEnumKeys(Difficulty).map(k => () => callback({
                                             difficulty: k as Difficulty,
                                             gameMode: GameMode.newGame
                                         })));
@@ -67,7 +67,7 @@ export class OverlayMenu {
             return new OverlayMenuOption('Lights On?',
                                          'theme',
                                          ['Yep', 'Nope'],
-                                         Shared.getNumericEnumKeys(Theme).map(t => () => callback({
+                                         getNumericEnumKeys(Theme).map(t => () => callback({
                                             gameMode: GameMode.newGame,
                                             theme: t as Theme
                                         })));
@@ -86,8 +86,8 @@ export class OverlayMenu {
 
         const menuOption: OverlayMenuOption | undefined = this.menuOptions[props.gameMode];
 
-        if (Shared.isDefined(menuOption)) {
-            return Shared.castSafeOr((menuOption as OverlayMenuOption).defaultOptionsIndex, OverlayMenu.defaultDefaultOptionsIndex);
+        if (isDefined(menuOption)) {
+            return castSafeOr((menuOption as OverlayMenuOption).defaultOptionsIndex, OverlayMenu.defaultDefaultOptionsIndex);
         } else {
             return OverlayMenu.defaultDefaultOptionsIndex;
         }

@@ -1,8 +1,8 @@
 import { IGameUpdate } from '../interfaces/iGameUpdate';
 import { IHighScore } from '../interfaces/iHighScore';
 import { Difficulty, GameMode, LetterGrade } from '../utilities/enum';
-import * as Persistence from '../utilities/persistence';
-import * as Shared from '../utilities/shared';
+import { fetchLocalHighScores, fetchStorableEnumValue, fetchString, persistGlobalHighScoreAsync, persistLocalData } from '../utilities/persistence';
+import { castSafeOr, getDateStamp, isDefined } from '../utilities/shared';
 
 export class GameState {
     private static readonly highScoresLocalStorageKey: string = 'ENDURE_HIGH_SCORES';
@@ -26,30 +26,30 @@ export class GameState {
 
     public static getPersistedState(): GameState {
         return new GameState(GameMode.newGame,
-                             Persistence.fetchStorableEnumValue(GameState.difficultyLocalStorageKey, Difficulty, GameState.defaultDifficulty) as Difficulty,
-                             Persistence.fetchLocalHighScores(GameState.highScoresLocalStorageKey),
-                             Shared.castSafeOr(Persistence.fetchString(GameState.playerNameLocalStorageKey), GameState.defaultPlayerName));
+                             fetchStorableEnumValue(GameState.difficultyLocalStorageKey, Difficulty, GameState.defaultDifficulty) as Difficulty,
+                             fetchLocalHighScores(GameState.highScoresLocalStorageKey),
+                             castSafeOr(fetchString(GameState.playerNameLocalStorageKey), GameState.defaultPlayerName));
     }
 
     public static persistState(state: GameState): void {
-        Persistence.persistData(GameState.difficultyLocalStorageKey, state.difficulty);
-        Persistence.persistData(GameState.highScoresLocalStorageKey, state.highScores);
-        Persistence.persistData(GameState.playerNameLocalStorageKey, GameState.isValidPlayerName(state.playerName) ? state.playerName : GameState.defaultPlayerName);
+        persistLocalData(GameState.difficultyLocalStorageKey, state.difficulty);
+        persistLocalData(GameState.highScoresLocalStorageKey, state.highScores);
+        persistLocalData(GameState.playerNameLocalStorageKey, GameState.isValidPlayerName(state.playerName) ? state.playerName : GameState.defaultPlayerName);
     }
 
     public static getNextStateFromUpdate(update: IGameUpdate, state: GameState): GameState {
-        const playerName: string = Shared.castSafeOr(update.playerName, state.playerName),
-              difficulty: Difficulty =  Shared.castSafeOr(update.difficulty, state.difficulty),
+        const playerName: string = castSafeOr(update.playerName, state.playerName),
+              difficulty: Difficulty = castSafeOr(update.difficulty, state.difficulty),
               highScores: IHighScore[][] = state.highScores;
 
         let maxCombo: number = state.maxCombo,
             stage: number = state.stage,
             score: number = state.score,
-            gameMode: GameMode =  Shared.castSafeOr(update.gameMode, state.gameMode),
-            letterGrade: number =  Shared.castSafeOr(update.letterGrade, state.letterGrade),
-            combo: number = Shared.isDefined(update.dropCombo) ? 0 : state.combo;
+            gameMode: GameMode = castSafeOr(update.gameMode, state.gameMode),
+            letterGrade: number = castSafeOr(update.letterGrade, state.letterGrade),
+            combo: number = isDefined(update.dropCombo) ? 0 : state.combo;
 
-        if (Shared.isDefined(update.points)) {
+        if (isDefined(update.points)) {
             score += ((update.points as number) * Math.max(combo, 1));
             ++combo;
             stage = GameState.getStage(score);
@@ -66,7 +66,7 @@ export class GameState {
 
         if (gameMode === GameMode.gameOver && score > 0) {
             const newHighScore: IHighScore = {
-                dateStamp: Shared.getDateStamp(new Date()),
+                dateStamp: getDateStamp(new Date()),
                 difficulty,
                 maxCombo,
                 name: state.playerName,
@@ -74,7 +74,7 @@ export class GameState {
             };
 
             highScores[difficulty] = highScores[difficulty].concat(newHighScore).sort((a, b) => b.value - a.value).slice(0, GameState.numberOfHighScoresToPersist);
-            // TODO: Persistence.persistGlobalHighScore(newHighScore, difficulty);
+            persistGlobalHighScoreAsync(newHighScore, difficulty);
         }
 
         if (!GameState.isInProgress(gameMode)) {

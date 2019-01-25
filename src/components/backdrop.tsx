@@ -1,13 +1,13 @@
-import * as React from 'react';
+import React, { PureComponent } from 'react';
 import { BackdropState } from '../classes/backdropState';
 import { IBackdropProps } from '../interfaces/iBackdropProps';
 import { Theme } from '../utilities/enum';
-import * as Shared from '../utilities/shared';
+import { fillArray } from '../utilities/shared';
 
 import '../styles/backdrop.scss';
 
-export class Backdrop extends React.PureComponent<IBackdropProps, BackdropState> {
-    private static readonly binderHoles: JSX.Element[] = Shared.fillArray(BackdropState.numberOfBinderHoles, i => {
+export class Backdrop extends PureComponent<IBackdropProps, BackdropState> {
+    private static readonly binderHoles: JSX.Element[] = fillArray(BackdropState.numberOfBinderHoles, i => {
         return <div key={i}
                     className='backdrop-binder-hole'>
                </div>;
@@ -20,7 +20,7 @@ export class Backdrop extends React.PureComponent<IBackdropProps, BackdropState>
     }
 
     public render(): JSX.Element {
-        const lines: JSX.Element[] = Shared.fillArray(this.state.numberOfLines, i => {
+        const lines: JSX.Element[] = fillArray(this.state.numberOfLines, i => {
             return <div key={i}
                         className='backdrop-line'>
                    </div>;

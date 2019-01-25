@@ -1,21 +1,21 @@
-import * as React from 'react';
+import React, { PureComponent } from 'react';
 import { AppState } from '../classes/appState';
 import { IAppUpdate } from '../interfaces/iAppUpdate';
 import { DomEvent, Theme } from '../utilities/enum';
-import * as Shared from '../utilities/shared';
+import { castSafeOr } from '../utilities/shared';
 import { Backdrop } from './backdrop';
 import { Game } from './game';
 
 import '../styles/app.scss';
 
-export class App extends React.PureComponent<object, AppState> {
+export class App extends PureComponent<object, AppState> {
     private static readonly reorientationTimeoutWindow: number = 100;
 
     private readonly onUpdate: (updates: IAppUpdate) => void = this.handleUpdate.bind(this);
     private readonly onOrientationChange: () => void = this.setOrientation.bind(this);
 
     private handleUpdate(updates: IAppUpdate): void {
-        const theme: Theme = Shared.castSafeOr(updates.theme, this.state.theme),
+        const theme: Theme = castSafeOr(updates.theme, this.state.theme),
               nextState: AppState = new AppState(theme, this.state.orientation);
 
         this.setState(nextState);

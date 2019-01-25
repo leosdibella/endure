@@ -1,5 +1,5 @@
 import { IDictionary } from '../interfaces/iDictionary';
-import { Difficulty} from '../utilities/enum';
+import { Difficulty } from '../utilities/enum';
 import { Animator } from './animator';
 
 export class ComboState {
